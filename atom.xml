@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>ttxsgoto&#39; Blog</title>
+  <subtitle>好好学习 努力工作 享受生活</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://ttxsgoto.github.io/"/>
+  <updated>2017-01-31T16:31:31.000Z</updated>
+  <id>https://ttxsgoto.github.io/</id>
+  
+  <author>
+    <name>ttxsgoto</name>
+    <email>zhongqiang2014@163.com</email>
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>hexo常用命令</title>
+    <link href="https://ttxsgoto.github.io/2017/01/31/%E6%96%B0%E7%9A%84%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/"/>
+    <id>https://ttxsgoto.github.io/2017/01/31/新的测试文章/</id>
+    <published>2017-01-31T02:54:17.000Z</published>
+    <updated>2017-01-31T16:31:31.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="安装命令"><a href="#安装命令" class="headerlink" title="安装命令"></a>安装命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">npm install -g hexo # 安装hexo</div><div class="line">hexo init   #初始化hexo目录</div><div class="line">npm install hexo-deployer-git --save 安装git所需的插件</div></pre></td></tr></table></figure>
+<h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">hexo clean</div><div class="line">hexo generate # 或者 hexo g 生成静态网页 </div><div class="line">hexo server # 或者 hexo s 启动本地服务</div><div class="line">hexo deploy # 将本地文件推送到github上</div><div class="line">hexo new &quot;title&quot;    # 新建文章</div><div class="line">hexo new page &quot;pagename&quot;    # 新建页面</div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;安装命令&quot;&gt;&lt;a href=&quot;#安装命令&quot; class=&quot;headerlink&quot; title=&quot;安装命令&quot;&gt;&lt;/a&gt;安装命令&lt;/h4&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pr
+    
+    </summary>
+    
+      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="运维" scheme="https://ttxsgoto.github.io/tags/%E8%BF%90%E7%BB%B4/"/>
+    
+      <category term="hexo" scheme="https://ttxsgoto.github.io/tags/hexo/"/>
+    
+  </entry>
+  
+</feed>
