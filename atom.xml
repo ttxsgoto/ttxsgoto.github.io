@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2017-02-05T14:16:31.000Z</updated>
+  <updated>2017-02-06T14:41:48.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -17,13 +17,13 @@
   
   <entry>
     <title>hexo常用命令</title>
-    <link href="https://ttxsgoto.github.io/2017/01/31/hexo/"/>
-    <id>https://ttxsgoto.github.io/2017/01/31/hexo/</id>
-    <published>2017-01-31T02:54:17.000Z</published>
-    <updated>2017-02-05T14:16:31.000Z</updated>
+    <link href="https://ttxsgoto.github.io/2017/02/06/hexo/"/>
+    <id>https://ttxsgoto.github.io/2017/02/06/hexo/</id>
+    <published>2017-02-06T14:38:32.000Z</published>
+    <updated>2017-02-06T14:41:48.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="安装命令"><a href="#安装命令" class="headerlink" title="安装命令"></a>安装命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">npm install -g hexo # 安装hexo</div><div class="line">hexo init   #初始化hexo目录</div><div class="line">npm install hexo-deployer-git --save 安装git所需的插件</div></pre></td></tr></table></figure>
-<h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">hexo clean</div><div class="line">hexo generate # 或者 hexo g 生成静态网页 </div><div class="line">hexo server # 或者 hexo s 启动本地服务</div><div class="line">hexo deploy # 将本地文件推送到github上</div><div class="line">hexo new &quot;title&quot;    # 新建文章</div><div class="line">hexo new page &quot;pagename&quot;    # 新建页面</div></pre></td></tr></table></figure>
+<h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">hexo clean</div><div class="line">hexo generate # 或者 hexo g 生成静态网页 </div><div class="line">hexo server # 或者 hexo s 启动本地服务</div><div class="line">hexo  deploy    #将本地文件推送到github上</div><div class="line">hexo new &quot;title&quot;    # 新建文章</div><div class="line">hexo new page &quot;pagename&quot;    # 新建页面</div></pre></td></tr></table></figure>
 ]]></content>
     
     <summary type="html">
@@ -36,6 +36,38 @@
     
     
       <category term="hexo" scheme="https://ttxsgoto.github.io/tags/hexo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pycharm,vim,items2常用快捷键</title>
+    <link href="https://ttxsgoto.github.io/2017/02/06/vim/"/>
+    <id>https://ttxsgoto.github.io/2017/02/06/vim/</id>
+    <published>2017-02-06T14:05:33.000Z</published>
+    <updated>2017-02-06T14:41:22.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="熟练掌握下面快捷键的使用-方便查询"><a href="#熟练掌握下面快捷键的使用-方便查询" class="headerlink" title="熟练掌握下面快捷键的使用(方便查询)"></a>熟练掌握下面快捷键的使用(方便查询)</h4><h5 id="Pycharm日常快捷键"><a href="#Pycharm日常快捷键" class="headerlink" title="Pycharm日常快捷键"></a>Pycharm日常快捷键</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">- cmd + b           跳转到声明处(cmd + 鼠标)</div><div class="line">- cmd + y           显示方法对应的代码</div><div class="line">- cmd + []          光标之前/后的位置</div><div class="line">- cmd + del         删除当前行</div><div class="line">- cmd + o           搜索class</div><div class="line">- cmd + l           指定行数跳转</div><div class="line">- cmd + shift + o   搜索文件</div><div class="line">- cmd + opt + o     搜索函数</div><div class="line">- cmd + +           展开当前</div><div class="line">- cmd + -           收缩当前</div><div class="line">- cmd + shift + +   展开所有</div><div class="line">- cmd + shift + -   收缩所有</div><div class="line">- cmd + fn + F2     停止运行程序</div><div class="line">- cmd + /           注释/取消注释</div><div class="line">- cmd + fn + F12    显示文件结构</div><div class="line">- cmd + d           在下一行复制本行的内容</div><div class="line">- cmd + up/down     转到其他目录中</div><div class="line">- alt + enter       自动添加包</div><div class="line">- alt + del         向前删除一个字符串</div><div class="line">- alt + up          选中一个单词</div><div class="line">- alt + control + i 自动缩进行</div><div class="line">- double shift      选择需要查看的文件</div><div class="line">- alt + r           启动程序</div><div class="line">- alt + d           debug启动程序</div></pre></td></tr></table></figure>
+<hr>
+<h5 id="Vim日常快捷键"><a href="#Vim日常快捷键" class="headerlink" title="Vim日常快捷键"></a>Vim日常快捷键</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">- hjkl              左下上右</div><div class="line">- gg                跳到文首</div><div class="line">- G                 跳到文末</div><div class="line">- M                 跳到当前页屏幕中间</div><div class="line">- &apos;0                光标跳到上次关闭文件前的位置</div><div class="line">- control + b       向上翻页</div><div class="line">- control + f       向下翻页</div><div class="line">- dw                删除一个单词</div><div class="line">- D                 删除所在行光标后面的内容</div><div class="line">- d0                删除所在行光标前面的内容</div><div class="line">- x/X               向后删除一个字符，X为向前删除一个字符</div><div class="line">- 0                 移动到当前行的第一个字符处</div><div class="line">- $                 移动到当前行的最后一个字符处</div><div class="line">- u                 撤销之前的操作</div><div class="line">- control + r       向后执行刚才撤销的内容</div><div class="line">- n                 查询时向下重复前一个查询操作</div><div class="line">- N                 查询时向上重复前一个查询操作</div><div class="line">- :s/old/new/g      用new替换行中所有的old</div><div class="line">- %s/old/new/g      用new替换当前文件里所有的old</div><div class="line">- v                 字符选择</div><div class="line">- V                 行选择</div><div class="line">- ctrl+v            块选择</div><div class="line"></div><div class="line">可用于在选中的行上插入相同的内容</div><div class="line">- 定位光标</div><div class="line">- crtl+v           进入块编辑模式</div><div class="line">- I                大写字母I，然后插入字符</div><div class="line">- ESC              按两下esc 即可添加相同内容到对应的行</div></pre></td></tr></table></figure>
+<hr>
+<h5 id="Items2常用快捷键"><a href="#Items2常用快捷键" class="headerlink" title="Items2常用快捷键"></a>Items2常用快捷键</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">- cmd + t           新建标签</div><div class="line">- cmd + w           关闭标签</div><div class="line">- cmd + L/R         左右切换标签</div><div class="line">- cmd + ;           查看历史命令</div><div class="line">- cmd + r           清屏</div><div class="line">- cmd + d           垂直分屏</div><div class="line">- cmd + shift + d   水平分屏</div><div class="line">- control + a       到行首</div><div class="line">- control + e       到行末</div><div class="line">- control + d       删除当前光标的字符</div><div class="line">- 选中即复制 + 鼠标中键粘贴</div></pre></td></tr></table></figure>
+<hr>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;熟练掌握下面快捷键的使用-方便查询&quot;&gt;&lt;a href=&quot;#熟练掌握下面快捷键的使用-方便查询&quot; class=&quot;headerlink&quot; title=&quot;熟练掌握下面快捷键的使用(方便查询)&quot;&gt;&lt;/a&gt;熟练掌握下面快捷键的使用(方便查询)&lt;/h4&gt;&lt;h5 id=&quot;Pyc
+    
+    </summary>
+    
+      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="vim" scheme="https://ttxsgoto.github.io/tags/vim/"/>
+    
+      <category term="pycharm" scheme="https://ttxsgoto.github.io/tags/pycharm/"/>
+    
+      <category term="items2" scheme="https://ttxsgoto.github.io/tags/items2/"/>
     
   </entry>
   
