@@ -1,0 +1,403 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>CPU性能命令 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="基本概念
+CPU使用率:通过测量一段时间内cpu实例忙于执行工作的时间比例获得，以百分比表示
+CPI(每指令周期数)：用来描述cpu如何使用它的时钟周期，同时也可以用来理解CPU使用率的本质；CPI较高代表cpu进场陷入停滞，通常都是在访问内存，较低的CPI表示cpu基本没有停滞，指令吞吐较高
+IP">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/05/cpu/" title="CPU性能命令" itemprop="url">CPU性能命令</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-02-05T14:05:33.000Z" itemprop="datePublished">2017-02-05</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#基本概念"><span class="toc-number">1.</span> <span class="toc-text">基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#CPU使用说明例子"><span class="toc-number">1.1.</span> <span class="toc-text">CPU使用说明例子</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#性能命令如下"><span class="toc-number">1.2.</span> <span class="toc-text">性能命令如下</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#uptime命令，用来统计系统当前的运行状态"><span class="toc-number">1.2.1.</span> <span class="toc-text">uptime命令，用来统计系统当前的运行状态</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#top-查看负载情况-主要关注负载1-5-15min"><span class="toc-number">1.2.2.</span> <span class="toc-text">top    查看负载情况 主要关注负载1,5,15min</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#vmstart-命令（虚拟内存统计），"><span class="toc-number">1.2.3.</span> <span class="toc-text">vmstart 命令（虚拟内存统计），</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mpstat命令"><span class="toc-number">1.2.4.</span> <span class="toc-text">mpstat命令</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#pidstat-按进程或线程来打印cpu用量"><span class="toc-number">1.2.5.</span> <span class="toc-text">pidstat 按进程或线程来打印cpu用量</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#dstat-命令，比较全部的查看系统资源信息"><span class="toc-number">1.2.6.</span> <span class="toc-text">dstat 命令，比较全部的查看系统资源信息</span></a></li></ol></li></ol></li></ol>
+		</div>
+		
+		<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><hr>
+<p>CPU使用率:通过测量一段时间内cpu实例忙于执行工作的时间比例获得，以百分比表示</p>
+<p>CPI(每指令周期数)：用来描述cpu如何使用它的时钟周期，同时也可以用来理解CPU使用率的本质；CPI较高代表cpu进场陷入停滞，通常都是在访问内存，较低的CPI表示cpu基本没有停滞，指令吞吐较高</p>
+<p>IPC(每周期指令数)：它为CPI的倒数</p>
+<p>饱和度：一个100%使用率的cpu称为饱和</p>
+<h4 id="CPU使用说明例子"><a href="#CPU使用说明例子" class="headerlink" title="CPU使用说明例子"></a>CPU使用说明例子</h4><blockquote>
+<p>CPU 很无辜，是个任劳任怨的打工仔，每时每刻都有工作在做（进程、线程）并且自己有一张工作清单（可运行队列），由老板（进程调度）来决定他该干什么，他需要 和老板沟通以便得到老板的想法并及时调整自己的工作（上下文切换），部分工作做完以后还需要及时向老板汇报（中断），所以打工仔（CPU）除了做自己该做 的工作以外，还有大量时间和精力花在沟通和汇报上。</p>
+<p>打工仔接受和完成多少任务并向老板汇报了（中断）；</p>
+<p>打工仔和老板沟通、协商每项工作的工作进度（上下文切换）；</p>
+<p>打工仔的工作列表是不是都有排满（可运行队列）；</p>
+<p>打工仔工作效率如何，是不是在偷懒（CPU 利用率）。</p>
+</blockquote>
+<h4 id="性能命令如下"><a href="#性能命令如下" class="headerlink" title="性能命令如下"></a>性能命令如下</h4><pre><code>- uptime
+- top
+- vmstart
+- mpstat
+- pidstat
+- dstat
+</code></pre><p>说明如下：</p>
+<h5 id="uptime命令，用来统计系统当前的运行状态"><a href="#uptime命令，用来统计系统当前的运行状态" class="headerlink" title="uptime命令，用来统计系统当前的运行状态"></a>uptime命令，用来统计系统当前的运行状态</h5><pre><code>12:02:32 up 235 days, 18:58,  4 users,  load average: 0.02, 0.10, 0.07
+</code></pre><p>其中load average这三个值表示系统在1min，5min，15min内的平均负载，这三个值一般不能大于系统CPU的个数。如果长期大于cpu个数表示cpu不足以服务线程，说明cpu繁忙，有些线程在等待，可能会影响系统性能</p>
+<p>平均负载：表示对cpu资源的需求，通过汇总正在运行的线程数（使用率）和正在排队等待运行的线程数(饱和度)计算得到.</p>
+<h5 id="top-查看负载情况-主要关注负载1-5-15min"><a href="#top-查看负载情况-主要关注负载1-5-15min" class="headerlink" title="top    查看负载情况 主要关注负载1,5,15min"></a>top    查看负载情况 主要关注负载1,5,15min</h5><p>该命令显示了最消耗cpu的任务，并带有cpu消耗百分比，TIME和%CPU显示了CPU占用的时间（这里是分钟时间）</p>
+<pre><code>ps aux|head -1;ps aux|grep -v PID|sort -rn -k +3|head  查看占用cpu资源最多的10个进程方法
+
+ps aux|head -1;ps aux|grep -v PID|sort -rn -k +4|head  查看占用内存资源最多的10个进程方法
+
+ps -eo comm,pid,pcpu,pmem --sort -pcpu | head -20
+</code></pre><h5 id="vmstart-命令（虚拟内存统计），"><a href="#vmstart-命令（虚拟内存统计），" class="headerlink" title="vmstart 命令（虚拟内存统计），"></a>vmstart 命令（虚拟内存统计），</h5><p>最后几列显示了cpu平均负载，少于10%可能是一个有问题<br>vmstart [-V] [-n] [delay [count]]</p>
+<pre><code>-V  表示打印出版本信息，可选参数  
+-n  表示在周期性循环输出，输出的头部信息仅显示一次
+delay 表示两次输出之间的时间间隔
+count 表示按照“delay”指定的时间间隔统计的次数，默认为1次
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">vmstart 3 5</div><div class="line">1 procs -----------memory----------  ---swap-- -----io---- --system-- -----cpu-----</div><div class="line">2 r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</div><div class="line">3 2  0   7400 171448 171212 7667080    0    0    70   605    0    0  2  1 97  1  0</div><div class="line">4 0  0   7400 171828 171212 7667100    0    0     0  2387 1322 1572  1  1 99  0  0</div></pre></td></tr></table></figure>
+<p>在cpu评估中，主要注意procs项中的r项的值和cpu项中us、sy和id列的值<br>这些值都是所有cpu的系统平均数，r除外，是总数r 应小于cpu个数<br>当脏页达到内存页面设置的值时，开始写入硬盘，通过  /sbin/sysctl -n vm.dirty_background_ratio   查看，默认值为10<br>当系统物理内存剩余量在该值范围时，开始大量使用swap交换空间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">r，所有等待的加上正在运行的线程数，这些线程都是可运行状态，只不过 CPU 暂时不可用；</div><div class="line">b，被 blocked 的进程数，正在等待 IO 请求；</div><div class="line">in，被处理过的中断数</div><div class="line">cs，系统上正在做上下文切换的数目</div><div class="line">us，用户占用 CPU 的百分比</div><div class="line">sys，内核和中断占用 CPU 的百分比</div><div class="line">wa，所有可运行的线程被 blocked 以后都在等待 IO，这时候 CPU 空闲的百分比</div><div class="line">id，CPU 完全空闲的百分比</div><div class="line">swpd，已使用的 SWAP 空间大小，KB 为单位；</div><div class="line">free，可用的物理内存大小，KB 为单位；</div><div class="line">buff，物理内存用来缓存读写操作的 buffer 大小，KB 为单位；</div><div class="line">cache，物理内存用来缓存进程地址空间的 cache 大小，KB 为单位；</div><div class="line">si，数据从 SWAP 读取到 RAM（swap in）的大小，KB 为单位；</div><div class="line">so，数据从 RAM 写到 SWAP（swap out）的大小，KB 为单位；</div><div class="line">bi，磁盘块从文件系统或 SWAP 读取到 RAM（blocks in）的大小，block 为单位；</div><div class="line">bo，磁盘块从 RAM 写到文件系统或 SWAP（blocks out）的大小，block 为单位；</div></pre></td></tr></table></figure></p>
+<h5 id="mpstat命令"><a href="#mpstat命令" class="headerlink" title="mpstat命令"></a>mpstat命令</h5><p>(每个CPU统计信息）,检查单个cpu是否繁忙<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">mpstat -P ALL 1</div><div class="line">05:43:50 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest   %idle</div><div class="line">05:43:51 PM  all    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    4    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    5    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    6    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line">05:43:51 PM    7    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00</div><div class="line"></div><div class="line">-P ALL 用来打印每个CPU的信息</div><div class="line">-P 1 1  用来打印第二个cpu的信息</div><div class="line">%usr ：用户态时间</div><div class="line">%nice :以nice优先级运行的进程用户态时间</div><div class="line">%sys ：系统态时间（内核）</div><div class="line">%iowait ：I/O等待</div><div class="line">%irq   ：硬件中断CPU用量</div><div class="line">%soft  ：软件中断CPU用量</div><div class="line">%steal ：耗费在服务其他租户的时间</div><div class="line">%guest ：花在访客虚拟机的时间</div><div class="line">%idle：空闲时间</div><div class="line"></div><div class="line">重要列有：usr，sys和idle</div></pre></td></tr></table></figure></p>
+<h5 id="pidstat-按进程或线程来打印cpu用量"><a href="#pidstat-按进程或线程来打印cpu用量" class="headerlink" title="pidstat 按进程或线程来打印cpu用量"></a>pidstat 按进程或线程来打印cpu用量</h5><p>包括用户态和系统态时间的分解，默认情况下仅输出活动的进程的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">pidstat 1</div><div class="line">05:49:59 PM       PID    %usr %system  %guest    %CPU   CPU  Command</div><div class="line">05:50:00 PM        37    0.00    0.99    0.00    0.99     3  kblockd/3</div><div class="line">05:50:00 PM        60    0.00    0.99    0.00    0.99     0  kswapd0</div><div class="line">05:50:00 PM     18520    0.99    0.99    0.00    1.98     0  pidstat</div><div class="line">05:50:00 PM     18524    0.00   16.83    0.00   16.83     0  tar</div><div class="line">05:50:00 PM     18525   53.47   13.86    0.00   67.33     0  gzip</div><div class="line">-t  打印每个线程的统计信息</div><div class="line">-p ALL  用来打印所有的进程，包括空闲进程</div></pre></td></tr></table></figure></p>
+<h5 id="dstat-命令，比较全部的查看系统资源信息"><a href="#dstat-命令，比较全部的查看系统资源信息" class="headerlink" title="dstat 命令，比较全部的查看系统资源信息"></a>dstat 命令，比较全部的查看系统资源信息</h5><p>常用命令： dstat -cdlnmpsy  查看比较全面的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">-c  cpu</div><div class="line">-d disk</div><div class="line">-l  load</div><div class="line">-n net</div><div class="line">-m memory</div><div class="line">-p procs</div><div class="line">-s swap</div><div class="line">-y system</div><div class="line">--output   xxx.csv   生成csv文件，可以通过excel打开</div><div class="line"></div><div class="line">dstat -cdlnmpsy</div><div class="line">---total-cpu-usage---- -dsk/total- ---load-avg--- -net/total- ---procs---&gt;</div><div class="line">usr sys idl wai hiq siq| read  writ| 1m   5m  15m | recv  send|run blk new&gt;</div><div class="line">  2   1  97   0   0   0|  73k  115k|   0 0.01 0.05|   0     0 |  0   0 1.2&gt;</div><div class="line">  0   1  99   0   0   0|   0     0 |   0 0.01 0.05| 146B 1058B|  0   0   0&gt;</div><div class="line">  0   1 100   0   0   0|   0     0 |   0 0.01 0.05| 146B  514B|  0   0   0&gt;</div><div class="line">  1   0  99   0   0   0|   0     0 |   0 0.01 0.05| 146B  514B|  0   0   0&gt;</div><div class="line">  0   0 100   0   0   0|   0     0 |   0 0.01 0.05| 146B  514B|  0   0   0&gt;</div><div class="line">  0   1  99   0   0   0|   0    12k|   0 0.01 0.05| 146B  514B|1.0   0   0&gt;</div><div class="line"></div><div class="line">dstat --top-io --top-bio</div></pre></td></tr></table></figure></p>
+<p>PS:相关内容参照《性能之巅-洞悉系统、企业与云计算》第6章-cpu章节</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/CPU/">CPU</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/02/05/cpu/" data-title="CPU性能命令 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/06/vim/" title="pycharm,vim,items2常用快捷键">
+  <strong>新一篇:</strong><br/>
+  <span>
+  pycharm,vim,items2常用快捷键</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/01/hexo/"  title="hexo常用命令">
+ <strong>旧一篇:</strong><br/> 
+ <span>hexo常用命令
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="CPU性能命令" data-thread-key="cpu" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/cpu"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
