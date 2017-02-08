@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2017-02-08T14:17:26.000Z</updated>
+  <updated>2017-02-07T14:32:47.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,28 +14,6 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>xx</title>
-    <link href="https://ttxsgoto.github.io/2017/02/08/xx/"/>
-    <id>https://ttxsgoto.github.io/2017/02/08/xx/</id>
-    <published>2017-02-08T13:43:12.000Z</published>
-    <updated>2017-02-08T14:17:26.000Z</updated>
-    
-    <content type="html"><![CDATA[<p><img src="https://ttxsgoto.github.io/img/xx/12.png" alt="xxx"></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;img src=&quot;https://ttxsgoto.github.io/img/xx/12.png&quot; alt=&quot;xxx&quot;&gt;&lt;/p&gt;
-
-    
-    </summary>
-    
-      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
-    
-    
-  </entry>
   
   <entry>
     <title>awk、uniq、sort三个命令的基本用法</title>
