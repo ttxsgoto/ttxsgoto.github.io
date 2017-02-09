@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2017-02-08T14:58:27.000Z</updated>
+  <updated>2017-02-09T15:04:03.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,89 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>生成器、迭代器、反射器</title>
+    <link href="https://ttxsgoto.github.io/2017/02/09/yield/"/>
+    <id>https://ttxsgoto.github.io/2017/02/09/yield/</id>
+    <published>2017-02-09T14:37:32.000Z</published>
+    <updated>2017-02-09T15:04:03.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="生成器（generator"><a href="#生成器（generator" class="headerlink" title="生成器（generator)"></a>生成器（generator)</h3><p>一个函数调用时返回一个迭代器，那么这个就叫生成器（generator），如果函数中包含yield语法，那么这个函数就变成了生成器<br>return作用：在一个生成器中，如果没有return，则默认执行到函数完毕；如果遇到return，如果在执行过程中return则会抛出StopIteration终止迭代</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">def fab(max):</div><div class="line">    n, a, b = 0, 0, 1</div><div class="line">    while n &lt; max:</div><div class="line">        yield b</div><div class="line">        a, b = b, a + b</div><div class="line">        n = n + 1</div><div class="line">for n in fab(5):</div><div class="line">    print n</div></pre></td></tr></table></figure>
+<p><strong>yield：</strong> 每需要一个时，添加一个<br>简单地讲，yield 的作用就是把一个函数变成一个 generator，带有 yield 的函数不再是一个普通函数，Python 解释器会将其视为一个 generator，调用 fab(5) 不会执行 fab 函数，而是返回一个 iterable 对象！在 for 循环执行时，每次循环都会执行 fab 函数内部的代码，执行到 yield b 时，fab 函数就返回一个迭代值，下次迭代时，代码从 yield b 的下一条语句继续执行，而函数的本地变量看起来和上次中断执行前是完全一样的，于是函数继续执行，直到再次遇到 yield。看起来就好像一个函数在正常执行的过程中被 yield 中断了数次，每次中断都会通过 yield 返回当前的迭代值。</p>
+<h3 id="迭代器"><a href="#迭代器" class="headerlink" title="迭代器"></a>迭代器</h3><p><strong>迭代器iter</strong> :存在内存中或者文件中，一次只能读取1个元素<br>是访问元素的一种方式，迭代器对象从集合的第一个元素开始访问，直到所有的元素被访问完后结束</p>
+<p>迭代器的优点：不需要事项准备好整个迭代过程中的所有元素，迭代器仅在迭代到某个元素时才计算该元素，在这之前或之后，元素可以不存在或者被销毁，该特点使它特别适合用于遍历一个大的文件或集合，如几个G的文件</p>
+<p><strong>特点</strong></p>
+<pre><code>1.访问值不需要关心迭代器内部结构，仅需通过next()方法来不断取下一个内容
+2.不能随机访问集合中的某个值，只能从头到尾依次访问
+3.访问到一半时不能回退
+4.用于循环大的数据集合，节约内存
+</code></pre><p><strong>方法</strong></p>
+<pre><code>next():返回迭代器的下一个元素
+__iter__:返回迭代器对象本身
+</code></pre><p> <strong>定义一个迭代器</strong></p>
+<pre><code>names = iter([&quot;a&quot;,&quot;b&quot;,&quot;d&quot;])
+</code></pre><p><strong>使用</strong></p>
+<pre><code>print (names.next())
+</code></pre><h3 id="反射器"><a href="#反射器" class="headerlink" title="反射器"></a>反射器</h3><ul>
+<li>hasattr(obj,attr)    这个方法用来检查obj中是否有一个名为attr的属性，返回一个布尔值</li>
+<li>getattr(obj,attr)     这个方法将返回名为attr值得属性的值，如attr为’bar’，则返回obj.bar方法</li>
+<li>setattr(obj,attr,val)    调用这个方法将给obj的名为attr的值得属性赋值为val，如果attr为’bar’，则相当于obj.bar=val</li>
+</ul>
+<p><strong>三种执行方式</strong></p>
+<ol>
+<li><p>以字符串的形式导入模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">temp = &apos;sys&apos;</div><div class="line">model = __import__(temp)</div><div class="line">print model.path</div><div class="line"> </div><div class="line"># 结果：</div><div class="line">[&apos;/Users/study/py01&apos;]</div></pre></td></tr></table></figure>
+</li>
+<li><p>以字符串的形式执行函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">temp = &quot;mymodel&quot;  #模块名称</div><div class="line">func = &quot;myfunc&quot;   #函数名称</div><div class="line">model = __import__(temp)</div><div class="line">func1 = getattr(model, func) #到mymodel模块中找myfunc函数，如果有返回function</div><div class="line">func1(*args, **kwargs)    #执行func1函数，即执行模块中的函数</div></pre></td></tr></table></figure>
+</li>
+<li><p>以字符串的形式判断类里面有没有对应的方法，根据输入的内容，执行类中对应的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">class MyClass(object):</div><div class="line">    def sayhi(self):</div><div class="line">        print &quot;sayhi&quot;</div><div class="line">    def info(self):</div><div class="line">        print &quot;info&quot;</div><div class="line">    def do(self):</div><div class="line">        print &quot;do&quot;</div><div class="line">    def run(self):</div><div class="line">        print &quot;run&quot;</div><div class="line">def outside():</div><div class="line">    print &quot;outside other funciton&quot;</div><div class="line"> </div><div class="line">m = MyClass()</div><div class="line">user_input  = raw_input(&apos;Pls input function:&apos;)</div><div class="line">if hasattr(m, user_input): #判断有没有该方法</div><div class="line">    func = getattr(m, user_input) #获得该方法</div><div class="line">    func()  #执行方法</div><div class="line">else:</div><div class="line">    print &quot;Error!&quot;</div><div class="line">    setattr(m, user_input, outside) #设置方法</div><div class="line">    func = getattr(m,user_input)</div><div class="line">    func()</div></pre></td></tr></table></figure>
+</li>
+</ol>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;生成器（generator&quot;&gt;&lt;a href=&quot;#生成器（generator&quot; class=&quot;headerlink&quot; title=&quot;生成器（generator)&quot;&gt;&lt;/a&gt;生成器（generator)&lt;/h3&gt;&lt;p&gt;一个函数调用时返回一个迭代器，那么这个就叫生成器
+    
+    </summary>
+    
+      <category term="python" scheme="https://ttxsgoto.github.io/categories/python/"/>
+    
+    
+      <category term="yeild" scheme="https://ttxsgoto.github.io/tags/yeild/"/>
+    
+      <category term="generator" scheme="https://ttxsgoto.github.io/tags/generator/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>docker常用命令</title>
+    <link href="https://ttxsgoto.github.io/2017/02/09/docker-command/"/>
+    <id>https://ttxsgoto.github.io/2017/02/09/docker-command/</id>
+    <published>2017-02-09T13:08:57.000Z</published>
+    <updated>2017-02-09T15:23:29.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>主要记录Docker工作中，常使用命令.</strong></p>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">docker build -t name ./path(dockerfile)  #通过dockerfile来创建镜像</div><div class="line">    --rm=true  表示构建成功后，移除所有中间容器</div><div class="line">    --no-cache=false 表示在构建过程中不使用缓存</div><div class="line"></div><div class="line">docker run  -it -p 2222:22 --name 容器名称 镜像名称  #启动docker镜像</div><div class="line">    -it 交互式模式启动，前台可以看到</div><div class="line">    -d 后台模式启动</div><div class="line">    -p 2222:22指定端口映射</div><div class="line">    --name 容器名称</div><div class="line">    -v  host_dir:container_dir   宿主机和容器数据映射，数据同步</div><div class="line">    -e 传递环境变量  -e WORDPRESS_DB_HOST=x.x.x.x</div><div class="line">    --entrypoint=/bin/bash   将cmd命令的环境覆盖掉</div><div class="line">如：docker run -itd -p 80:80 --name nginx_php -v /root/html:/data/www/html nginx1.8</div><div class="line">docker ps  # 将处于run状态下的容器显示出来</div><div class="line">docker ps -a   #将所有docker状态的容器显示出来</div><div class="line">docker info     #查看docker信息</div><div class="line">docker images # 查看镜像</div><div class="line">docker pull   xxx  #下载镜像</div><div class="line">docker push  xxx  #将镜像推送到registry</div><div class="line">docker search xxxx #查询镜像</div><div class="line">docker diff     #列出容器内发生变化的文件和目录（A-Add，D-Delete，C-Change）</div><div class="line">docker commit  xxxx    abc/yyy  #把有修改的container提交到新的images中</div><div class="line">docker tag  原镜像名称     新名称    #给镜像重命名</div><div class="line">docker top container    #查看正在运行的容器中的进程的运行情况</div><div class="line">docker port container   #用于查看容器与主机之间的端口映射关系信息</div><div class="line">docker exec -it  container_id(base(名称)) /bin/bash    #进入docker容器里面</div><div class="line">docker stop b1430f1a3daa    #停止容器运行</div><div class="line">Ctrl +p +q                         #进入容器后，从终端退出容器</div><div class="line">docker rm  -f 容器名称   #删除容器，-f强制删除</div><div class="line">docker rmi  image  #移除一个或多个镜像</div><div class="line">docker inspect  #查看镜像或容器的底层详细信息</div><div class="line">docker inspect -f &#123;&#123;.NetworkSettings.IPAddress&#125;&#125;  xxxxx   -f #查看特定信息</div><div class="line">docker ps -qa  # 列出所有的容器(含沉睡镜像)的容器ID号</div><div class="line">docker rm `docker ps -qa` 将沉睡的容器删除</div></pre></td></tr></table></figure>
+<h3 id="存储相关命令"><a href="#存储相关命令" class="headerlink" title="存储相关命令"></a>存储相关命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">docker save -o ubuntu_14.04.tar ubuntu:14.04   #存出镜像</div><div class="line">docker load &lt; ubuntu_14.04.tar   #载入镜像，导入相关的元数据（包括标签等）</div><div class="line">docker export ID(7691a814370e) &gt;ubuntu.tar   #导出容器，导出容器快照到本地</div><div class="line">docker import             #导入容器快照，可以导入远程文件、本地文件和目录，使用http的url从远程位置导入，本地或目录的导入需要使用-参数</div><div class="line">如：docker import http://xxx.yyy.com/ext.tar.gz  xxx/yyy  || docker import - ubuntu:14.04</div></pre></td></tr></table></figure>
+<h3 id="日志相关命令"><a href="#日志相关命令" class="headerlink" title="日志相关命令"></a>日志相关命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">docker events     #打印容器实时的系统事件</div><div class="line">docker history  images    #打印指定image的每层image命令行的历史记录</div><div class="line">docker logs container  #批量打印出容器中进程的运行日志</div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;strong&gt;主要记录Docker工作中，常使用命令.&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&quot;常用命令&quot;&gt;&lt;a href=&quot;#常用命令&quot; class=&quot;headerlink&quot; title=&quot;常用命令&quot;&gt;&lt;/a&gt;常用命令&lt;/h3&gt;&lt;figure class=&quot;highl
+    
+    </summary>
+    
+      <category term="Docker" scheme="https://ttxsgoto.github.io/categories/Docker/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>docker—网络模式</title>
