@@ -1,0 +1,390 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Celery异步 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明Celery是一个异步任务队列/基于分布式消息传递的作业队列。它侧重于实时操作，但对调度的支持也很好
+适用场景
+可以在 Request-Response 循环之外执行的操作：发送邮件、推送消息
+耗时的操作：调用第三方 API（前端通过 AJAX 展示进度和结果）
+周期性任务：取代 crontab">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/12/celery/" title="Celery异步" itemprop="url">Celery异步</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-03-12T05:18:43.000Z" itemprop="datePublished">2017-03-12</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#适用场景"><span class="toc-number">2.</span> <span class="toc-text">适用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#架构设计"><span class="toc-number">3.</span> <span class="toc-text">架构设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置启动"><span class="toc-number">4.</span> <span class="toc-text">配置启动</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-number">4.1.</span> <span class="toc-text">配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#启动"><span class="toc-number">4.2.</span> <span class="toc-text">启动</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#应用实例"><span class="toc-number">5.</span> <span class="toc-text">应用实例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#异步执行任务"><span class="toc-number">5.1.</span> <span class="toc-text">异步执行任务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#周期执行任务"><span class="toc-number">5.2.</span> <span class="toc-text">周期执行任务</span></a></li></ol></li></ol>
+		</div>
+		
+		<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>Celery是一个异步任务队列/基于分布式消息传递的作业队列。它侧重于实时操作，但对调度的支持也很好</p>
+<h3 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h3><ul>
+<li>可以在 Request-Response 循环之外执行的操作：发送邮件、推送消息</li>
+<li>耗时的操作：调用第三方 API（前端通过 AJAX 展示进度和结果）</li>
+<li>周期性任务：取代 crontab</li>
+</ul>
+<h3 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a>架构设计</h3><p><img src="https://ttxsgoto.github.io/img/celery/celery01.png" alt=""><br>Celery的架构由三部分组成：</p>
+<pre><code>消息中间件（message broker）：Celery本身不提供消息服务是任务调度队列，通常以服务形式出现，可以方便的和第三方提供的消息中间件集成；包括，RabbitMQ, Redis, MongoDB；
+任务执行单元（worker）：是Celery提供的任务执行的单元，worker并发的运行在分布式的系统节点中；
+任务执行结果存储（task result store）：用来存储Worker执行的任务的结果，Celery支持以不同方式存储任务的结果，包括AMQP, Redis，memcached, MongoDB，SQLAlchemy, Django ORM，Apache Cassandra, IronCache
+</code></pre><h3 id="配置启动"><a href="#配置启动" class="headerlink" title="配置启动"></a>配置启动</h3><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"># 参数配置</div><div class="line">    BROKER_URL = &apos;redis://127.0.0.1:6379&apos;               # 指定 Broker</div><div class="line">    CELERY_RESULT_BACKEND = &apos;redis://127.0.0.1:6379/0&apos;  # 指定 Backend</div><div class="line">    CELERY_TIMEZONE = &apos;Asia/Shanghai&apos;                   # 指定时区，默认是 UTC</div><div class="line"></div><div class="line">    CELERY_IMPORTS = (                                  # 指定导入的任务模块</div><div class="line">    &apos;celery_app.task1&apos;,</div><div class="line">    &apos;celery_app.task2&apos;</div><div class="line">)</div><div class="line">    app.config_from_object(&apos;celeryconfig&apos;)  #将配置导入到celery对象中</div></pre></td></tr></table></figure>
+<h4 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h4><p>celery worker -A tasks –loglevel=info –concurrency=5<br>参数”-A”指定了Celery实例的位置，本例是在”tasks.py”中，celery命令会自动在该文件中寻找Celery对象实例。建议指定Celery对象名称，如”-A tasks.app”。<br>参数”loglevel”指定了日志等级，也可以不加，默认为warning。也可以使用 -l info来表示<br>参数”concurrency”指定最大并发数，默认为CPU核数<br>delay():方法将任务发送到消息队列中，由之前启动worker执行，这时Python控制台上只会返回”AsyncResult”信息。如果你看下之前职程的启动窗口，你会看到多了条日志”Received task: celery_app.task1.add[bec9a333-3af7-43ab-b93d-4a2ae6779058]  ETA:[2017-03-12 12:57:08.630629+08:00]”<br>“delay()”方法，它其实是对”apply_async()”方法的封装，使得你只要传入任务所需的参数即可。对于特殊的任务调度需求，你需要使用”apply_async()”，其常用的参数有：</p>
+<pre><code>countdown: 指定多少秒后任务才被执行
+eta: 指定任务被调度的时间，参数类型是datetime
+expires: 任务过期时间，参数类型可以是int（秒），也可以是datetime
+retry: 任务发送失败的重试次数
+priority: 任务优先级，范围是0-9
+serializer: 参数和返回值的序列化方式
+</code></pre><p>result = add.delay(2,5)<br>result.ready()  #True,用于检查任务执行是否成功<br>result.get(timeout=1)   #7,get方法用于获取任务结果</p>
+<p>delay() 方法是 apply_async() 方法的简写<br>apply_async(args=(), kwargs={}, route_name=None, **options)<br>这个调用会把 add 操作放入到队列里，然后立即返回一个 AsyncResult 对象<br>当函数被@app.task装饰后，就成为可被 Celery 调度的任务</p>
+<h3 id="应用实例"><a href="#应用实例" class="headerlink" title="应用实例"></a>应用实例</h3><h4 id="异步执行任务"><a href="#异步执行任务" class="headerlink" title="异步执行任务"></a>异步执行任务</h4><p>目录结构：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- celery_app</div><div class="line">    - __init__.py</div><div class="line">    - celeryconfig.py</div><div class="line">    - init.py</div><div class="line">    - task1.py</div><div class="line">    - task2.py</div><div class="line">    - client.py</div></pre></td></tr></table></figure></p>
+<p>celeryconfig.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">BROKER_URL = &apos;redis://127.0.0.1:6379&apos;               # 指定 Broker</div><div class="line">CELERY_RESULT_BACKEND = &apos;redis://127.0.0.1:6379/0&apos;  # 指定 Backend</div><div class="line">CELERY_TIMEZONE = &apos;Asia/Shanghai&apos;                   # 指定时区，默认是 UTC</div><div class="line"> </div><div class="line">CELERY_IMPORTS = (                                  # 指定导入的任务模块</div><div class="line">    &apos;celery_app.task1&apos;,</div><div class="line">    &apos;celery_app.task2&apos;</div><div class="line">)</div></pre></td></tr></table></figure></p>
+<p>init.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line">&apos;&apos;&apos;</div><div class="line">Describe:异步执行</div><div class="line">启动worker进程;每次修改task代码后,需要restart  celery 进程;</div><div class="line">cd /train/celery_demo &amp;&amp; celery worker -A celery_app.init --loglevel=INFO</div><div class="line"></div><div class="line">&apos;&apos;&apos;</div><div class="line">from celery import Celery</div><div class="line"> </div><div class="line">ttxsgoto = Celery(&quot;ttxsgoto&quot;)   #创建一个celery任务</div><div class="line"> </div><div class="line">ttxsgoto.config_from_object(&apos;celery_app.celeryconfig&apos;)  #将配置导入到celery对象中</div></pre></td></tr></table></figure></p>
+<p>task1.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">import time</div><div class="line">from .init import ttxsgoto</div><div class="line"> </div><div class="line">@ttxsgoto.task</div><div class="line">def add(x, y):</div><div class="line">    time.sleep(5)</div><div class="line">    return x + y</div></pre></td></tr></table></figure></p>
+<p>task2.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">import time</div><div class="line">from .init import ttxsgoto</div><div class="line"> </div><div class="line">@ttxsgoto.task</div><div class="line">def multiply(x, y):</div><div class="line">    time.sleep(10)</div><div class="line">    return x * y</div></pre></td></tr></table></figure></p>
+<p>client.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">import time</div><div class="line">import task1</div><div class="line">import task2</div><div class="line"> </div><div class="line">print &quot;异步执行开始:&quot;,time.ctime()</div><div class="line">task1.add.apply_async(args=(2,8), countdown=5) # 5 秒后执行任务</div><div class="line">task2.multiply.delay(3,7)</div><div class="line"> </div><div class="line">print &quot;end!!!!!&quot;</div><div class="line">print time.ctime()</div></pre></td></tr></table></figure></p>
+<p>启动celery并服务，并执行client.py脚本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">celery worker -A celery_app.init  -l info</div><div class="line">python client.py</div></pre></td></tr></table></figure></p>
+<h4 id="周期执行任务"><a href="#周期执行任务" class="headerlink" title="周期执行任务"></a>周期执行任务</h4><p>目录结构：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- celery_app_cron</div><div class="line">    - __init__.py</div><div class="line">    - celeryconfig.py</div><div class="line">    - init.py</div><div class="line">    - task1.py</div><div class="line">    - task2.py</div></pre></td></tr></table></figure></p>
+<p>celeryconfig.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">from datetime import timedelta</div><div class="line">from celery.schedules import crontab</div><div class="line">from celery import Celery</div><div class="line"> </div><div class="line">BROKER_URL = &apos;redis://127.0.0.1:6379&apos;               # 指定 Broker</div><div class="line">CELERY_RESULT_BACKEND = &apos;redis://127.0.0.1:6379/0&apos;  # 指定 Backend</div><div class="line">CELERY_TIMEZONE = &apos;Asia/Shanghai&apos;                   # 指定时区，默认是 UTC</div><div class="line"> </div><div class="line">CELERY_IMPORTS = (                                  # 指定导入的任务模块</div><div class="line">    &apos;celery_app_cron.task1&apos;,</div><div class="line">    &apos;celery_app_cron.task2&apos;</div><div class="line">)</div><div class="line"> </div><div class="line">#ttxsgoto = Celery(&quot;cron&quot;,broker= BROKER_URL, backend= CELERY_RESULT_BACKEND)</div><div class="line"> </div><div class="line">#定时任务设置</div><div class="line">CELERYBEAT_SCHEDULE = &#123;</div><div class="line">    &apos;add-every-30s&apos;:&#123;</div><div class="line">        &apos;task&apos;:&apos;celery_app_cron.task1.add&apos;,         #任务执行的函数</div><div class="line">        &apos;schedule&apos;:timedelta(seconds=30),           # 每30s执行一次</div><div class="line">        &apos;args&apos;:(3,12)                                # 任务函数参数</div><div class="line">    &#125;,</div><div class="line"></div><div class="line">    &apos;multiply-erverday-7-10&apos;:&#123;</div><div class="line">        &apos;task&apos;:&apos;celery_app_cron.task2.multiply&apos;,</div><div class="line">        #&apos;schedule&apos;:crontab(hour=7,minute=10),      #cron计划任务,每天7:10进行</div><div class="line">        &apos;args&apos;:(3,15)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>init.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line">&apos;&apos;&apos;</div><div class="line">Describe:定时任务</div><div class="line">启动worker进程;每次修改task代码后,需要restart  celery 进程;</div><div class="line">cd /train/celery_demo &amp;&amp; celery -A celery_app_cron.init worker --loglevel=INFO</div><div class="line">cd /train/celery_demo &amp;&amp; celery -A celery_app_cron.init beat</div><div class="line">放在一起执行:</div><div class="line">cd /train/celery_demo &amp;&amp; celery -B -A celery_app_cron.init worker --loglevel=INFO</div><div class="line">&apos;&apos;&apos;</div><div class="line">from celery import Celery</div><div class="line"> </div><div class="line">ttxsgoto = Celery(&quot;cron&quot;)</div><div class="line">ttxsgoto.config_from_object(&apos;celery_app_cron.celeryconfig&apos;)</div></pre></td></tr></table></figure></p>
+<p>task1.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">import time</div><div class="line">from .init import ttxsgoto</div><div class="line"> </div><div class="line">@ttxsgoto.task</div><div class="line">def add(x, y):</div><div class="line">    time.sleep(5)</div><div class="line">    return x + y</div></pre></td></tr></table></figure></p>
+<p>task2.py<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">import time</div><div class="line">from init import ttxsgoto</div><div class="line"> </div><div class="line">@ttxsgoto.task</div><div class="line">def multiply(x, y):</div><div class="line">    time.sleep(10)</div><div class="line">    return x * y</div></pre></td></tr></table></figure></p>
+<p>启动celery服务，可以看到执行结果，30s运行一次task1.add<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">celery worker -B -A celery_app_cron.init -l info</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/celery/">celery</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/03/12/celery/" data-title="Celery异步 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2017/03/08/django-page/"  title="django分页">
+ <strong>旧一篇:</strong><br/> 
+ <span>django分页
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Celery异步" data-thread-key="celery" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/celery"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
