@@ -1,0 +1,364 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>redis日常笔记 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="redis设置密码123456789101112131415方法一（命令行）：CONFIG SET requirepass  password	#设置密码为passwordauth password	#登录ping	#验证CONFIG SET requirepass  &amp;apos;&amp;apos;	#取">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/18/redis/" title="redis日常笔记" itemprop="url">redis日常笔记</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-02-18T14:16:52.000Z" itemprop="datePublished">2017-02-18</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis设置密码"><span class="toc-number">1.</span> <span class="toc-text">redis设置密码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#常用命令"><span class="toc-number">2.</span> <span class="toc-text">常用命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis备份-amp-恢复"><span class="toc-number">3.</span> <span class="toc-text">redis备份&恢复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置文件"><span class="toc-number">4.</span> <span class="toc-text">配置文件</span></a></li></ol>
+		</div>
+		
+		<h3 id="redis设置密码"><a href="#redis设置密码" class="headerlink" title="redis设置密码"></a>redis设置密码</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">方法一（命令行）：</div><div class="line">CONFIG SET requirepass  password	#设置密码为password</div><div class="line">auth password	#登录</div><div class="line">ping	#验证</div><div class="line">CONFIG SET requirepass  &apos;&apos;	#取消密码，设置为空</div><div class="line">redis-cli -h 127.0.0.1 -p 6379 -a &quot;ttxsgoto&quot; 	#验证连接</div><div class="line"> </div><div class="line">方法二（配置文件）：</div><div class="line">/etc/redis.conf中</div><div class="line">#requirepass foobared  </div><div class="line">去掉行前的注释，并修改密码为所需的密码,保存文件</div><div class="line">重启redis server完成</div><div class="line"> </div><div class="line">#导出</div><div class="line">redis-cli -h 127.0.0.1 -p 6379 -a &quot;ttxsgoto&quot; keys xxx* &gt; xxx.txt</div></pre></td></tr></table></figure>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">keys *  #查看所有的keys</div><div class="line">get key #查看key</div><div class="line">set key vlaue   #设置key</div><div class="line">del key #删除key</div><div class="line"> </div><div class="line">#其他   http://redisdoc.com/</div><div class="line">dbsize  #当前数据库key数量</div><div class="line">select 1    #切换到1号数据库</div><div class="line">config get *    #返回配置参数的变量和值</div><div class="line">info [Memory]    #返回redis服务器的各种信息和统计数据，如版本，内存使用情况  http://redisdoc.com/server/info.html</div><div class="line">monitor    #实时打印出 Redis 服务器接收到的命令，调试用</div><div class="line">bgsave  #fork出一个新子进程，负责将数据保存到磁盘中</div><div class="line">slowlog get num    #查看slowlog http://redisdoc.com/server/slowlog.html</div><div class="line">slowlog len/reset     #slowlog数量/清空</div><div class="line">save    #备份</div><div class="line">move key db-index   # 返回1成功，0 如果key不存在，或者已经在指定数据库中</div><div class="line"> </div><div class="line">#删除所有key</div><div class="line">flushdb     #删除当前数据库中的所有Key</div><div class="line">flushall    #删除所有数据库中的所有key</div><div class="line"> </div><div class="line">查看建是否存在</div><div class="line">exists key   有返回(integer) 1，没有返回(integer) 0</div><div class="line"> </div><div class="line">rename key newkey   #更改键的名称</div><div class="line">type key    #返回键的数据类型</div></pre></td></tr></table></figure>
+<h3 id="redis备份-amp-恢复"><a href="#redis备份-amp-恢复" class="headerlink" title="redis备份&amp;恢复"></a>redis备份&amp;恢复</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">######## 备份 ########</div><div class="line">save    #备份，写入rdb文件</div><div class="line">bgsave  #fork出一个新子进程，负责将数据保存到磁盘中</div><div class="line"> </div><div class="line">######## 恢复 ########</div><div class="line">Redis 恢复的机制</div><div class="line">    - 如果只配置 AOF ，重启时加载 AOF 文件恢复数据；</div><div class="line">    - 如果同时配置了 RDB 和 AOF ，启动是只加载 AOF 文件恢复数据；</div><div class="line">    - 如果只配置 RDB，启动是将加载 dump 文件恢复数据</div><div class="line"> </div><div class="line">1.aof 中恢复数据(配置如下)</div><div class="line">    appendonly yes</div><div class="line">    dir /data/redis/</div><div class="line">2.rdb 中恢复数据(配置如下)</div><div class="line">    appendonly no</div><div class="line">    dir /data/redis/</div><div class="line">3.启动服务</div><div class="line"> </div><div class="line">#####重启服务时，会自动加载备份文件中的数据，但如果密码没有写入配置问题，会丢失需要重新设置</div><div class="line">#定时备份文件</div><div class="line">对于RDB和AOF，都是直接拷贝文件即可，可以设定crontab进行定时备份： cp /var/lib/redis/dump.rdb /somewhere/safe/dump.$(date +%Y%m%d%H%M).rdb</div><div class="line"> </div><div class="line">检查修复AOF文件：</div><div class="line">redis-check-aof data/appendonly.aof</div><div class="line"> </div><div class="line"># 数据快照，备份，主从</div><div class="line">http://blog.csdn.net/zhu_xun/article/details/16806697</div></pre></td></tr></table></figure>
+<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div></pre></td><td class="code"><pre><div class="line">#redis.conf</div><div class="line">################################## INCLUDES ###################################</div><div class="line"># 其他个性化设置</div><div class="line"># include /path/to/local.conf</div><div class="line"># include /path/to/other.conf</div><div class="line"> </div><div class="line">################################ GENERAL  #####################################常用</div><div class="line">daemonize no    #默认不为守护进程运行，设置为yes修改为守护进程</div><div class="line">pidfile /var/run/redis.pid  #如果为守护进程模式，pid文件</div><div class="line">port 6379   #监听端口</div><div class="line">tcp-backlog 511     # TCP 监听的最大容纳数量,在高并发的环境下，你需要把这个值调高以避免客户端连接缓慢的问题,/proc/sys/net/core/somaxconn 和设置值 相同</div><div class="line"># bind 192.168.1.100 10.0.0.1   #你如果只想让它在一个网络接口上监听，那你就绑定一个IP或者多个IP，多个IP用空格隔开</div><div class="line">timeout 0   # 指定在一个 client 空闲多少秒之后关闭连接（0 就是不管它）</div><div class="line">tcp-keepalive 0 # tcp 心跳包，推荐一个合理的值就是60秒</div><div class="line">loglevel notice     # 定义日志级别，notice (适用于生产环境)</div><div class="line">logfile &quot;&quot;      # 指定日志文件的位置</div><div class="line"> </div><div class="line"># 要想把日志记录到系统日志，就把它改成 yes，</div><div class="line"># 也可以可选择性的更新其他的syslog 参数以达到你的要求</div><div class="line"># syslog-enabled no</div><div class="line"> </div><div class="line"># 设置 syslog 的 identity。</div><div class="line"># syslog-ident redis</div><div class="line"> </div><div class="line"># 设置 syslog 的 facility，必须是 USER 或者是 LOCAL0-LOCAL7 之间的值。</div><div class="line"># syslog-facility local0</div><div class="line"> </div><div class="line">databases 32    #设置数据库的数目，启动32个数据库，默认为16个(0-15)</div><div class="line"> </div><div class="line">################################ SNAPSHOTTING  ################################快照</div><div class="line"># 存 DB 到磁盘：</div><div class="line">#   格式：save &lt;间隔时间（秒）&gt; &lt;写入次数&gt;</div><div class="line">#   根据给定的时间间隔和写入次数将数据保存到磁盘</div><div class="line">#</div><div class="line">#   下面的例子的意思是：</div><div class="line">#   900 秒内如果至少有 1 个 key 的值变化，则保存</div><div class="line">#   300 秒内如果至少有 10 个 key 的值变化，则保存</div><div class="line">#   60 秒内如果至少有 10000 个 key 的值变化，则保存</div><div class="line">#　　</div><div class="line">#   注意：你可以注释掉所有的 save 行来停用保存功能。</div><div class="line">#   也可以直接一个空字符串来实现停用：</div><div class="line">#   save &quot;&quot;</div><div class="line"> </div><div class="line">save 900 1</div><div class="line">save 300 10</div><div class="line">save 60 10000</div><div class="line"> </div><div class="line"># 默认情况下，如果 redis 最后一次的后台保存失败，redis 将停止接受写操作，</div><div class="line"># 这样以一种强硬的方式让用户知道数据不能正确的持久化到磁盘，</div><div class="line"># 否则就会没人注意到灾难的发生。</div><div class="line">#</div><div class="line"># 如果后台保存进程重新启动工作了，redis 也将自动的允许写操作。</div><div class="line">#</div><div class="line"># 你可能不希望 redis 这样做，那你就改成 no </div><div class="line">stop-writes-on-bgsave-error yes</div><div class="line"> </div><div class="line"># 是否在 dump .rdb 数据库的时候使用 LZF 压缩字符串</div><div class="line"># 默认都设为 yes</div><div class="line"># 如果你希望保存子进程节省点 cpu ，你就设置它为 no ，</div><div class="line"># 不过这个数据集可能就会比较大</div><div class="line">rdbcompression yes</div><div class="line"> </div><div class="line"># 是否校验rdb文件</div><div class="line">rdbchecksum yes</div><div class="line"> </div><div class="line"># 设置 dump 的文件位置</div><div class="line">dbfilename dump.rdb </div><div class="line"> </div><div class="line"># 工作目录</div><div class="line"># 例如上面的 dbfilename 只指定了文件名，</div><div class="line"># 但是它会写入到这个目录下。这个配置项一定是个目录，而不能是文件名。</div><div class="line">dir ./      #设置到 /etc/redis下 dir &apos;/etc/redis/&apos;</div><div class="line"> </div><div class="line">################################# REPLICATION #################################主从复制</div><div class="line">#######</div><div class="line"> </div><div class="line">################################## SECURITY ###################################安全</div><div class="line"># 设置认证密码</div><div class="line">requirepass foobared</div><div class="line"> </div><div class="line">################################### LIMITS ####################################限制</div><div class="line"># 一旦达到最大限制，redis 将关闭所有的新连接</div><div class="line"># 并发送一个‘max number of clients reached’的错误</div><div class="line"># maxclients 10000</div><div class="line"> </div><div class="line"># 最大使用内存</div><div class="line"># maxmemory &lt;bytes&gt;</div><div class="line"> </div><div class="line"># 最大内存策略，你有 5 个选择。</div><div class="line"># </div><div class="line"># volatile-lru -&gt; remove the key with an expire set using an LRU algorithm</div><div class="line"># volatile-lru -&gt; 使用 LRU 算法移除包含过期设置的 key 。</div><div class="line"># allkeys-lru -&gt; remove any key accordingly to the LRU algorithm</div><div class="line"># allkeys-lru -&gt; 根据 LRU 算法移除所有的 key 。</div><div class="line"># volatile-random -&gt; remove a random key with an expire set</div><div class="line"># allkeys-random -&gt; remove a random key, any key</div><div class="line"># volatile-ttl -&gt; remove the key with the nearest expire time (minor TTL)</div><div class="line"># noeviction -&gt; don&apos;t expire at all, just return an error on write operations</div><div class="line"># noeviction -&gt; 不让任何 key 过期，只是给写入操作返回一个错误</div><div class="line"> </div><div class="line">############################## APPEND ONLY MODE ###############################</div><div class="line"> </div><div class="line">appendonly no   #在启动时Redis会逐个执行AOF文件中的命令来将硬盘中的数据载入到内存中，载入的速度相较RDB会慢一些</div><div class="line">appendfilename &quot;appendonly.aof&quot;</div><div class="line"> </div><div class="line"># appendfsync always</div><div class="line">appendfsync everysec</div><div class="line">no-appendfsync-on-rewrite no</div><div class="line"> </div><div class="line">auto-aof-rewrite-percentage 100</div><div class="line">auto-aof-rewrite-min-size 64mb</div><div class="line"> </div><div class="line">################################ LUA SCRIPTING  ###############################</div><div class="line">lua-time-limit 5000</div><div class="line"> </div><div class="line">################################ REDIS CLUSTER  ###############################集群</div><div class="line"># cluster-enabled yes   # 启用或停用集群</div><div class="line"> </div><div class="line"># cluster-config-file nodes-6379.conf</div><div class="line"># cluster-node-timeout 15000</div><div class="line"># cluster-slave-validity-factor 10</div><div class="line"># cluster-migration-barrier 1</div><div class="line"> </div><div class="line">################################## SLOW LOG ###################################慢日志</div><div class="line"> </div><div class="line">slowlog-log-slower-than 10000   # 慢查询记录时间10000ms</div><div class="line">slowlog-max-len 128             # 记录数据条数 </div><div class="line"> </div><div class="line">############################# Event notification ##############################</div><div class="line">notify-keyspace-events &quot;&quot;</div><div class="line"> </div><div class="line">############################### ADVANCED CONFIG ###############################</div><div class="line">hash-max-ziplist-entries 512</div><div class="line">hash-max-ziplist-value 64</div><div class="line"> </div><div class="line">list-max-ziplist-entries 512</div><div class="line">list-max-ziplist-value 64</div><div class="line"> </div><div class="line">set-max-intset-entries 512</div><div class="line"> </div><div class="line">zset-max-ziplist-entries 128</div><div class="line">zset-max-ziplist-value 64</div><div class="line"> </div><div class="line">hll-sparse-max-bytes 3000</div><div class="line"> </div><div class="line">activerehashing yes</div><div class="line"> </div><div class="line">client-output-buffer-limit normal 0 0 0</div><div class="line">client-output-buffer-limit slave 256mb 64mb 60</div><div class="line">client-output-buffer-limit pubsub 32mb 8mb 60</div><div class="line"> </div><div class="line">hz 10</div><div class="line"> </div><div class="line">aof-rewrite-incremental-fsync yes</div></pre></td></tr></table></figure>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/redis/">redis</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/02/18/redis/" data-title="redis日常笔记 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/03/06/logging/" title="logging模块">
+  <strong>新一篇:</strong><br/>
+  <span>
+  logging模块</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/16/mongo/"  title="mongo日常笔记">
+ <strong>旧一篇:</strong><br/> 
+ <span>mongo日常笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="redis日常笔记" data-thread-key="redis" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/redis"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
