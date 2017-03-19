@@ -1,0 +1,416 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>ansible | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Ansible架构图
+Ansible特性- 基于python实现，由Paramike，PyYAML和Jinjia2三个关键模块
+- 部署简单，agentless
+- 使用ssh协议
+- 主从集中化模式
+- 支持自定义模块
+- 支持playbook
+- 幂等性：一种操作可重复多次结果相同
+Ansibl">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/18/ansible/" title="ansible" itemprop="url">ansible</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-03-18T13:19:30.000Z" itemprop="datePublished">2017-03-18</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Ansible架构图"><span class="toc-number">1.</span> <span class="toc-text">Ansible架构图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ansible特性"><span class="toc-number">2.</span> <span class="toc-text">Ansible特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ansible核心组件"><span class="toc-number">3.</span> <span class="toc-text">Ansible核心组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Invetory文件说明"><span class="toc-number">4.</span> <span class="toc-text">Invetory文件说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#常见模块"><span class="toc-number">5.</span> <span class="toc-text">常见模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#playbook"><span class="toc-number">6.</span> <span class="toc-text">playbook</span></a></li></ol>
+		</div>
+		
+		<h3 id="Ansible架构图"><a href="#Ansible架构图" class="headerlink" title="Ansible架构图"></a>Ansible架构图</h3><p><img src="https://ttxsgoto.github.io/img/ansible/ansible01.png" alt=""></p>
+<h3 id="Ansible特性"><a href="#Ansible特性" class="headerlink" title="Ansible特性"></a>Ansible特性</h3><pre><code>- 基于python实现，由Paramike，PyYAML和Jinjia2三个关键模块
+- 部署简单，agentless
+- 使用ssh协议
+- 主从集中化模式
+- 支持自定义模块
+- 支持playbook
+- 幂等性：一种操作可重复多次结果相同
+</code></pre><h3 id="Ansible核心组件"><a href="#Ansible核心组件" class="headerlink" title="Ansible核心组件"></a>Ansible核心组件</h3><pre><code>- ansible core：Ansible的核心程序
+- host iventory：记录了每一个由Ansible管理的主机信息，信息包括ssh端口，root帐号密码，ip地址等
+- core modules：Ansible管理主机之前，先调用core Modules中的模块，然后指明管理Host Lnventory中的主机，就可以完成管理主机
+- custom modules：自定义模块
+- playbook(yaml,jinjia2)：YAML格式文件，多个任务定义在一个文件中
+- connect plugin：连接插件，Ansible和Host通信使用
+</code></pre><h3 id="Invetory文件说明"><a href="#Invetory文件说明" class="headerlink" title="Invetory文件说明"></a>Invetory文件说明</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">[web01]</div><div class="line">192.168.0.1 ansible_ssh_user=root ansible_ssh_pass=xxx</div><div class="line">[web02]</div><div class="line">192.168.0.[2:5]    #从2到5的主机</div><div class="line">[web03]    #对应变量</div><div class="line">192.168.0.8 port=80 hostname=&quot;test01&quot;</div><div class="line">192.168.0.9 port=8080 hostname=&quot;test02&quot;</div><div class="line">[web03:vars]    #对web03组定义变量</div><div class="line">server1=ttxsgoto1.com</div><div class="line">server2=ttxsgoto2.com</div><div class="line">[webservers:children]    #组嵌套，webservers组包括web01和web02下的主机</div><div class="line">web01</div><div class="line">web02</div><div class="line">[webservers:vars]    #组定义变量</div><div class="line">server1=tttxsgoto.com</div></pre></td></tr></table></figure>
+<p>查看模块帮助信息</p>
+<pre><code>- ansible-doc -l
+- ansible-doc -s  module_name
+</code></pre><p>ansible命令应用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ansible &lt;host-pattern&gt; [-f forks] [-m module_name] [-a args]</div><div class="line">-f forks:启动并发线程数</div><div class="line">-m module_name:使用的模块名</div><div class="line">-a args:模块特有的参数</div></pre></td></tr></table></figure></p>
+<h3 id="常见模块"><a href="#常见模块" class="headerlink" title="常见模块"></a>常见模块</h3><ul>
+<li>command</li>
+<li>cron</li>
+<li>user</li>
+<li>group</li>
+<li>copy</li>
+<li>file</li>
+<li>ping</li>
+<li>setup</li>
+<li>service</li>
+<li>shell</li>
+<li>script</li>
+<li>yum/apt</li>
+</ul>
+<p>cron:计划任务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">present: 安装任务</div><div class="line">absent:移除任务</div><div class="line">ansible local -m cron -a &apos;minute=*/5 job=&quot;/bin/echo abc &gt; /root/abc.log&quot; name=&quot;test cron job&quot;  state=&quot;absent&quot; &apos;</div></pre></td></tr></table></figure></p>
+<p>user:用户管理<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- name:指明添加的用户名</div><div class="line">- ansible local -m user -a &apos;name=&quot;user1&quot;&apos;</div></pre></td></tr></table></figure></p>
+<p>group:用户组管理<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">ansible local -m group -a &apos;name=user1 gid=306 system=yes&apos;    #添加用户组</div><div class="line">ansible local -m group -a &apos;name=user1 gid=306 system=yes state=absent&apos;    #删除用户组</div></pre></td></tr></table></figure></p>
+<p>copy:文件复制<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">src=:定义本地源路径</div><div class="line">content=:取代src=，定义内容直接写入到远程文件中</div><div class="line">dest=:定义远程路径，绝对路径</div><div class="line">ansible local -m copy -a &apos;src=/etc/fstab dest=/tmp/fstab.bak owner=root  mode=777&apos;</div><div class="line">ansible local -m copy -a &apos;content=&quot;hello wrold\nabc\n&quot; dest=/tmp/fstab.bak owner=root</div></pre></td></tr></table></figure></p>
+<p>file:文件管理属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">path=: 指明文件路径，可以使用name、dest来替换</div><div class="line">ansible local -m file -a &apos; owner=bigdata group=bigdata  mode=644 path=/tmp/fstab.bak&apos;    #修改权限和组信息</div><div class="line">ansible local -m file -a &apos;path=/tmp/fstab.bak.link src=/tmp/fstab.bak state=link&apos;  #软链接</div></pre></td></tr></table></figure></p>
+<p>ping:测试主机联通性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ansible local -m ping</div></pre></td></tr></table></figure></p>
+<p>setup:收集远程主机的facts<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#每个被管理节点会将自己相关的信息发生给远程的ansible主机，用于模板调用变量</div><div class="line">ansible local -m setup</div></pre></td></tr></table></figure></p>
+<p>service:常用服务的运行状态<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">enabled=: 开机自启动，为true和false</div><div class="line">name=: 服务名称</div><div class="line">state=: 启动状态，started,stopped,restarted;</div><div class="line">ansible local -m service -a &quot;enabled=true name=nginx state=started&quot;</div></pre></td></tr></table></figure></p>
+<p>shell:远程执行命令，可传递参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#用到管道等功能的复杂命令时使用shell命令</div><div class="line">ansible local -m shell -a &quot;echo xxx | passwd --stdin user1&quot;</div></pre></td></tr></table></figure></p>
+<p>script:将本地脚本在远程上执行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#注意：使用相对路径指定脚本</div><div class="line">ansible local -m script -a &quot;./test.sh&quot;</div></pre></td></tr></table></figure></p>
+<p>yum/apt: 安装程序包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">name=:    需要安装的程序包，可以加版本号</div><div class="line">state=:    present，lastest安装，absent表示卸载</div><div class="line">ansible local -m yum -a &quot;name=zsh&quot;    #安装</div><div class="line">ansible local -m apt -a &quot;name=zsh state=absent&quot;    #卸载</div></pre></td></tr></table></figure></p>
+<h3 id="playbook"><a href="#playbook" class="headerlink" title="playbook"></a>playbook</h3><p>通过yaml将多个模块组装起来运行多个任务<br>组成结构：<br>Playbooks：<br>    Tasks：任务列表<br>    Variables：变量<br>    Templates：模板<br>    Handlers：处理器，由某事件触发执行的操作<br>    Roles：角色</p>
+<p>运行说明：<br>0)yaml语法检测<br>ansible-playbook –syntax-check /path/to/playbook.yaml<br>1)yaml测试运行<br>ansible-playbook -C /path/to/playbook.yaml<br>2)运行<br>ansiable-playbook /path/to/playbook.yml<br>-t TAGS  #给指定的任务定义一个调用标识<br>–tags=TAGS #给指定的任务定义一个调用标识<br>–skip-tags=SKIP_TAGS #跳过指定的标签<br>–start-at-task=START_AT #从哪个任务后执行<br>–list-tags    #查看标签<br>基本结构：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div></pre></td><td class="code"><pre><div class="line">例子1：</div><div class="line">- hosts: webservers</div><div class="line">  remote_user: root</div><div class="line">  tasks:</div><div class="line">  - name: create nginx group</div><div class="line">      group: name=nginx system=yes gid=208</div><div class="line">  - name: create nginx user</div><div class="line">      user: name=nginx uid=208 system=yes</div><div class="line">- hosts: dbservers</div><div class="line">  remote_user: root</div><div class="line">  tasks:</div><div class="line">  - name: copy file to dbsrvs</div><div class="line">      copy: src=/etc/inittab dest=/tmp/inittab.bak</div><div class="line"> </div><div class="line">例子2(handler,vars)：</div><div class="line">- hosts: webservers</div><div class="line">  remote_user: root</div><div class="line">  vars:</div><div class="line">  - package: httpd</div><div class="line">  - service: httpd</div><div class="line">  tasks:</div><div class="line">  - name: install httpd package</div><div class="line">    yum: name=&#123;&#123; package &#125;&#125; state=lastest</div><div class="line">  - name: install configuration file for httpd</div><div class="line">      copy: src=/root/conf/httpd.conf dest=/etc/httpd/conf/httpd.conf</div><div class="line">      notify:</div><div class="line">      - restart httpd</div><div class="line">  - name: start httpd service</div><div class="line">      service: enabled=true name=httpd state=started</div><div class="line">  handlers:</div><div class="line">  - name: restart httpd</div><div class="line">    service: name=httpd state=restarted</div><div class="line">  - name: copy file</div><div class="line">    copy: content=&quot;&#123;&#123; ansible_all_ipv4_addresses &#125;&#125;&quot; dest=/tmp/test.txt</div><div class="line"> </div><div class="line">例子3(条件测试)：</div><div class="line">- hosts: webservers</div><div class="line">  remote_user: root</div><div class="line">  vars:</div><div class="line">  - username: user1</div><div class="line">  tasks:</div><div class="line">  - name: create &#123;&#123; username &#125;&#125;</div><div class="line">      user: name=&#123;&#123; userneam &#125;&#125;</div><div class="line">      when: ansible_fqdn == &apos;ttxsgoto&apos;</div><div class="line"> </div><div class="line">例子4(迭代-for)：</div><div class="line">- hosts: webservers</div><div class="line">  remote_user: root</div><div class="line">  - name: add username</div><div class="line">    user: name=&#123;&#123; item.name &#125;&#125; state=present groups=&#123;&#123; item.groups &#125;&#125;</div><div class="line">    with_items:</div><div class="line">      - &#123;name:&apos;testuser1&apos;,groups=&apos;user1&apos;&#125;</div><div class="line">      - &#123;name:&apos;testuser2&apos;,groups=&apos;user2&apos;&#125;</div><div class="line">- hosts: webservers</div><div class="line">  remote_user: root</div><div class="line">  - name: add username</div><div class="line">    user: name=&#123;&#123; item &#125;&#125; state=present groups=group1</div><div class="line">    with_items:</div><div class="line">      - testuser1</div><div class="line">      - testuser2</div><div class="line"> </div><div class="line">例子5(templates/tags  ansible-playbook test.yml --tags=&apos;conf_chage&apos;):</div><div class="line"> #tags: 在playbook可以为某个任务定义一个标签，在执行playbook时，通过tags可实现仅运行指定tasks任务</div><div class="line"> - hosts: webservers</div><div class="line">  remote_user: root</div><div class="line">  vars:</div><div class="line">  - package: httpd</div><div class="line">  - service: httpd</div><div class="line">  tasks:</div><div class="line">  - name: install httpd package</div><div class="line">    yum: name=&#123;&#123; package &#125;&#125; state=lastest</div><div class="line">  - name: install configuration file for httpd</div><div class="line">      template: src=/root/conf/httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf</div><div class="line">     tags:</div><div class="line">     - conf_chage</div><div class="line">     notify:</div><div class="line">      - restart httpd</div><div class="line">  - name: start httpd service</div><div class="line">      service: enabled=true name=httpd state=started</div><div class="line">  handlers:</div><div class="line">  - name: restart httpd</div><div class="line">    service: name=httpd state=restarted</div></pre></td></tr></table></figure></p>
+<p>roles：用于层次化、结构化的组织playbook；role能够根据层次结构自动装载变量文件、task以及handlers等，要使用roles只需要在playbook中使用include指令；roles通过分别将变量、文件、任务、模块及处理器放置在单独的目录中，并可以便捷地通过include它们的一种机制，角色一般用于基于主机构建服务的场景中；无实例，用到时在记录</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ansible/">ansible</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/03/18/ansible/" data-title="ansible | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/03/19/fabric/" title="fabric模块">
+  <strong>新一篇:</strong><br/>
+  <span>
+  fabric模块</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/03/12/celery/"  title="Celery异步">
+ <strong>旧一篇:</strong><br/> 
+ <span>Celery异步
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="ansible" data-thread-key="ansible" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/ansible"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
