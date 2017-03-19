@@ -46,7 +46,7 @@
     <link href="https://ttxsgoto.github.io/2017/03/18/ansible/"/>
     <id>https://ttxsgoto.github.io/2017/03/18/ansible/</id>
     <published>2017-03-18T13:19:30.000Z</published>
-    <updated>2017-03-19T13:52:29.000Z</updated>
+    <updated>2017-03-19T13:53:17.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="Ansible架构图"><a href="#Ansible架构图" class="headerlink" title="Ansible架构图"></a>Ansible架构图</h3><p><img src="https://ttxsgoto.github.io/img/ansible/ansible01.png" alt=""></p>
 <h3 id="Ansible特性"><a href="#Ansible特性" class="headerlink" title="Ansible特性"></a>Ansible特性</h3><pre><code>- 基于python实现，由Paramike，PyYAML和Jinjia2三个关键模块
