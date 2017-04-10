@@ -1,0 +1,374 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>datetime模块 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="日常工作中常用到时间处理，一般使用datetime模块来解决，datetime模块包括一些函数和类，用于完成日期和时间的解析、格式化和相关的运行
+
+时间转换为字符串(格式化输出)
+12345678910111213141516171819202122232425datetime.datetime.n">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/10/datetime/" title="datetime模块" itemprop="url">datetime模块</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-04-10T13:51:17.000Z" itemprop="datePublished">2017-04-10</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		
+		</div>
+		
+		<p>日常工作中常用到时间处理，一般使用datetime模块来解决，datetime模块包括一些函数和类，用于完成日期和时间的解析、格式化和相关的运行</p>
+<ul>
+<li><p>时间转换为字符串(格式化输出)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">datetime.datetime.now().strftime(<span class="string">"%Y-%m-%d %H:%M:%S"</span>)</div><div class="line"><span class="comment"># strftime参数，strftime(format[, tuple]) -&gt; string</span></div><div class="line">python中时间日期格式化符号：</div><div class="line">%y 两位数的年份表示（<span class="number">00</span><span class="number">-99</span>）</div><div class="line">%Y 四位数的年份表示（<span class="number">000</span><span class="number">-9999</span>）</div><div class="line">%m 月份（<span class="number">01</span><span class="number">-12</span>）</div><div class="line">%d 月内中的一天（<span class="number">0</span><span class="number">-31</span>）</div><div class="line">%H <span class="number">24</span>小时制小时数（<span class="number">0</span><span class="number">-23</span>）</div><div class="line">%I <span class="number">12</span>小时制小时数（<span class="number">01</span><span class="number">-12</span>）</div><div class="line">%M 分钟数（<span class="number">00</span><span class="number">-59</span>）</div><div class="line">%S 秒（<span class="number">00</span><span class="number">-59</span>）</div><div class="line">%a 本地简化星期名称</div><div class="line">%A 本地完整星期名称</div><div class="line">%b 本地简化的月份名称</div><div class="line">%B 本地完整的月份名称</div><div class="line">%c 本地相应的日期表示和时间表示</div><div class="line">%j 年内的一天（<span class="number">001</span><span class="number">-366</span>）</div><div class="line">%p 本地A.M.或P.M.的等价符</div><div class="line">%U 一年中的星期数（<span class="number">00</span><span class="number">-53</span>）星期天为星期的开始</div><div class="line">%w 星期（<span class="number">0</span><span class="number">-6</span>），星期天为星期的开始</div><div class="line">%W 一年中的星期数（<span class="number">00</span><span class="number">-53</span>）星期一为星期的开始</div><div class="line">%x 本地相应的日期表示</div><div class="line">%X 本地相应的时间表示</div><div class="line">%Z 当前时区的名称</div><div class="line">%% %号本身</div></pre></td></tr></table></figure>
+</li>
+<li><p>字符串和datetime转换</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="string">'''</span></div><div class="line">把str转换为datetime,转换方法是通过datetime.strptime()实现，需要一个日期和时间的格式化字符串</div><div class="line">'''</div><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: <span class="keyword">print</span> datetime.now()</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">21</span>:<span class="number">10</span>:<span class="number">03.619051</span></div><div class="line"></div><div class="line">In [<span class="number">3</span>]: type(datetime.now())</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: str = <span class="string">'2017-04-10 21:13:14'</span></div><div class="line"></div><div class="line">In [<span class="number">5</span>]: type(str)</div><div class="line">Out[<span class="number">5</span>]: str</div><div class="line"></div><div class="line">In [<span class="number">6</span>]: daytime = datetime.strptime(str,<span class="string">'%Y-%m-%d %H:%M:%S'</span>)</div><div class="line"></div><div class="line">In [<span class="number">7</span>]: daytime</div><div class="line">Out[<span class="number">7</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">21</span>, <span class="number">13</span>, <span class="number">14</span>)</div><div class="line"></div><div class="line">In [<span class="number">8</span>]: <span class="keyword">print</span> daytime</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">21</span>:<span class="number">13</span>:<span class="number">14</span></div><div class="line"></div><div class="line">In [<span class="number">9</span>]: type(daytime)</div><div class="line">Out[<span class="number">9</span>]: datetime.datetime</div></pre></td></tr></table></figure>
+</li>
+<li><p>当前时间</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="string">'''</span></div><div class="line">datetime是模块，datetime模块还包含一个datetime类，通过from datetime import datetime导入。</div><div class="line">如果仅导入import datetime，则需要使用datetime.datetime.now()返回当前日期和时间，其类型是datetime</div><div class="line">'''</div><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: now = datetime.now()</div><div class="line"></div><div class="line">In [<span class="number">3</span>]: now</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">20</span>, <span class="number">11</span>, <span class="number">7</span>, <span class="number">241762</span>)</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: <span class="keyword">print</span> now</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">20</span>:<span class="number">11</span>:<span class="number">07.241762</span></div><div class="line"></div><div class="line">In [<span class="number">5</span>]: type(now)</div><div class="line">Out[<span class="number">5</span>]: datetime.datetime</div></pre></td></tr></table></figure>
+</li>
+<li><p>特定时间</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: day = datetime(<span class="number">2017</span>,<span class="number">4</span>,<span class="number">10</span>,<span class="number">13</span>,<span class="number">14</span>)</div><div class="line"></div><div class="line">In [<span class="number">3</span>]: day</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">13</span>, <span class="number">14</span>)</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: <span class="keyword">print</span> day</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">14</span>:<span class="number">00</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>时间加减</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="string">'''</span></div><div class="line">对日期和时间进行加减实际上就是把datetime往后或往前计算，得到新的datetime。加减可以直接用+和-运算符，需要导入timedelta</div><div class="line">'''</div><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime,timedelta</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: now = datetime.now()</div><div class="line"></div><div class="line">In [<span class="number">3</span>]: now</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">21</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: now+timedelta(hours=<span class="number">2</span>)</div><div class="line">Out[<span class="number">4</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">23</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div><div class="line"></div><div class="line">In [<span class="number">5</span>]: now-timedelta(days=<span class="number">2</span>)</div><div class="line">Out[<span class="number">5</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">8</span>, <span class="number">21</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div><div class="line"></div><div class="line">In [<span class="number">6</span>]: now+timedelta(days=<span class="number">1</span>,hours=<span class="number">1</span>)</div><div class="line">Out[<span class="number">6</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">11</span>, <span class="number">22</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div></pre></td></tr></table></figure>
+</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/datetime/">datetime</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/04/10/datetime/" data-title="datetime模块 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2017/04/05/django-models-basic/"  title="django Models">
+ <strong>旧一篇:</strong><br/> 
+ <span>django Models
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="datetime模块" data-thread-key="datetime" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/datetime"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

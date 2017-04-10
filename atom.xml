@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2017-04-05T13:33:22.000Z</updated>
+  <updated>2017-04-10T08:52:56.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,49 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>datetime模块</title>
+    <link href="https://ttxsgoto.github.io/2017/04/10/datetime/"/>
+    <id>https://ttxsgoto.github.io/2017/04/10/datetime/</id>
+    <published>2017-04-10T13:51:17.000Z</published>
+    <updated>2017-04-10T08:52:56.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>日常工作中常用到时间处理，一般使用datetime模块来解决，datetime模块包括一些函数和类，用于完成日期和时间的解析、格式化和相关的运行</p>
+<ul>
+<li><p>时间转换为字符串(格式化输出)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">datetime.datetime.now().strftime(<span class="string">"%Y-%m-%d %H:%M:%S"</span>)</div><div class="line"><span class="comment"># strftime参数，strftime(format[, tuple]) -&gt; string</span></div><div class="line">python中时间日期格式化符号：</div><div class="line">%y 两位数的年份表示（<span class="number">00</span><span class="number">-99</span>）</div><div class="line">%Y 四位数的年份表示（<span class="number">000</span><span class="number">-9999</span>）</div><div class="line">%m 月份（<span class="number">01</span><span class="number">-12</span>）</div><div class="line">%d 月内中的一天（<span class="number">0</span><span class="number">-31</span>）</div><div class="line">%H <span class="number">24</span>小时制小时数（<span class="number">0</span><span class="number">-23</span>）</div><div class="line">%I <span class="number">12</span>小时制小时数（<span class="number">01</span><span class="number">-12</span>）</div><div class="line">%M 分钟数（<span class="number">00</span><span class="number">-59</span>）</div><div class="line">%S 秒（<span class="number">00</span><span class="number">-59</span>）</div><div class="line">%a 本地简化星期名称</div><div class="line">%A 本地完整星期名称</div><div class="line">%b 本地简化的月份名称</div><div class="line">%B 本地完整的月份名称</div><div class="line">%c 本地相应的日期表示和时间表示</div><div class="line">%j 年内的一天（<span class="number">001</span><span class="number">-366</span>）</div><div class="line">%p 本地A.M.或P.M.的等价符</div><div class="line">%U 一年中的星期数（<span class="number">00</span><span class="number">-53</span>）星期天为星期的开始</div><div class="line">%w 星期（<span class="number">0</span><span class="number">-6</span>），星期天为星期的开始</div><div class="line">%W 一年中的星期数（<span class="number">00</span><span class="number">-53</span>）星期一为星期的开始</div><div class="line">%x 本地相应的日期表示</div><div class="line">%X 本地相应的时间表示</div><div class="line">%Z 当前时区的名称</div><div class="line">%% %号本身</div></pre></td></tr></table></figure>
+</li>
+<li><p>字符串和datetime转换</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="string">'''</span></div><div class="line">把str转换为datetime,转换方法是通过datetime.strptime()实现，需要一个日期和时间的格式化字符串</div><div class="line">'''</div><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: <span class="keyword">print</span> datetime.now()</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">21</span>:<span class="number">10</span>:<span class="number">03.619051</span></div><div class="line"></div><div class="line">In [<span class="number">3</span>]: type(datetime.now())</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: str = <span class="string">'2017-04-10 21:13:14'</span></div><div class="line"></div><div class="line">In [<span class="number">5</span>]: type(str)</div><div class="line">Out[<span class="number">5</span>]: str</div><div class="line"></div><div class="line">In [<span class="number">6</span>]: daytime = datetime.strptime(str,<span class="string">'%Y-%m-%d %H:%M:%S'</span>)</div><div class="line"></div><div class="line">In [<span class="number">7</span>]: daytime</div><div class="line">Out[<span class="number">7</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">21</span>, <span class="number">13</span>, <span class="number">14</span>)</div><div class="line"></div><div class="line">In [<span class="number">8</span>]: <span class="keyword">print</span> daytime</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">21</span>:<span class="number">13</span>:<span class="number">14</span></div><div class="line"></div><div class="line">In [<span class="number">9</span>]: type(daytime)</div><div class="line">Out[<span class="number">9</span>]: datetime.datetime</div></pre></td></tr></table></figure>
+</li>
+<li><p>当前时间</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="string">'''</span></div><div class="line">datetime是模块，datetime模块还包含一个datetime类，通过from datetime import datetime导入。</div><div class="line">如果仅导入import datetime，则需要使用datetime.datetime.now()返回当前日期和时间，其类型是datetime</div><div class="line">'''</div><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: now = datetime.now()</div><div class="line"></div><div class="line">In [<span class="number">3</span>]: now</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">20</span>, <span class="number">11</span>, <span class="number">7</span>, <span class="number">241762</span>)</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: <span class="keyword">print</span> now</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">20</span>:<span class="number">11</span>:<span class="number">07.241762</span></div><div class="line"></div><div class="line">In [<span class="number">5</span>]: type(now)</div><div class="line">Out[<span class="number">5</span>]: datetime.datetime</div></pre></td></tr></table></figure>
+</li>
+<li><p>特定时间</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: day = datetime(<span class="number">2017</span>,<span class="number">4</span>,<span class="number">10</span>,<span class="number">13</span>,<span class="number">14</span>)</div><div class="line"></div><div class="line">In [<span class="number">3</span>]: day</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">13</span>, <span class="number">14</span>)</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: <span class="keyword">print</span> day</div><div class="line"><span class="number">2017</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">14</span>:<span class="number">00</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>时间加减</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="string">'''</span></div><div class="line">对日期和时间进行加减实际上就是把datetime往后或往前计算，得到新的datetime。加减可以直接用+和-运算符，需要导入timedelta</div><div class="line">'''</div><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> datetime <span class="keyword">import</span> datetime,timedelta</div><div class="line"></div><div class="line">In [<span class="number">2</span>]: now = datetime.now()</div><div class="line"></div><div class="line">In [<span class="number">3</span>]: now</div><div class="line">Out[<span class="number">3</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">21</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div><div class="line"></div><div class="line">In [<span class="number">4</span>]: now+timedelta(hours=<span class="number">2</span>)</div><div class="line">Out[<span class="number">4</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">23</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div><div class="line"></div><div class="line">In [<span class="number">5</span>]: now-timedelta(days=<span class="number">2</span>)</div><div class="line">Out[<span class="number">5</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">8</span>, <span class="number">21</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div><div class="line"></div><div class="line">In [<span class="number">6</span>]: now+timedelta(days=<span class="number">1</span>,hours=<span class="number">1</span>)</div><div class="line">Out[<span class="number">6</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">4</span>, <span class="number">11</span>, <span class="number">22</span>, <span class="number">39</span>, <span class="number">8</span>, <span class="number">413031</span>)</div></pre></td></tr></table></figure>
+</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;日常工作中常用到时间处理，一般使用datetime模块来解决，datetime模块包括一些函数和类，用于完成日期和时间的解析、格式化和相关的运行&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;时间转换为字符串(格式化输出)&lt;/p&gt;
+&lt;figure class=&quot;highlight pyt
+    
+    </summary>
+    
+      <category term="python" scheme="https://ttxsgoto.github.io/categories/python/"/>
+    
+    
+      <category term="datetime" scheme="https://ttxsgoto.github.io/tags/datetime/"/>
+    
+  </entry>
   
   <entry>
     <title>django Models</title>
@@ -807,61 +850,6 @@ __iter__:返回迭代器对象本身
     
     
       <category term="Network" scheme="https://ttxsgoto.github.io/tags/Network/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>awk、uniq、sort三个命令的基本用法</title>
-    <link href="https://ttxsgoto.github.io/2017/02/07/awk_uniq_sort/"/>
-    <id>https://ttxsgoto.github.io/2017/02/07/awk_uniq_sort/</id>
-    <published>2017-02-07T14:38:32.000Z</published>
-    <updated>2017-02-15T13:56:13.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>今天对awk、uniq、sort三个命令做了基础功能的学习，这里自己记录一下：</p>
-<h4 id="1-awk"><a href="#1-awk" class="headerlink" title="1.awk"></a>1.awk</h4><p>数据处理工具，将一行分割成多个“字段”来处理</p>
-<pre><code>awk -F &apos;文本切割符&apos;‘{处理过程}’ 文件名称
-</code></pre><p>如：cat /ect/passwd | awk -F ‘:’ ‘{print $1}’   #以：分割，打印第一列的数据；如果为$0表示整个文件内容</p>
-<pre><code>cat /etc/passwd | awk -F &apos;&apos;BEGIN {print &quot;begin,goto&quot;} {print $1&quot;,&quot;$7} END {print “end,end”}  #以空白符作为分割，打印begin，goto开始执行信息，打印1，7行，以end,end结束
-</code></pre><h4 id="2-uniq"><a href="#2-uniq" class="headerlink" title="2.uniq"></a>2.uniq</h4><p>命令用来过滤重复部分显示文件内容,这个命令读取输入文件，并比较相邻的行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">参数：</div><div class="line"></div><div class="line">-c  显示输出中，在每行行首加上本行在文件中出现的次数</div><div class="line">-d  只显示重复行</div><div class="line">-u  只显示文件中不重复的各行</div><div class="line">-n  前n个字段与每个字段前的空白一起被忽略</div><div class="line">+n  前n个字符被忽略，之前的字符被跳过（字符从0开始编号）</div><div class="line">-f   n与-n相同，这里n是字段数</div><div class="line">-s   n与+n相同，这里n是字符数</div><div class="line">常用： uniq -c  首行显示文件中出现的次数</div></pre></td></tr></table></figure></p>
-<h4 id="3-sort-排序"><a href="#3-sort-排序" class="headerlink" title="3.sort 排序"></a>3.sort 排序</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">参数：</div><div class="line">-u  在输出行中去除重复行</div><div class="line">-r   默认的排序方式为升序，-r转换为降序排列</div><div class="line">-n  默认按照字符来排序出现10在2前面，-n以数值来排序</div><div class="line">-t   后面设定间隔符</div><div class="line">-k  指定列数</div><div class="line">如：sort -n -k 2 -t ： test.txt  以数值排序，按照第二列以“：”间隔来排列顺序</div></pre></td></tr></table></figure>
-<p>以上简单总结而已，后续如有其他使用，再更新！！！</p>
-<h4 id="4-日常使用相关"><a href="#4-日常使用相关" class="headerlink" title="4.日常使用相关"></a>4.日常使用相关</h4><ul>
-<li><p>截取日志中特定时间段的日志内容</p>
-<pre><code>sed -n &apos;/2016-08-25 09:44:10/,/2016-08-25 09:44:30/p&apos;  1.txt &gt; test.txt
-</code></pre></li>
-</ul>
-<ul>
-<li><p>nginx 访问日志统计访问的url</p>
-<p>  截取特定时间段的日志</p>
-<pre><code>cat nginx.acc.log | egrep &quot;12/Aug/2016&quot; | sed -n &apos;/14:59:44/,/15:47:23/p&apos; &gt; a.txt
-</code></pre></li>
-<li><p>排序</p>
-<pre><code>cat a.txt |awk -F &apos;+0800&apos; &apos;{print $2}&apos;| awk -F &apos; &apos; &apos;{print $5}&apos; | sort #对数据进行(ASCII)排序  
-</code></pre></li>
-<li><p>去重，uniq -c 只会合并相邻的记录，所以在使用它之前，应该先进行排序</p>
-<pre><code>cat a.txt |awk -F &apos;+0800&apos; &apos;{print $2}&apos;| awk -F &apos; &apos; &apos;{print $5}&apos; | sort | uniq -c
-</code></pre></li>
-<li><p>再排序，得到 (次数  内容)的文件， sort -k 1 -n -r 指定对第一行进行排序，-n 数字排序，以降序排列</p>
-<pre><code>cat a.txt |awk -F &apos;+0800&apos; &apos;{print $2}&apos;| awk -F &apos; &apos; &apos;{print $5}&apos; | sort | uniq -c | sort -k 1 -n -r
-</code></pre></li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;今天对awk、uniq、sort三个命令做了基础功能的学习，这里自己记录一下：&lt;/p&gt;
-&lt;h4 id=&quot;1-awk&quot;&gt;&lt;a href=&quot;#1-awk&quot; class=&quot;headerlink&quot; title=&quot;1.awk&quot;&gt;&lt;/a&gt;1.awk&lt;/h4&gt;&lt;p&gt;数据处理工具，将一行分
-    
-    </summary>
-    
-      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
-    
-    
-      <category term="awk" scheme="https://ttxsgoto.github.io/tags/awk/"/>
-    
-      <category term="sort" scheme="https://ttxsgoto.github.io/tags/sort/"/>
-    
-      <category term="uniq" scheme="https://ttxsgoto.github.io/tags/uniq/"/>
     
   </entry>
   
