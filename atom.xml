@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2017-04-10T12:50:42.000Z</updated>
+  <updated>2017-04-17T12:47:05.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -16,11 +16,109 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>多线程-threading</title>
+    <link href="https://ttxsgoto.github.io/2017/04/17/threading/"/>
+    <id>https://ttxsgoto.github.io/2017/04/17/threading/</id>
+    <published>2017-04-17T12:37:11.000Z</published>
+    <updated>2017-04-17T12:47:05.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="线程5种状态"><a href="#线程5种状态" class="headerlink" title="线程5种状态"></a>线程5种状态</h4><ul>
+<li>新建</li>
+<li>就绪</li>
+<li>运行</li>
+<li>阻塞</li>
+<li>死亡</li>
+</ul>
+<p>阻塞的三种情况：</p>
+<ul>
+<li>同步阻塞：是指处于竞争锁定的状态，线程请求锁定时将进入这个状态，一旦成功获得锁定又恢复到运行状态；</li>
+<li>等待阻塞：是指等待其他线程通知的状态，线程获得条件锁定后，调用“等待”将进入这个状态，一旦其他线程发出通知，线程将进入同步阻塞状态，再次竞争条件锁定；</li>
+<li>其他阻塞：是指调用time.sleep()、anotherthread.join()或等待IO时的阻塞，这个状态下线程不会释放已获得的锁定。</li>
+</ul>
+<h4 id="GIL"><a href="#GIL" class="headerlink" title="GIL"></a>GIL</h4><p>在python虚拟机中的访问由全局解释器锁（GIL）控制，由于有了这把锁能保证同一时刻只有一个线程在运行，在多线程环境下，python虚拟机按照如下方式运行：</p>
+<ol>
+<li>设置GIL</li>
+<li>切换到一个线程中运行</li>
+<li>运行：<br> a指定数量的字节码的指令，或者<br> b线程主动让出控制（可以调用time.sleep(0)）</li>
+<li>把线程设置为睡眠状态</li>
+<li>解锁GIL</li>
+<li>在重复以上所有步骤</li>
+</ol>
+<h4 id="threading-Thread模块"><a href="#threading-Thread模块" class="headerlink" title="threading.Thread模块"></a>threading.Thread模块</h4><p>threading.Thread 作用：创建线程实例<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">- start()    开始一个线程的执行</div><div class="line">- run()    定义线程的功能的函数（一般会被子类重写）</div><div class="line">- join(timeout=<span class="keyword">None</span>)  程序挂起，直到子线程结束，在执行主线程，如果给了timeout，则最多阻塞timeout秒</div><div class="line">- getName()    返回线程的名字</div><div class="line">- setName()    设置线程的名字</div><div class="line">- isAlive()    检查线程是否成活</div><div class="line">- isDaemon()   是否等待线程执行完成后在执行主进程，默认为false</div><div class="line">- setDeaemon() 设置为daemoe模式，setDeaemon(<span class="keyword">True</span>)，不等子线程执行完成，直接执行主线程；如果在主线程没有结束时，子线程会执行直到主线程结束，子线程也结束</div></pre></td></tr></table></figure></p>
+<h4 id="多线程运行方式"><a href="#多线程运行方式" class="headerlink" title="多线程运行方式"></a>多线程运行方式</h4><h5 id="函数调用"><a href="#函数调用" class="headerlink" title="函数调用"></a>函数调用</h5><p>target传入函数名称，args传递给函数的参数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># encoding: utf-8</span></div><div class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</div><div class="line"><span class="keyword">from</span> time <span class="keyword">import</span> sleep,ctime,sleep</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">myfunction</span><span class="params">(arg)</span>:</span></div><div class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> range(<span class="number">10</span>):</div><div class="line">        <span class="keyword">print</span> item</div><div class="line">        sleep(<span class="number">1</span>)</div><div class="line"><span class="keyword">print</span> <span class="string">"before"</span></div><div class="line"> </div><div class="line">t1 = Thread(target=myfunction,args=(<span class="string">'hello'</span>,))</div><div class="line"><span class="keyword">print</span> t1.getName() <span class="comment">#Thread-1</span></div><div class="line"><span class="keyword">print</span> t1.isDaemon() <span class="comment">#默认为false</span></div><div class="line"><span class="comment">#t1.setDaemon(True)  #设置为setDaemon模式</span></div><div class="line">t1.start()</div><div class="line">t1.join(timeout=<span class="number">5</span>)</div><div class="line"><span class="keyword">print</span> <span class="string">"after"</span></div><div class="line"><span class="keyword">print</span> <span class="string">"Over"</span></div><div class="line">sleep(<span class="number">5</span>)</div></pre></td></tr></table></figure></p>
+<h5 id="类继承调用"><a href="#类继承调用" class="headerlink" title="类继承调用"></a>类继承调用</h5><p>使用Threading创建线程，从threading.Thread继承，然后重写init方法和run方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"> </div><div class="line"><span class="keyword">import</span> time</div><div class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">mythread</span><span class="params">(Thread)</span>:</span> <span class="comment">#继承父类的threading.Thread</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,threadid,threadname,counter)</span>:</span></div><div class="line">        Thread.__init__(self)</div><div class="line">        self.threadid = threadid</div><div class="line">        self.threadname = threadname</div><div class="line">        self.counter = counter</div><div class="line">         </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span> <span class="comment">#把要执行的代码写在run函数中，线程创建后会直接运行run函数</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"Starting %s \n"</span> %self.threadname</div><div class="line">        print_time(self.name,self.counter,self.threadid) <span class="comment">#函数调用</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"Exiting %s"</span> %self.threadname</div><div class="line">         </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_time</span><span class="params">(threadName,delay,counter)</span>:</span></div><div class="line">    <span class="keyword">while</span> counter :</div><div class="line">        time.sleep(delay)</div><div class="line">        <span class="keyword">print</span> counter,<span class="string">"%s: %s"</span> %(threadName,time.ctime())</div><div class="line">        counter -=<span class="number">1</span></div><div class="line">         </div><div class="line">t1 = mythread(<span class="number">2</span>,<span class="string">"线程一"</span>,<span class="number">1</span>)</div><div class="line">t1.start()</div></pre></td></tr></table></figure></p>
+<h4 id="生产者消费者模型"><a href="#生产者消费者模型" class="headerlink" title="生产者消费者模型"></a>生产者消费者模型</h4><p>优点：</p>
+<ol>
+<li>解耦：两者都只依赖于缓冲区，不相互依赖</li>
+<li>支持并发：生产者把制造出来的数据往缓冲区一丢，就可以再去生产下一个数据，即不用依赖消费者的处理速度</li>
+<li>支持忙闲不均</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="keyword">import</span> threading</div><div class="line"><span class="keyword">import</span> time,random</div><div class="line"><span class="keyword">import</span> Queue</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">proudcer</span><span class="params">(name,que)</span>:</span></div><div class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">        <span class="keyword">if</span> que.qsize() &lt; <span class="number">3</span>:</div><div class="line">            que.put(<span class="string">'生产包子'</span>)</div><div class="line">            <span class="keyword">print</span> <span class="string">"%s:生产了一个包子...."</span> %name</div><div class="line">        time.sleep(random.randrange(<span class="number">5</span>))</div><div class="line">         </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer</span><span class="params">(name,que)</span>:</span></div><div class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">        <span class="keyword">try</span>:</div><div class="line">            que.get_nowait() <span class="comment">#不等待队列是否有值</span></div><div class="line">            <span class="keyword">print</span> <span class="string">"%s:消费了一个包子...."</span> %name</div><div class="line">        <span class="keyword">except</span> Exception:</div><div class="line">            <span class="keyword">print</span> <span class="string">u'没有包子可消费了 .....'</span></div><div class="line">        time.sleep(random.randrange(<span class="number">3</span>))</div><div class="line">         </div><div class="line"><span class="comment">#实例化生产者</span></div><div class="line">q = Queue.Queue()</div><div class="line">p1 = threading.Thread(target=proudcer,args=(<span class="string">"生产者01"</span>,q))</div><div class="line">p2 = threading.Thread(target=proudcer,args=(<span class="string">"生产者02"</span>,q))</div><div class="line">p1.start()</div><div class="line">p2.start()</div><div class="line"> </div><div class="line"><span class="comment">#实例化消费者</span></div><div class="line">c1 = threading.Thread(target=consumer,args=(<span class="string">"消费者01"</span>,q))</div><div class="line">c2 = threading.Thread(target=consumer,args=(<span class="string">"消费者02"</span>,q))</div><div class="line">c1.start()</div><div class="line">c2.start()</div></pre></td></tr></table></figure>
+<h4 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h4><p>线程锁,保证数据安全，多个线程都同时修改某个变量，有可能出现问题，Lock处于锁定状态时，不被特定的线程拥有。Lock包含两种状态——锁定和非锁定，以及两个基本的方法</p>
+<p>运行：任何时刻只能有一个线程在执行</p>
+<p>定义和方法:</p>
+<pre><code>lock = threading.Lock() #线程锁定义
+lock.acquire() #获取锁，开始独占cpu
+slock.release() #释放锁，可以被其他使用cpu资源,必须在获得锁定后再使用，否则抛出异常
+slock.locked()  #主程序判断locked()状态
+Lock= threading.RLock() #可重入锁，多把锁时引用，释放时也应该释放对应的多把锁
+lock = threading.BoundedSemaphore(4) #同时允许多少个线程进行数据修改信号量：同一时刻，允许几个线程运行
+</code></pre><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="keyword">import</span> threading</div><div class="line"><span class="keyword">import</span> time</div><div class="line"> </div><div class="line">data = <span class="number">0</span></div><div class="line">lock = threading.Lock() <span class="comment">#定义锁</span></div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">global</span> data</div><div class="line">    <span class="keyword">print</span> <span class="string">"%s acquire lock ..."</span> %threading.currentThread().getName()</div><div class="line">    <span class="comment">#print "acquire-----%s" %lock.acquire()</span></div><div class="line">    <span class="keyword">if</span> lock.acquire(): <span class="comment">#调用锁，返回是否获得锁</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"%s get the lock."</span> %threading.currentThread().getName()</div><div class="line">        data += <span class="number">1</span></div><div class="line">        <span class="keyword">print</span> data</div><div class="line">        time.sleep(<span class="number">2</span>)</div><div class="line">        <span class="keyword">print</span> <span class="string">"%s release lock..."</span> %threading.currentThread().getName()</div><div class="line">        lock.release() <span class="comment"># 调用release()将释放锁</span></div><div class="line">         </div><div class="line">t1 = threading.Thread(target=func)</div><div class="line">t2 = threading.Thread(target=func)</div><div class="line">t3 = threading.Thread(target=func)</div><div class="line">t1.start()</div><div class="line">t2.start()</div><div class="line">t3.start()</div></pre></td></tr></table></figure>
+<h4 id="Event"><a href="#Event" class="headerlink" title="Event"></a>Event</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">event = threading.Event()</div><div class="line">event.wait()    #将阻塞线程放置为阻塞状态，等待设置处理</div><div class="line">event.set()   #event内置了一个初始为false的标示，当调用set时，设置为true，开始处理</div><div class="line">event.clear()    #将set标示位清空，设置为false</div><div class="line">event.isSet()    #判断set标示位是否为true</div></pre></td></tr></table></figure>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><p><a href="http://www.cnblogs.com/huxi/archive/2010/06/26/1765808.html" target="_blank" rel="external">http://www.cnblogs.com/huxi/archive/2010/06/26/1765808.html</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;线程5种状态&quot;&gt;&lt;a href=&quot;#线程5种状态&quot; class=&quot;headerlink&quot; title=&quot;线程5种状态&quot;&gt;&lt;/a&gt;线程5种状态&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;新建&lt;/li&gt;
+&lt;li&gt;就绪&lt;/li&gt;
+&lt;li&gt;运行&lt;/li&gt;
+&lt;li&gt;阻塞&lt;/li&gt;
+&lt;li&gt;
+    
+    </summary>
+    
+      <category term="python" scheme="https://ttxsgoto.github.io/categories/python/"/>
+    
+    
+      <category term="threading" scheme="https://ttxsgoto.github.io/tags/threading/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>importlib模块</title>
+    <link href="https://ttxsgoto.github.io/2017/04/16/importlib/"/>
+    <id>https://ttxsgoto.github.io/2017/04/16/importlib/</id>
+    <published>2017-04-16T07:44:11.000Z</published>
+    <updated>2017-04-17T07:48:51.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>通过字符串导入模块，动态导入模块，3种方式,记录如下：</p>
+<p>方式一：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">os1 = __import__('os')</div><div class="line">os1.path.join &lt;==&gt; from os.path import join</div></pre></td></tr></table></figure></p>
+<p>方式二：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">import imp</div><div class="line">os2 = imp.load_module('os',*imp.find_module('os'))</div><div class="line">os2.path.join &lt;==&gt; from os.path import join</div></pre></td></tr></table></figure></p>
+<p>方式三：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">module = importlib.import_module('os')</div><div class="line">os_path =  getattr(module,'path')</div><div class="line">os_path.join &lt;==&gt; from os.path import join</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;通过字符串导入模块，动态导入模块，3种方式,记录如下：&lt;/p&gt;
+&lt;p&gt;方式一：&lt;br&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div cla
+    
+    </summary>
+    
+      <category term="python" scheme="https://ttxsgoto.github.io/categories/python/"/>
+    
+    
+      <category term="importlib" scheme="https://ttxsgoto.github.io/tags/importlib/"/>
+    
+  </entry>
+  
+  <entry>
     <title>datetime模块</title>
     <link href="https://ttxsgoto.github.io/2017/04/10/datetime/"/>
     <id>https://ttxsgoto.github.io/2017/04/10/datetime/</id>
     <published>2017-04-10T13:51:17.000Z</published>
-    <updated>2017-04-10T12:50:42.000Z</updated>
+    <updated>2017-04-10T12:53:28.000Z</updated>
     
     <content type="html"><![CDATA[<p>日常工作中常用到时间处理，一般使用datetime模块来解决，datetime模块包括一些函数和类，用于完成日期和时间的解析、格式化和相关的运行.</p>
 <h4 id="时间转换为字符串-格式化输出"><a href="#时间转换为字符串-格式化输出" class="headerlink" title="时间转换为字符串(格式化输出)"></a>时间转换为字符串(格式化输出)</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">datetime.datetime.now().strftime(<span class="string">"%Y-%m-%d %H:%M:%S"</span>)</div><div class="line"><span class="comment"># strftime参数，strftime(format[, tuple]) -&gt; string</span></div><div class="line">python中时间日期格式化符号：</div><div class="line">%y 两位数的年份表示（<span class="number">00</span><span class="number">-99</span>）</div><div class="line">%Y 四位数的年份表示（<span class="number">000</span><span class="number">-9999</span>）</div><div class="line">%m 月份（<span class="number">01</span><span class="number">-12</span>）</div><div class="line">%d 月内中的一天（<span class="number">0</span><span class="number">-31</span>）</div><div class="line">%H <span class="number">24</span>小时制小时数（<span class="number">0</span><span class="number">-23</span>）</div><div class="line">%I <span class="number">12</span>小时制小时数（<span class="number">01</span><span class="number">-12</span>）</div><div class="line">%M 分钟数（<span class="number">00</span><span class="number">-59</span>）</div><div class="line">%S 秒（<span class="number">00</span><span class="number">-59</span>）</div><div class="line">%a 本地简化星期名称</div><div class="line">%A 本地完整星期名称</div><div class="line">%b 本地简化的月份名称</div><div class="line">%B 本地完整的月份名称</div><div class="line">%c 本地相应的日期表示和时间表示</div><div class="line">%j 年内的一天（<span class="number">001</span><span class="number">-366</span>）</div><div class="line">%p 本地A.M.或P.M.的等价符</div><div class="line">%U 一年中的星期数（<span class="number">00</span><span class="number">-53</span>）星期天为星期的开始</div><div class="line">%w 星期（<span class="number">0</span><span class="number">-6</span>），星期天为星期的开始</div><div class="line">%W 一年中的星期数（<span class="number">00</span><span class="number">-53</span>）星期一为星期的开始</div><div class="line">%x 本地相应的日期表示</div><div class="line">%X 本地相应的时间表示</div><div class="line">%Z 当前时区的名称</div><div class="line">%% %号本身</div></pre></td></tr></table></figure>
@@ -757,85 +855,6 @@ __iter__:返回迭代器对象本身
       <category term="yeild" scheme="https://ttxsgoto.github.io/tags/yeild/"/>
     
       <category term="generator" scheme="https://ttxsgoto.github.io/tags/generator/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>docker常用命令</title>
-    <link href="https://ttxsgoto.github.io/2017/02/09/docker-command/"/>
-    <id>https://ttxsgoto.github.io/2017/02/09/docker-command/</id>
-    <published>2017-02-09T13:08:57.000Z</published>
-    <updated>2017-02-09T15:26:14.000Z</updated>
-    
-    <content type="html"><![CDATA[<p><strong>主要记录Docker工作中，常使用命令.</strong></p>
-<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">docker build -t name ./path(dockerfile)  #通过dockerfile来创建镜像</div><div class="line">    --rm=true  表示构建成功后，移除所有中间容器</div><div class="line">    --no-cache=false 表示在构建过程中不使用缓存</div><div class="line"></div><div class="line">docker run  -it -p 2222:22 --name 容器名称 镜像名称  #启动docker镜像</div><div class="line">    -it 交互式模式启动，前台可以看到</div><div class="line">    -d 后台模式启动</div><div class="line">    -p 2222:22指定端口映射</div><div class="line">    --name 容器名称</div><div class="line">    -v  host_dir:container_dir   宿主机和容器数据映射，数据同步</div><div class="line">    -e 传递环境变量  -e WORDPRESS_DB_HOST=x.x.x.x</div><div class="line">    --entrypoint=/bin/bash   将cmd命令的环境覆盖掉</div><div class="line">如：docker run -itd -p 80:80 --name nginx_php -v /root/html:/data/www/html nginx1.8</div><div class="line">docker ps  # 将处于run状态下的容器显示出来</div><div class="line">docker ps -a   #将所有docker状态的容器显示出来</div><div class="line">docker info     #查看docker信息</div><div class="line">docker images # 查看镜像</div><div class="line">docker pull   xxx  #下载镜像</div><div class="line">docker push  xxx  #将镜像推送到registry</div><div class="line">docker search xxxx #查询镜像</div><div class="line">docker diff     #列出容器内发生变化的文件和目录（A-Add，D-Delete，C-Change）</div><div class="line">docker commit  xxxx    abc/yyy  #把有修改的container提交到新的images中</div><div class="line">docker tag  原镜像名称     新名称    #给镜像重命名</div><div class="line">docker top container    #查看正在运行的容器中的进程的运行情况</div><div class="line">docker port container   #用于查看容器与主机之间的端口映射关系信息</div><div class="line">docker exec -it  container_id(base(名称)) /bin/bash    #进入docker容器里面</div><div class="line">docker stop b1430f1a3daa    #停止容器运行</div><div class="line">Ctrl +p +q                         #进入容器后，从终端退出容器</div><div class="line">docker rm  -f 容器名称   #删除容器，-f强制删除</div><div class="line">docker rmi  image  #移除一个或多个镜像</div><div class="line">docker inspect  #查看镜像或容器的底层详细信息</div><div class="line">docker inspect -f &#123;&#123;.NetworkSettings.IPAddress&#125;&#125;  xxxxx   -f #查看特定信息</div><div class="line">docker ps -qa  # 列出所有的容器(含沉睡镜像)的容器ID号</div><div class="line">docker rm `docker ps -qa` 将沉睡的容器删除</div></pre></td></tr></table></figure>
-<h3 id="存储相关命令"><a href="#存储相关命令" class="headerlink" title="存储相关命令"></a>存储相关命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">docker save -o ubuntu_14.04.tar ubuntu:14.04   #存出镜像</div><div class="line">docker load &lt; ubuntu_14.04.tar   #载入镜像，导入相关的元数据（包括标签等）</div><div class="line">docker export ID(7691a814370e) &gt;ubuntu.tar   #导出容器，导出容器快照到本地</div><div class="line">docker import             #导入容器快照，可以导入远程文件、本地文件和目录，使用http的url从远程位置导入，本地或目录的导入需要使用-参数</div><div class="line">如：docker import http://xxx.yyy.com/ext.tar.gz  xxx/yyy  || docker import - ubuntu:14.04</div></pre></td></tr></table></figure>
-<h3 id="日志相关命令"><a href="#日志相关命令" class="headerlink" title="日志相关命令"></a>日志相关命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">docker events     #打印容器实时的系统事件</div><div class="line">docker history  images    #打印指定image的每层image命令行的历史记录</div><div class="line">docker logs container  #批量打印出容器中进程的运行日志</div></pre></td></tr></table></figure>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;strong&gt;主要记录Docker工作中，常使用命令.&lt;/strong&gt;&lt;/p&gt;
-&lt;h3 id=&quot;常用命令&quot;&gt;&lt;a href=&quot;#常用命令&quot; class=&quot;headerlink&quot; title=&quot;常用命令&quot;&gt;&lt;/a&gt;常用命令&lt;/h3&gt;&lt;figure class=&quot;highl
-    
-    </summary>
-    
-      <category term="Docker" scheme="https://ttxsgoto.github.io/categories/Docker/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>docker—网络模式</title>
-    <link href="https://ttxsgoto.github.io/2017/02/08/docker_network/"/>
-    <id>https://ttxsgoto.github.io/2017/02/08/docker_network/</id>
-    <published>2017-02-08T14:05:33.000Z</published>
-    <updated>2017-02-08T14:58:27.000Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="Docker网络实现原理"><a href="#Docker网络实现原理" class="headerlink" title="Docker网络实现原理"></a>Docker网络实现原理</h3><p>Docker 中的网络接口默认都是虚拟的接口。虚拟接口的优势之一是转发效率较高。 Linux 通过在内核中进 行数据复制来实现虚拟接口之间的数据转发，发送接口的发送缓存中的数据包被直接复制到接收接口的接收缓存中。对于本地系统和容器内系统看来就像是一个正常的以太网卡，只是它不需要真正同外部网络设备通信，速度要快很多；Docker 容器网络利用此技术，它在本地主机和容器内分别创建一个虚拟接口，并让它们彼此连通 （这样的一对接口叫做 veth pair ）</p>
-<p>Docker 创建一个容器的时候，会执行如下操作：</p>
-<ul>
-<li>创建一对虚拟接口，分别放到本地主机和新容器中； </li>
-<li>本地主机一端桥接到默认的 docker0 或指定网桥上，并具有一个唯一的名字，如 vethf9； </li>
-<li>容器一端放到新容器中，并修改名字作为 eth0，这个接口只在容器的名字空间可见； </li>
-<li>从网桥可用地址段中获取一个空闲地址分配给容器的 eth0，并配置默认路由到桥接网卡 vethf9。 </li>
-</ul>
-<p>完成这些之后，容器就可以使用 eth0 虚拟网卡来连接其他容器和其他网络</p>
-<p>网络模式需要开启linux系统转发功能，查看linux系统中是否开启转发功能：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">#sysctl net.ipv4.ip_forward</div><div class="line">net.ipv4.ip_forward = 1</div><div class="line"># 设置：sysctl -w  net.ipv4.ip_forward=1</div></pre></td></tr></table></figure></p>
-<h3 id="几种网络模式"><a href="#几种网络模式" class="headerlink" title="几种网络模式"></a>几种网络模式</h3><h4 id="nat"><a href="#nat" class="headerlink" title="nat"></a>nat</h4><p>–net=bridge (默认的网桥)，Docker通过宿主机的网桥(docker0)来连通内部和宿主机的网络，实现了容器与宿主机和外界之间的网络通信<br><img src="https://ttxsgoto.github.io/img/docker_network/1.png" alt="nat"></p>
-<p>Bridge桥接模式的实现步骤主要如下：</p>
-<p>（1）Docker Daemon利用veth pair技术，在宿主机上创建两个虚拟网络接口设备，假设为veth0和veth1。而veth pair技术的特性可以保证无论哪一个veth接收到网络报文，都会将报文传输给另一方。</p>
-<p>（2）Docker Daemon将veth0附加到Docker Daemon创建的docker0网桥上。保证宿主机的网络报文可以发往veth0。</p>
-<p>（3）Docker Daemon将veth1添加到Docker Container所属的namespace下，并被改名为eth0。如此一来，保证宿主机的网络报文若发往veth0，则立即会被eth0接收，实现宿主机到Docker Container网络的联通性；同时，也保证Docker Container单独使用eth0，实现容器网络环境的隔离性。</p>
-<p>同时Docker采用NAT（Network Address Translation，网络地址转换）的方式(可自行查询实现原理)，让宿主机以外的世界可以主动将网络报文发送至容器内部。</p>
-<p>通过Bridger网桥模式实现：</p>
-<p>（1）容器拥有独立、隔离的网络栈</p>
-<p>（2）容器和宿主机以外的世界通过NAT建立通信</p>
-<h4 id="host"><a href="#host" class="headerlink" title="host"></a>host</h4><p>–net=host (告诉docker不要将容器网络放在隔离的名字容器中，即不要容器化容器内的网络，该模式下的Docker Container和host宿主机共享同一个网络namespace，即container和宿主机一样，使用宿主机的eth0)<br><img src="https://ttxsgoto.github.io/img/docker_network/2.png" alt="host"></p>
-<p>Docker Container的host网络模式在实现过程中，由于不需要额外的网桥以及虚拟网卡，故不会涉及docker0以及veth pair。父进程在创建子进程时，如果不使用CLONE_NEWNET这个参数标志，那么创建出的子进程会与父 进程共享同一个网络namespace。Docker就是采用了这个简单的原理，在创建进程启动容器的过程中，没有传入CLONE_NEWNET参数标 志，实现Docker Container与宿主机共享同一个网络环境，即实现host网络模式。</p>
-<p>Docker Container的网络模式中，host模式是bridge桥接模式很好的补充。采用host模式的Docker Container，可以直接使用宿主机的IP地址与外界进行通信，若宿主机的eth0是一个公有IP，那么容器也拥有这个公有IP。同时容器内服务的端口也可以使用宿主机的端口，无需额外进行NAT转换。当然，有这样的方便，肯定会损失部分其他的特性，最明显的是Docker Container网络环境隔离性的弱化，即容器不再拥有隔离、独立的网络栈。另外，使用host模式的Docker Container虽然可以让容器内部的服务和传统情况无差别、无改造的使用，但是由于网络隔离性的弱化，该容器会与宿主机共享竞争网络栈的使用；另外，容器内部将不再拥有所有的端口资源，原因是部分端口资源已经被宿主机本身的服务占用，还有部分端口已经用以bridge网络模式容器的端口映射。</p>
-<h4 id="Other-container"><a href="#Other-container" class="headerlink" title="Other container"></a>Other container</h4><p>–net=container:NAME_or_ID  (让docker将新建容器的进程放到一个已存在容器的网络栈中，新容器进程有自己的文件系统、进程列表和资源限制，但会和已存在的容器共享IP地址和端口等网络资源，两者进程可以直接通过lo 环回接口通信)<br><img src="https://ttxsgoto.github.io/img/docker_network/3.png" alt="other"></p>
-<p>上图右侧的Docker Container即采用了other container网络模式，它能使用的网络环境即为左侧Docker Container brdige桥接模式下的网络</p>
-<p>Docker Container的other container网络模式在实现过程中，不涉及网桥，同样也不需要创建虚拟网卡veth pair。</p>
-<p>完成other container网络模式的创建只需要两个步骤：</p>
-<p>(1) 查找other container（即需要被共享网络环境的容器）的网络namespace；</p>
-<p>(2) 将新创建的Docker Container（也是需要共享其他网络的容器）的namespace，使用other container的namespace<br>在这种模式下的Docker Container可以通过localhost来访问namespace下的其他容器，传输效率较高。虽然多个容器共享网络环境，但是多个容器形成的整体依然与宿主机以及其他容器形成网络隔离。另外，这种模式还节约了一定数量的网络资源。但是需要注意的是，它并没有改善容器与宿主机以外世界通信的情况。</p>
-<h4 id="none"><a href="#none" class="headerlink" title="none"></a>none</h4><p>–net=none   (让Docker将新容器放到隔离的网络栈中，但不进行网络配置，之后用户可以自己进行配置，容器内部只能使用loopback网络设备，不会再有其他的网络资源)</p>
-<h3 id="网络相关的命令"><a href="#网络相关的命令" class="headerlink" title="网络相关的命令"></a>网络相关的命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">-b BRIDGE or --bridge=BRIDGE --指定容器挂载的网桥</div><div class="line">--bip=CIDR --定制 docker0 的掩码</div><div class="line">-H SOCKET... or --host=SOCKET... --Docker 服务端接收命令的通道</div><div class="line">--icc=true|false --是否支持容器之间进行通信</div><div class="line">--ip-forward=true|false --容器之间的通信</div><div class="line">--iptables=true|false --禁止 Docker 添加 iptables 规则</div><div class="line">--mtu=BYTES --容器网络中的 MTU</div></pre></td></tr></table></figure>
-<p>上述网络模式理论主要来自链接：</p>
-<p><a href="http://www.infoq.com/cn/articles/docker-source-code-analysis-part7" target="_blank" rel="external">http://www.infoq.com/cn/articles/docker-source-code-analysis-part7</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h3 id=&quot;Docker网络实现原理&quot;&gt;&lt;a href=&quot;#Docker网络实现原理&quot; class=&quot;headerlink&quot; title=&quot;Docker网络实现原理&quot;&gt;&lt;/a&gt;Docker网络实现原理&lt;/h3&gt;&lt;p&gt;Docker 中的网络接口默认都是虚拟的接口。虚拟接口的优势
-    
-    </summary>
-    
-      <category term="Docker" scheme="https://ttxsgoto.github.io/categories/Docker/"/>
-    
-    
-      <category term="Network" scheme="https://ttxsgoto.github.io/tags/Network/"/>
     
   </entry>
   
