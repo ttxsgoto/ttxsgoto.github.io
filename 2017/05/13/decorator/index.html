@@ -10,9 +10,10 @@
     <meta name="author" content="ttxsgoto">
     
     <meta name="description" content="功能给程序去重，在不改动源代码和原有调用方式下，给函数添加额外的功能模块（如验证功能）
-理解装饰器就是执行一个函数,当执行到@auth时，内部的动作为：
-- 执行auth函数，并将@auth下面的函数作为auth函数的参数，即@auth == auth(f1)
-- 将执行完的auth函数返回值赋给@">
+闭包- 当函数离开创建环境后,依然持有其上下文状态
+- 要形成闭包，首先需要一个嵌套的函数，即函数中定义了另一个函数，子函数引用父函
+  数的变量,子函数称为闭包;
+- Python中函数也是对象，所以函数也有很">
     
     
     
@@ -100,10 +101,17 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#功能"><span class="toc-number">1.</span> <span class="toc-text">功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#理解"><span class="toc-number">2.</span> <span class="toc-text">理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#装饰器实例"><span class="toc-number">3.</span> <span class="toc-text">装饰器实例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#函数-无参数-的装饰器"><span class="toc-number">3.1.</span> <span class="toc-text">函数(无参数)的装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#函数含有-一个-多个-参数的装饰器"><span class="toc-number">3.2.</span> <span class="toc-text">函数含有(一个/多个)参数的装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#有参数的装饰器"><span class="toc-number">3.3.</span> <span class="toc-text">有参数的装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#多装饰器"><span class="toc-number">3.4.</span> <span class="toc-text">多装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#函数的类装饰器-1"><span class="toc-number">3.5.</span> <span class="toc-text">函数的类装饰器(1)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#函数的类装饰器-2"><span class="toc-number">3.6.</span> <span class="toc-text">函数的类装饰器(2)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#装饰器的不足"><span class="toc-number">4.</span> <span class="toc-text">装饰器的不足</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#功能"><span class="toc-number">1.</span> <span class="toc-text">功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#闭包"><span class="toc-number">2.</span> <span class="toc-text">闭包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#理解"><span class="toc-number">3.</span> <span class="toc-text">理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#装饰器实例"><span class="toc-number">4.</span> <span class="toc-text">装饰器实例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#函数-无参数-的装饰器"><span class="toc-number">4.1.</span> <span class="toc-text">函数(无参数)的装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#函数含有-一个-多个-参数的装饰器"><span class="toc-number">4.2.</span> <span class="toc-text">函数含有(一个/多个)参数的装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#有参数的装饰器"><span class="toc-number">4.3.</span> <span class="toc-text">有参数的装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#多装饰器"><span class="toc-number">4.4.</span> <span class="toc-text">多装饰器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#函数的类装饰器-1"><span class="toc-number">4.5.</span> <span class="toc-text">函数的类装饰器(1)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#函数的类装饰器-2"><span class="toc-number">4.6.</span> <span class="toc-text">函数的类装饰器(2)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#装饰器的不足"><span class="toc-number">5.</span> <span class="toc-text">装饰器的不足</span></a></li></ol>
 		</div>
 		
 		<h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><p>给程序去重，在不改动源代码和原有调用方式下，给函数添加额外的功能模块（如验证功能）</p>
+<h3 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h3><pre><code>- 当函数离开创建环境后,依然持有其上下文状态
+- 要形成闭包，首先需要一个嵌套的函数，即函数中定义了另一个函数，子函数引用父函
+  数的变量,子函数称为闭包;
+- Python中函数也是对象，所以函数也有很多属性，和闭包相关的属性是 
+  __closure__,__closure__ 属性定义的是一个包含 cell 对象的元组，其中元组
+  中的每一个cell对象用来保存作用域中变量的值
+</code></pre><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line">#coding: utf_8</div><div class="line"> </div><div class="line">def func(n):</div><div class="line">    print 'id(n)----&gt; &#123;&#125;'.format(id(n))</div><div class="line"> </div><div class="line">    def new_power(x):</div><div class="line">        return x**n</div><div class="line">    print 'id(new_power)----&gt; &#123;&#125;'.format(id(new_power))</div><div class="line">    return new_power</div><div class="line"> </div><div class="line">first = func(5) # 在调用func函数时产生一个闭包new_power,并且已拥有局部变量n的值,即使func生命周期结束后,值n依然存在,因为n被new_power引用,所以不会被回收</div><div class="line"> </div><div class="line">print id(first)</div><div class="line">del func</div><div class="line">print first(2)</div><div class="line">print first.__closure__, first.__closure__[0].cell_contents # 函数也为对象,其中的闭包属性</div><div class="line">##### 运行结果 #####</div><div class="line">id(n)----&gt; 140676064892712</div><div class="line">id(new_power)----&gt; 4357115728</div><div class="line">4357115728</div><div class="line">32</div></pre></td></tr></table></figure>
 <h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>装饰器就是执行一个函数,当执行到@auth时，内部的动作为：</p>
 <pre><code>- 执行auth函数，并将@auth下面的函数作为auth函数的参数，即@auth == auth(f1)
 - 将执行完的auth函数返回值赋给@auth下面的函数的函数名，即 f1 = auth(f1),相当于执行inner函数
