@@ -140,10 +140,12 @@
     <link href="https://ttxsgoto.github.io/2017/05/13/decorator/"/>
     <id>https://ttxsgoto.github.io/2017/05/13/decorator/</id>
     <published>2017-05-13T02:57:35.000Z</published>
-    <updated>2017-05-21T14:37:43.000Z</updated>
+    <updated>2017-05-22T12:33:38.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><p>给程序去重，在不改动源代码和原有调用方式下，给函数添加额外的功能模块（如验证功能）</p>
-<h3 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h3><pre><code>- 当函数离开创建环境后,依然持有其上下文状态
+<h3 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h3><pre><code>- 能把装饰的函数替换成其他函数
+- 装饰器在加载/导入模块时立即执行,被装饰的函数在被调用的时候运行
+</code></pre><h3 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h3><pre><code>- 当函数离开创建环境后,依然持有其上下文状态
 - 要形成闭包，首先需要一个嵌套的函数，即函数中定义了另一个函数，子函数引用父函
   数的变量,子函数称为闭包;
 - Python中函数也是对象，所以函数也有很多属性，和闭包相关的属性是 
@@ -169,7 +171,7 @@
     <summary type="html">
     
       &lt;h3 id=&quot;功能&quot;&gt;&lt;a href=&quot;#功能&quot; class=&quot;headerlink&quot; title=&quot;功能&quot;&gt;&lt;/a&gt;功能&lt;/h3&gt;&lt;p&gt;给程序去重，在不改动源代码和原有调用方式下，给函数添加额外的功能模块（如验证功能）&lt;/p&gt;
-&lt;h3 id=&quot;闭包&quot;&gt;&lt;a href=&quot;#闭包
+&lt;h3 id=&quot;特性&quot;&gt;&lt;a href=&quot;#特性
     
     </summary>
     
