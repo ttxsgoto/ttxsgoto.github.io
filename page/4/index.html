@@ -89,261 +89,21 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
-        <a href="/2017/05/24/copy-deepcopy/" title="深拷贝和浅拷贝、赋值" itemprop="url">
+        <a href="/2017/02/01/hexo/" title="hexo常用命令" itemprop="url">
       
-        深拷贝和浅拷贝、赋值
+        hexo常用命令
       </a>
     </h1>
     
      
-           <p itemprop="description" >http://www.cnblogs.com/wilber2013/p/4645353.html
-概念说明
-赋值：对象的赋值是进行对象引用（内存地址）传递，引用的地址没有变化，相当于设置了另外一个别名；注意：当修改不可变类型的值时，对应内部的引用发生变化；其中可变类型(列表，字典</p>
+           <p itemprop="description" >安装命令123npm install -g hexo # 安装hexohexo init   #初始化hexo目录npm install hexo-deployer-git --save 安装git所需的插件
+常用命令123456hexo cleanhexo generate #</p>
         
     
     <p class="article-more-link">
-      <time datetime="2017-05-24T13:38:11.000Z" itemprop="datePublished">2017-05-24</time>
+      <time datetime="2017-02-01T14:38:32.000Z" itemprop="datePublished">2017-02-01</time>
       
-          <a href="/2017/05/24/copy-deepcopy/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/16/descriptor/" title="描述符" itemprop="url">
-      
-        描述符
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >描述符说明- 只要是定义了__get__()、__set()__、__delete()__中任意一个方法的对象都叫描述符
-- 描述符是一个具有绑定行为的对象属性，其属性的访问被描述符协议方法覆写
-- 通常来说Python对象的属性控制默认是这样的：从对象的字典(__dict__)</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-16T12:24:28.000Z" itemprop="datePublished">2017-05-16</time>
-      
-          <a href="/2017/05/16/descriptor/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/14/rest-framwork-serializers/" title="ModelSerializer常用方法" itemprop="url">
-      
-        ModelSerializer常用方法
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >ModelSerializer属性方法12345678910111213class AccountSerializer(serializers.ModelSerializer):    other_name = serializers.CharField(source=&#39;name</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-14T12:13:22.000Z" itemprop="datePublished">2017-05-14</time>
-      
-          <a href="/2017/05/14/rest-framwork-serializers/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/14/rest-framwork-note/" title="Rest_framwork笔记" itemprop="url">
-      
-        Rest_framwork笔记
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >实现restful操作步骤0.setting.py 添加设置1234INSTALLED_APPS = (	&#39;rest_framework&#39;,        &#39;app&#39;,)
-1.serializer序列化models1234567891011121314151617from res</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-14T11:36:53.000Z" itemprop="datePublished">2017-05-14</time>
-      
-          <a href="/2017/05/14/rest-framwork-note/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/13/decorator/" title="装饰器" itemprop="url">
-      
-        装饰器
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >功能给程序去重，在不改动源代码和原有调用方式下，给函数添加额外的功能模块（如验证功能）
-特性- 能把装饰的函数替换成其他函数
-- 装饰器在加载/导入模块时立即执行,被装饰的函数在被调用的时候运行
-闭包- 当函数离开创建环境后,依然持有其上下文状态
-- 要形成闭包，首先需要一个嵌套</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-13T02:57:35.000Z" itemprop="datePublished">2017-05-13</time>
-      
-          <a href="/2017/05/13/decorator/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/17/threading/" title="多线程-threading" itemprop="url">
-      
-        多线程-threading
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >线程5种状态
-新建
-就绪
-运行
-阻塞
-死亡
-
-阻塞的三种情况：
-
-同步阻塞：是指处于竞争锁定的状态，线程请求锁定时将进入这个状态，一旦成功获得锁定又恢复到运行状态；
-等待阻塞：是指等待其他线程通知的状态，线程获得条件锁定后，调用“等待”将进入这个状态，一旦其他线程发出通知，线程将</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-17T12:37:11.000Z" itemprop="datePublished">2017-04-17</time>
-      
-          <a href="/2017/04/17/threading/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/16/importlib/" title="importlib模块" itemprop="url">
-      
-        importlib模块
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >通过字符串导入模块，动态导入模块，3种方式,记录如下：
-方式一：12os1 = __import__(&#39;os&#39;)os1.path.join &amp;lt;==&amp;gt; from os.path import join
-方式二：123import impos2 = imp.load_mo</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-16T07:44:11.000Z" itemprop="datePublished">2017-04-16</time>
-      
-          <a href="/2017/04/16/importlib/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/10/datetime/" title="datetime模块" itemprop="url">
-      
-        datetime模块
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >日常工作中常用到时间处理，一般使用datetime模块来解决，datetime模块包括一些函数和类，用于完成日期和时间的解析、格式化和相关的运行.
-时间转换为字符串(格式化输出)12345678910111213141516171819202122232425datetime.d</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-10T13:51:17.000Z" itemprop="datePublished">2017-04-10</time>
-      
-          <a href="/2017/04/10/datetime/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/05/django-models-basic/" title="django Models" itemprop="url">
-      
-        django Models
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >字段123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-05T12:07:24.000Z" itemprop="datePublished">2017-04-05</time>
-      
-          <a href="/2017/04/05/django-models-basic/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/03/30/re/" title="re模块" itemprop="url">
-      
-        re模块
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >说明正则表达式用于字符的筛选和匹配，相关语法规则请参考其他文档，这里主要学习相关函数功能；
-匹配使用函数
-re.match(pattern, string[, flags]):从第一个字符开始匹配,匹配成功就返回,不关心后面的内容;
-re.search(pattern, stri</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-03-30T13:18:15.000Z" itemprop="datePublished">2017-03-30</time>
-      
-          <a href="/2017/03/30/re/">阅读更多&raquo;</a>
+          <a href="/2017/02/01/hexo/">阅读更多&raquo;</a>
       
     </p>
 
@@ -352,7 +112,7 @@ re.search(pattern, stri</p>
 
 
   <nav id="page-nav" class="clearfix">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/3/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
   </nav>
 
 </div>
