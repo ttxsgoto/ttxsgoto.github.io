@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2017-05-25T05:08:46.000Z</updated>
+  <updated>2017-05-25T05:11:13.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -16,14 +16,13 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>深拷贝和浅拷贝、赋值</title>
+    <title>深拷贝/浅拷贝和赋值</title>
     <link href="https://ttxsgoto.github.io/2017/05/24/copy-deepcopy/"/>
     <id>https://ttxsgoto.github.io/2017/05/24/copy-deepcopy/</id>
     <published>2017-05-24T13:38:11.000Z</published>
-    <updated>2017-05-25T05:08:46.000Z</updated>
+    <updated>2017-05-25T05:11:13.000Z</updated>
     
-    <content type="html"><![CDATA[<p><a href="http://www.cnblogs.com/wilber2013/p/4645353.html" target="_blank" rel="external">http://www.cnblogs.com/wilber2013/p/4645353.html</a></p>
-<h4 id="概念说明"><a href="#概念说明" class="headerlink" title="概念说明"></a>概念说明</h4><ul>
+    <content type="html"><![CDATA[<h4 id="概念说明"><a href="#概念说明" class="headerlink" title="概念说明"></a>概念说明</h4><ul>
 <li>赋值：对象的赋值是进行对象引用（内存地址）传递，引用的地址没有变化，相当于设置了另外一个别名；注意：当修改不可变类型的值时，对应内部的引用发生变化；其中可变类型(列表，字典)，不可变类型(数字，字符串，元祖)</li>
 <li>浅拷贝：只拷贝父对象，不会拷贝对象的内部的子对象,只是原对象元素的引用，下列操作相当于浅拷贝<pre><code>- 使用切片操作[:]
 - 使用list/dir/set
@@ -39,7 +38,8 @@
     
     <summary type="html">
     
-      &lt;p&gt;&lt;a href=&quot;http://www.cnblogs.com/wilber2013/p/4645353.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.cnblogs.com/wilber2013/p/4645353.htm
+      &lt;h4 id=&quot;概念说明&quot;&gt;&lt;a href=&quot;#概念说明&quot; class=&quot;headerlink&quot; title=&quot;概念说明&quot;&gt;&lt;/a&gt;概念说明&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;赋值：对象的赋值是进行对象引用（内存地址）传递，引用的地址没有变化，相当于设置了另外一个别名；注意：当修改不可变
     
     </summary>
     
