@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2017-05-25T05:11:13.000Z</updated>
+  <updated>2017-05-29T06:41:00.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://ttxsgoto.github.io/2017/05/24/copy-deepcopy/"/>
     <id>https://ttxsgoto.github.io/2017/05/24/copy-deepcopy/</id>
     <published>2017-05-24T13:38:11.000Z</published>
-    <updated>2017-05-25T05:11:13.000Z</updated>
+    <updated>2017-05-29T06:41:00.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="概念说明"><a href="#概念说明" class="headerlink" title="概念说明"></a>概念说明</h4><ul>
 <li>赋值：对象的赋值是进行对象引用（内存地址）传递，引用的地址没有变化，相当于设置了另外一个别名；注意：当修改不可变类型的值时，对应内部的引用发生变化；其中可变类型(列表，字典)，不可变类型(数字，字符串，元祖)</li>
@@ -43,10 +43,10 @@
     
     </summary>
     
-      <category term="copy" scheme="https://ttxsgoto.github.io/categories/copy/"/>
+      <category term="python" scheme="https://ttxsgoto.github.io/categories/python/"/>
     
     
-      <category term="python" scheme="https://ttxsgoto.github.io/tags/python/"/>
+      <category term="copy" scheme="https://ttxsgoto.github.io/tags/copy/"/>
     
   </entry>
   
