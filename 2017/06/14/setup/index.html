@@ -1,0 +1,384 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>setuptools模块打包 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明将日常常用模块打包成tar.gz,egg，wheel包，方便其他工程复用；主要通过setuptools这个模块完成打包工作
+简单实例目录结构：12345├── README		    # readme信息├── package_demo	# 包名│   ├── __init__.py│   └─">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/06/14/setup/" title="setuptools模块打包" itemprop="url">setuptools模块打包</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-06-14T13:51:32.000Z" itemprop="datePublished">2017-06-14</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#简单实例"><span class="toc-number">2.</span> <span class="toc-text">简单实例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#常用字段"><span class="toc-number">2.1.</span> <span class="toc-text">常用字段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#打包命令"><span class="toc-number">2.2.</span> <span class="toc-text">打包命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#包验证"><span class="toc-number">2.3.</span> <span class="toc-text">包验证</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#分发到PyPI"><span class="toc-number">3.</span> <span class="toc-text">分发到PyPI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参考链接"><span class="toc-number">4.</span> <span class="toc-text">参考链接</span></a></li></ol>
+		</div>
+		
+		<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>将日常常用模块打包成tar.gz,egg，wheel包，方便其他工程复用；主要通过setuptools这个模块完成打包工作</p>
+<h3 id="简单实例"><a href="#简单实例" class="headerlink" title="简单实例"></a>简单实例</h3><p>目录结构：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">├── README		    # readme信息</div><div class="line">├── package_demo	# 包名</div><div class="line">│   ├── __init__.py</div><div class="line">│   └── now_time.py	# 功能模块</div><div class="line">└── setup.py		# setup文件</div></pre></td></tr></table></figure></p>
+<p>now_time.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding: utf_8</span></div><div class="line"><span class="keyword">import</span> datetime</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">now</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> datetime.datetime.now()</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    now()</div></pre></td></tr></table></figure></p>
+<p>setup.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding: utf_8</span></div><div class="line"> </div><div class="line"><span class="keyword">from</span> setuptools <span class="keyword">import</span> setup, find_packages</div><div class="line"><span class="keyword">from</span> os <span class="keyword">import</span> path</div><div class="line"> </div><div class="line">here = path.abspath(path.dirname(__file__))</div><div class="line"> </div><div class="line"><span class="keyword">with</span> open(path.join(here, <span class="string">'README'</span>)) <span class="keyword">as</span> f:</div><div class="line">    long_description = f.read()</div><div class="line"> </div><div class="line">install_requires=[</div><div class="line">    <span class="string">'gitchangelog'</span>,</div><div class="line">]</div><div class="line"></div><div class="line">setup(</div><div class="line">    name=<span class="string">'Package_demo'</span>,</div><div class="line">    version=<span class="string">'1.0.0'</span>,</div><div class="line">    description=<span class="string">'setup package demo'</span>,</div><div class="line">    long_description=long_description,</div><div class="line">    url=<span class="string">'https://github.com/'</span>,</div><div class="line">    author=<span class="string">'ttxsgoto'</span>,</div><div class="line">    author_email=<span class="string">'359450323@qq.com'</span>,</div><div class="line">    license=<span class="string">'MIT'</span>,</div><div class="line">    classifiers=[</div><div class="line">        <span class="string">'Development Status :: 4 - Beta'</span>,</div><div class="line">        <span class="string">'Intended Audience :: Developers'</span>,</div><div class="line">        <span class="string">'Topic :: Software Development :: Build Tools'</span>,</div><div class="line">        <span class="string">'License :: OSI Approved :: MIT License'</span>,</div><div class="line">        <span class="string">'Programming Language :: Python'</span>,</div><div class="line">        <span class="string">'Programming Language :: Python :: 2.7'</span>,</div><div class="line">    ],</div><div class="line">    keywords=<span class="string">'Package_demo'</span>,</div><div class="line">    <span class="comment"># packages=find_packages(</span></div><div class="line">    <span class="comment">#     where='.',</span></div><div class="line">    <span class="comment">#     exclude=['contrib', 'docs', 'tests'], # 排除某些包</span></div><div class="line">    <span class="comment"># ),</span></div><div class="line">    packages=[<span class="string">'package_demo'</span>],</div><div class="line">    install_requires=install_requires,</div><div class="line">)</div></pre></td></tr></table></figure></p>
+<h4 id="常用字段"><a href="#常用字段" class="headerlink" title="常用字段"></a>常用字段</h4><ul>
+<li>name 项目名称</li>
+<li>version 项目当前的版本，1.0.0表示1.0.0版，目前还处于开发阶段</li>
+<li>description 包的简单描述</li>
+<li>long_description=long_description, 较长的描述</li>
+<li>url 为项目访问地址</li>
+<li>author 为项目开发人员</li>
+<li>author_email 为项目开发人员邮件</li>
+<li>license 为本项目遵循的授权许可</li>
+<li>classifiers 有很多设置，具体内容可以参考官方文档, <a href="https://pypi.python.org/pypi?%3Aaction=list_classifiers" target="_blank" rel="external">https://pypi.python.org/pypi?%3Aaction=list_classifiers</a></li>
+<li>keywords 是本项目的关键词，理解为标签</li>
+<li>packages 指定包,如果很多可以使用find_packages &amp; exclude</li>
+<li>install_requires 依赖包安装</li>
+<li>extras_require 额外的依赖包</li>
+</ul>
+<h4 id="打包命令"><a href="#打包命令" class="headerlink" title="打包命令"></a>打包命令</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">python setup.py check  <span class="comment"># 检查</span></div><div class="line">python setup.py sdist  <span class="comment"># 打包为 .tar.gz</span></div><div class="line">python setup.py bdist_egg  <span class="comment">#  创建 Eggs包</span></div><div class="line">python setup.py bdist_wheel  <span class="comment"># 创建 Wheel包</span></div><div class="line"><span class="comment"># 生成的文件均位于 dist 目录下</span></div></pre></td></tr></table></figure>
+<p>打包后的目录结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">python setup.py sdist</div><div class="line"></div><div class="line">├── Package_demo.egg-info</div><div class="line">│   ├── PKG-INFO</div><div class="line">│   ├── SOURCES.txt</div><div class="line">│   ├── dependency_links.txt</div><div class="line">│   ├── requires.txt</div><div class="line">│   └── top_level.txt</div><div class="line">├── README</div><div class="line">├── dist</div><div class="line">│   └── Package_demo-1.0.0.tar.gz</div><div class="line">├── package_demo</div><div class="line">│   ├── __init__.py</div><div class="line">│   └── now_time.py</div><div class="line">└── setup.py</div></pre></td></tr></table></figure></p>
+<h4 id="包验证"><a href="#包验证" class="headerlink" title="包验证"></a>包验证</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">pip install Package_demo<span class="number">-1.0</span><span class="number">.0</span>.tar.gz</div><div class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> package_demo <span class="keyword">import</span> now_time</div><div class="line"> </div><div class="line">In [<span class="number">2</span>]: now_time.now()</div><div class="line">Out[<span class="number">2</span>]: datetime.datetime(<span class="number">2017</span>, <span class="number">6</span>, <span class="number">14</span>, <span class="number">23</span>, <span class="number">10</span>, <span class="number">52</span>, <span class="number">278942</span>)</div><div class="line"> </div><div class="line">In [<span class="number">3</span>]:</div></pre></td></tr></table></figure>
+<h3 id="分发到PyPI"><a href="#分发到PyPI" class="headerlink" title="分发到PyPI"></a>分发到PyPI</h3><p>首先到 PyPI 注册一个帐号, 在邮箱内确认<br>之后在目录新建一个 .pypirc 文件, 写入下面内容(注意填入自己的帐号密码):<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[pypirc]</div><div class="line">servers = pypi</div><div class="line">[server-login]</div><div class="line">username:username</div><div class="line">password:password</div></pre></td></tr></table></figure></p>
+<p>上传<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">python setup.py register  <span class="comment"># 将包注册到 PyPI</span></div><div class="line">python setup.py register sdist upload  <span class="comment"># 上传</span></div></pre></td></tr></table></figure></p>
+<p>登录验证查看是否上传成功</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ul>
+<li><a href="https://packaging.python.org/tutorials/distributing-packages/#name" target="_blank" rel="external">https://packaging.python.org/tutorials/distributing-packages/#name</a></li>
+<li><a href="https://github.com/pypa/sampleproject/blob/master/setup.py" target="_blank" rel="external">https://github.com/pypa/sampleproject/blob/master/setup.py</a></li>
+<li><a href="https://github.com/celery/celery/blob/master/setup.py" target="_blank" rel="external">https://github.com/celery/celery/blob/master/setup.py</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/setuptools/">setuptools</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/06/14/setup/" data-title="setuptools模块打包 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2017/05/24/copy-deepcopy/"  title="深拷贝/浅拷贝和赋值">
+ <strong>旧一篇:</strong><br/> 
+ <span>深拷贝/浅拷贝和赋值
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="setuptools模块打包" data-thread-key="setup" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/setup"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
