@@ -4,13 +4,13 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>iptables做端口映射 | ttxsgoto&#39; Blog</title>
+    <title>Throtting | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="需求外网需要访问内网的redis(无公网ip)服务器A，而它只能通过内网访问，其中服务器B有公网和内网地址，B通过内网可以访问A的服务；这时可以通过端口转发，通过访问B的端口来实际访问A的redis服务
-解决方案1234567891011# B服务器 外网ip: 120.27.114.114   内">
+    <meta name="description" content="Django Rest framework 频率控制配置说明
+全局设置setting.py12345678910111213141516171819202122# 设置节流方案&#39;DEFAULT_THROTTLE_CLASSES&#39;: (    # 开启匿名用户接口请求频率限制    &#39;rest_fra">
     
     
     
@@ -87,10 +87,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/07/21/iptables-forward/" title="iptables做端口映射" itemprop="url">iptables做端口映射</a>
+      <a href="/2017/08/10/Throtting/" title="Throtting" itemprop="url">Throtting</a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-07-21T12:49:34.000Z" itemprop="datePublished">2017-07-21</time>
+    <time datetime="2017-08-10T11:56:37.000Z" itemprop="datePublished">2017-08-10</time>
   </p>
 </header>
 	<div class="article-content">
@@ -98,31 +98,45 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#需求"><span class="toc-number">1.</span> <span class="toc-text">需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解决方案"><span class="toc-number">2.</span> <span class="toc-text">解决方案</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#全局设置"><span class="toc-number">1.</span> <span class="toc-text">全局设置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#自定义"><span class="toc-number">2.</span> <span class="toc-text">自定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#类视图使用"><span class="toc-number">3.</span> <span class="toc-text">类视图使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他说明"><span class="toc-number">4.</span> <span class="toc-text">其他说明</span></a></li></ol>
 		</div>
 		
-		<h3 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h3><p>外网需要访问内网的redis(无公网ip)服务器A，而它只能通过内网访问，其中服务器B有公网和内网地址，B通过内网可以访问A的服务；这时可以通过端口转发，通过访问B的端口来实际访问A的redis服务</p>
-<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># B服务器 外网ip: 120.27.114.114   内网ip: 10.10.10.10 端口:6379  转发</span></div><div class="line"><span class="comment"># A服务器 内网ip: 10.10.10.12:6379</span></div><div class="line"><span class="built_in">echo</span> <span class="string">'1'</span> &gt; /proc/sys/net/ipv4/ip_forward</div><div class="line">sysctl -p</div><div class="line">iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT</div><div class="line">iptables -A FORWARD <span class="_">-d</span> 10.10.10.12 -p tcp --dport 6379 -j ACCEPT</div><div class="line">iptables -t nat -A PREROUTING <span class="_">-d</span> 120.27.114.114 -p tcp -m tcp --dport 6379 -j DNAT --to-destination 10.10.10.12:6379</div><div class="line">iptables -t nat -A POSTROUTING <span class="_">-d</span> 10.10.10.12 -p tcp -m tcp --dport 6379 -j SNAT --to-source 10.10.10.10</div><div class="line"></div><div class="line">iptables-save &gt; /etc/iptables/rules.v4       <span class="comment"># 保存</span></div><div class="line">iptables-restore &lt; /etc/iptables/rules.v4	<span class="comment"># 导入</span></div></pre></td></tr></table></figure>
+		<p>Django Rest framework 频率控制配置说明</p>
+<h4 id="全局设置"><a href="#全局设置" class="headerlink" title="全局设置"></a>全局设置</h4><p>setting.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 设置节流方案</span></div><div class="line"><span class="string">'DEFAULT_THROTTLE_CLASSES'</span>: (</div><div class="line">    <span class="comment"># 开启匿名用户接口请求频率限制</span></div><div class="line">    <span class="string">'rest_framework.throttling.AnonRateThrottle'</span>,</div><div class="line">    <span class="comment"># 开启授权用户接口请求频率限制</span></div><div class="line">    <span class="string">'rest_framework.throttling.UserRateThrottle'</span>,</div><div class="line">    <span class="comment"># 开启自定义设置接口请求频率，在views中通过设置throttle_scope 来使用</span></div><div class="line">    <span class="string">'rest_framework.throttling.ScopedRateThrottle'</span>,</div><div class="line">    <span class="comment"># 自定义</span></div><div class="line">    <span class="string">'app.throttling.UserRecordThrottle'</span>,</div><div class="line">),</div><div class="line"><span class="string">'DEFAULT_THROTTLE_RATES'</span>: &#123;</div><div class="line">    <span class="comment"># 频率限制有second, minute, hour, day</span></div><div class="line">    <span class="comment"># 匿名用户请求频率</span></div><div class="line">    <span class="string">'anon'</span>: <span class="string">'1000/day'</span>,</div><div class="line">    <span class="comment"># 授权用户请求频率</span></div><div class="line">    <span class="string">'user'</span>: <span class="string">'20000/day'</span>,</div><div class="line">    <span class="comment"># 自定义请求频率,DEFAULT_THROTTLE_CLASSES中需要设置ScopedRateThrottle</span></div><div class="line">    <span class="string">'ttxs'</span>: <span class="string">'10/minute'</span>,</div><div class="line">    <span class="comment"># 自定义请求频率</span></div><div class="line">    <span class="string">'user_record'</span>: <span class="keyword">None</span></div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<h4 id="自定义"><a href="#自定义" class="headerlink" title="自定义"></a>自定义</h4><p>throttling.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> rest_framework.throttling <span class="keyword">import</span> UserRateThrottle, AnonRateThrottle</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserRecordThrottle</span><span class="params">(UserRateThrottle)</span>:</span></div><div class="line">    scope = <span class="string">'user_record'</span></div><div class="line">    rate = <span class="string">'5/minute'</span></div></pre></td></tr></table></figure></p>
+<p>使用方式说明：</p>
+<p>方式一: 在views.py中使用，设置为throttle_classes = ([UserRecordThrottle,])</p>
+<p>方式二: 在setting.py中设置，</p>
+<ul>
+<li>在DEFAULT_THROTTLE_CLASSES添加’app.throttling.UserRecordThrottle’</li>
+<li>DEFAULT_THROTTLE_RATES中添加user_record</li>
+<li>在views.py中通过throttle_scope = ‘user_record’ 调用</li>
+</ul>
+<h4 id="类视图使用"><a href="#类视图使用" class="headerlink" title="类视图使用"></a>类视图使用</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> rest_framework.response <span class="keyword">import</span> Response</div><div class="line"><span class="keyword">from</span> rest_framework.throttling <span class="keyword">import</span> UserRateThrottle</div><div class="line"><span class="keyword">from</span> rest_framework.views <span class="keyword">import</span> APIView</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExampleView</span><span class="params">(APIView)</span>:</span></div><div class="line">    throttle_classes = ([UserRateThrottle,UserParserRecordThrottle])</div><div class="line">    throttle_scope = <span class="string">'ttxs'</span> <span class="comment"># 设置了ScopedRateThrottle对应的RATES</span></div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self, request, format=None)</span>:</span></div><div class="line">        <span class="keyword">pass</span></div><div class="line">        <span class="keyword">return</span> Response(<span class="string">'ok'</span>)</div><div class="line"> </div><div class="line"><span class="comment"># 超过设置访问频率后，错误信息</span></div><div class="line">&#123;</div><div class="line">  <span class="string">"msg"</span>: <span class="string">"request was throttled."</span>,</div><div class="line">  <span class="string">"code"</span>: <span class="number">10429</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="其他说明"><a href="#其他说明" class="headerlink" title="其他说明"></a>其他说明</h4><ol>
+<li>匿名用户频率如果设置大于授权用户频率，则以授权用户频率为准</li>
+<li>频率限制是针对单个接口的频率，而不是所有接口的频率</li>
+</ol>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/端口转发/">端口转发</a>
+  <span></span> <a href="/tags/DRF/">DRF</a><a href="/tags/Throtting/">Throtting</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/运维/">运维</a>
+  <a class="article-category-link" href="/categories/Django/">Django</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2017/07/21/iptables-forward/" data-title="iptables做端口映射 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2017/08/10/Throtting/" data-title="Throtting | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -132,18 +146,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/08/10/Throtting/" title="Throtting">
+ <a href="/2017/08/11/Filters/" title="Filters">
   <strong>新一篇:</strong><br/>
   <span>
-  Throtting</span>
+  Filters</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/07/15/django-forms/"  title="django forms表单">
+<a href="/2017/07/21/iptables-forward/"  title="iptables做端口映射">
  <strong>旧一篇:</strong><br/> 
- <span>django forms表单
+ <span>iptables做端口映射
 </span>
 </a>
 </div>
@@ -153,7 +167,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="iptables做端口映射" data-thread-key="iptables-forward" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/iptables-forward"></div>
+	<div class="ds-thread" data-title="Throtting" data-thread-key="Throtting" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/Throtting"></div>
 	
 </section>
 
