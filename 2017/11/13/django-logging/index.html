@@ -1,0 +1,385 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>django 日志系统 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="logging组成
+记录器(Logger)
+  logger决定消息需要处理，即将传递该消息给一个Handler
+
+处理程序(Handler)
+  handler决定如何处理logger中的每条信息，表示详细的日志行为，如写入文件或者屏幕显示等
+  handler中也有日志级别，如果消息的日志级别小">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/13/django-logging/" title="django 日志系统" itemprop="url">django 日志系统</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-11-13T14:41:28.000Z" itemprop="datePublished">2017-11-13</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#logging组成"><span class="toc-number">1.</span> <span class="toc-text">logging组成</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#日志级别"><span class="toc-number">2.</span> <span class="toc-text">日志级别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用logging"><span class="toc-number">3.</span> <span class="toc-text">使用logging</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实例-settings-py"><span class="toc-number">4.</span> <span class="toc-text">实例(settings.py)</span></a></li></ol>
+		</div>
+		
+		<h4 id="logging组成"><a href="#logging组成" class="headerlink" title="logging组成"></a>logging组成</h4><ul>
+<li><p>记录器(Logger)</p>
+<p>  logger决定消息需要处理，即将传递该消息给一个Handler</p>
+</li>
+<li><p>处理程序(Handler)</p>
+<p>  handler决定如何处理logger中的每条信息，表示详细的日志行为，如写入文件或者屏幕显示等</p>
+<p>  handler中也有日志级别，如果消息的日志级别小于handler的级别，handler将忽略该消息</p>
+</li>
+<li><p>过滤器(Filters)</p>
+<p>  用于对从logger传递给handler的日志记录进行额外的控制</p>
+<p>  filters可以用于修改将要处理的日志记录的优先级</p>
+<p>  filters可以安装在logger或者handler上，多个filter可以串联起来实现多层filter行为</p>
+</li>
+<li><p>格式化(Formatter)</p>
+<p>  日志记录需要转换成文本</p>
+</li>
+</ul>
+<h4 id="日志级别"><a href="#日志级别" class="headerlink" title="日志级别"></a>日志级别</h4><ul>
+<li>DEBUG: 用于调试底层系统信息</li>
+<li>INFO: 普通的系统信息</li>
+<li>WARNING: 警告信息</li>
+<li>ERROR： 错误信息</li>
+<li>CRITICAL: 严重错误信息</li>
+</ul>
+<h4 id="使用logging"><a href="#使用logging" class="headerlink" title="使用logging"></a>使用logging</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> logging</div><div class="line"> </div><div class="line"><span class="comment"># 调用获取logger的实例</span></div><div class="line">logger = logging.getLogger(__name__)</div><div class="line"> </div><div class="line"><span class="comment"># 使用</span></div><div class="line">logger.error(<span class="string">'Something wrong!'</span>)</div><div class="line">logger.debug(<span class="string">'debug'</span>)</div><div class="line">logger.info(<span class="string">'info'</span>)</div><div class="line">logger.warning(<span class="string">'warning'</span>)</div><div class="line">logger.critical(<span class="string">'critical'</span>)</div><div class="line">logger.log(<span class="string">'log'</span>)   <span class="comment"># 打印消息时手动指定日志级别</span></div><div class="line">logger.exception() <span class="comment"># 创建一个error级别日志消息</span></div></pre></td></tr></table></figure>
+<h4 id="实例-settings-py"><a href="#实例-settings-py" class="headerlink" title="实例(settings.py)"></a>实例(settings.py)</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line">LOGGING = &#123;</div><div class="line">    <span class="string">'version'</span>: <span class="number">1</span>,</div><div class="line">    <span class="string">'disable_existing_loggers'</span>: <span class="keyword">False</span>,   <span class="comment"># 默认配置中的所有logger 都将禁用</span></div><div class="line">    <span class="string">'formatters'</span>: &#123;</div><div class="line">       <span class="string">'standard'</span>: &#123;</div><div class="line">            <span class="string">'format'</span>: <span class="string">'%(asctime)s [%(threadName)s:%(thread)d] [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'</span>&#125;,  <span class="comment">#日志格式</span></div><div class="line">        &#125;,</div><div class="line"> </div><div class="line">    <span class="comment"># 'filters': &#123;</span></div><div class="line">    <span class="comment">#     'require_debug_false': &#123;</span></div><div class="line">    <span class="comment">#         '()': 'django.utils.log.RequireDebugFalse',</span></div><div class="line">    <span class="comment">#     &#125;,</span></div><div class="line">    <span class="comment"># &#125;,</span></div><div class="line">    <span class="string">'handlers'</span>: &#123;</div><div class="line">        <span class="string">'default'</span>: &#123;</div><div class="line">            <span class="string">'level'</span>:<span class="string">'DEBUG'</span>,</div><div class="line">            <span class="string">'class'</span>:<span class="string">'logging.handlers.RotatingFileHandler'</span>,</div><div class="line">            <span class="string">'filename'</span>: <span class="string">"../logs/server.log"</span>,   <span class="comment"># 日志输出文件</span></div><div class="line">            <span class="string">'maxBytes'</span>: <span class="number">1024</span>*<span class="number">1024</span>*<span class="number">5</span>,                                    <span class="comment"># 文件大小</span></div><div class="line">            <span class="string">'backupCount'</span>: <span class="number">5</span>,                                           <span class="comment"># 备份份数</span></div><div class="line">            <span class="string">'formatter'</span>:<span class="string">'standard'</span>,                                     <span class="comment">#使用哪种formatters日志格式</span></div><div class="line">        &#125;,</div><div class="line">        <span class="string">'error'</span>: &#123;</div><div class="line">            <span class="string">'level'</span>:<span class="string">'ERROR'</span>,</div><div class="line">            <span class="string">'class'</span>:<span class="string">'logging.handlers.RotatingFileHandler'</span>,</div><div class="line">            <span class="string">'filename'</span>: <span class="string">"../logs/server.log"</span>,</div><div class="line">            <span class="string">'maxBytes'</span>:<span class="number">1024</span>*<span class="number">1024</span>*<span class="number">5</span>,</div><div class="line">            <span class="string">'backupCount'</span>: <span class="number">5</span>,</div><div class="line">            <span class="string">'formatter'</span>:<span class="string">'standard'</span>,</div><div class="line">        &#125;,</div><div class="line">        <span class="string">'console'</span>:&#123;</div><div class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</div><div class="line">            <span class="string">'class'</span>: <span class="string">'logging.StreamHandler'</span>,</div><div class="line">            <span class="string">'formatter'</span>: <span class="string">'standard'</span></div><div class="line">        &#125;,</div><div class="line">    &#125;,</div><div class="line">    <span class="string">'loggers'</span>: &#123;</div><div class="line">        <span class="string">'django'</span>: &#123;</div><div class="line">            <span class="string">'handlers'</span>: [<span class="string">'default'</span>, <span class="string">'console'</span>],</div><div class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</div><div class="line">            <span class="string">'propagate'</span>: <span class="keyword">True</span></div><div class="line">        &#125;,</div><div class="line">        <span class="string">'django.request'</span>: &#123;</div><div class="line">            <span class="string">'handlers'</span>: [<span class="string">'console'</span>, <span class="string">'default'</span>],</div><div class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</div><div class="line">            <span class="string">'propagate'</span>: <span class="keyword">False</span>,</div><div class="line">        &#125;,</div><div class="line">        <span class="string">'django.db.backends'</span>: &#123;</div><div class="line">            <span class="string">'handlers'</span>: [<span class="string">'console'</span>,],</div><div class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</div><div class="line">            <span class="string">'propagate'</span>: <span class="keyword">False</span>,</div><div class="line">        &#125;,</div><div class="line">        <span class="string">'ttxs'</span>: &#123;</div><div class="line">            <span class="string">'handlers'</span>: [<span class="string">'console'</span>, <span class="string">'default'</span>, <span class="string">'error'</span>],</div><div class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</div><div class="line">        &#125;,</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/logging/">logging</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/django/">django</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/11/13/django-logging/" data-title="django 日志系统 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2017/09/27/django-signals/"  title="Signals信号">
+ <strong>旧一篇:</strong><br/> 
+ <span>Signals信号
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="django 日志系统" data-thread-key="django-logging" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/django-logging"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

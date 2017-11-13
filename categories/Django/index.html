@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>分类: Django | ttxsgoto&#39; Blog</title>
+    <title>分类: django | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
@@ -84,7 +84,7 @@ var _hmt = _hmt || [];
         
 
 <div class="archive-title" >
-  <h2 class="category-icon">Django</h2>
+  <h2 class="category-icon">django</h2>
   
 </div>
 <div id="main" class="archive-part clearfix">
@@ -94,149 +94,142 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
-        <a href="/2017/09/27/django-signals/" title="Signals信号" itemprop="url">
+        <a href="/2017/11/13/django-logging/" title="django 日志系统" itemprop="url">
       
-        Signals信号
+        django 日志系统
       </a>
     </h1>
     
     <p class="article-more-link">
-      <time datetime="2017-09-27T14:41:10.000Z" itemprop="datePublished">2017-09-27</time>
+      <time datetime="2017-11-13T14:41:28.000Z" itemprop="datePublished">2017-11-13</time>
       
-          <a href="/2017/09/27/django-signals/">阅读更多&raquo;</a>
+          <a href="/2017/11/13/django-logging/">阅读更多&raquo;</a>
       
     </p>
 
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/08/11/Filters/" title="Filters" itemprop="url">
-      
-        Filters
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-08-11T12:10:55.000Z" itemprop="datePublished">2017-08-11</time>
-      
-          <a href="/2017/08/11/Filters/">阅读更多&raquo;</a>
-      
-    </p>
 
-  </article>
-</section>
+  </div>
+</div>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/08/10/Throtting/" title="Throtting" itemprop="url">
-      
-        Throtting
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-08-10T11:56:37.000Z" itemprop="datePublished">2017-08-10</time>
-      
-          <a href="/2017/08/10/Throtting/">阅读更多&raquo;</a>
-      
-    </p>
+      </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
 
-  </article>
-</section>
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/07/15/django-forms/" title="django forms表单" itemprop="url">
-      
-        django forms表单
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-07-15T13:17:58.000Z" itemprop="datePublished">2017-07-15</time>
-      
-          <a href="/2017/07/15/django-forms/">阅读更多&raquo;</a>
-      
-    </p>
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
 
-  </article>
-</section>
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/14/rest-framwork-serializers/" title="ModelSerializer常用方法" itemprop="url">
-      
-        ModelSerializer常用方法
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-14T12:13:22.000Z" itemprop="datePublished">2017-05-14</time>
-      
-          <a href="/2017/05/14/rest-framwork-serializers/">阅读更多&raquo;</a>
-      
-    </p>
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
 
-  </article>
-</section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/14/rest-framwork-note/" title="Rest_framwork笔记" itemprop="url">
-      
-        Rest_framwork笔记
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-14T11:36:53.000Z" itemprop="datePublished">2017-05-14</time>
-      
-          <a href="/2017/05/14/rest-framwork-note/">阅读更多&raquo;</a>
-      
-    </p>
 
-  </article>
-</section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/05/django-models-basic/" title="django Models" itemprop="url">
-      
-        django Models
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-05T12:07:24.000Z" itemprop="datePublished">2017-04-05</time>
-      
-          <a href="/2017/04/05/django-models-basic/">阅读更多&raquo;</a>
-      
-    </p>
 
-  </article>
-</section>
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/03/28/django-test/" title="django测试" itemprop="url">
-      
-        django测试
+
+    </body>
+   </html>
+�试
       </a>
     </h1>
     
