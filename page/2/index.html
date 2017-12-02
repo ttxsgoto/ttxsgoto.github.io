@@ -89,6 +89,56 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2017/08/10/Throtting/" title="Throtting" itemprop="url">
+      
+        Throtting
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >Django Rest framework 频率控制配置说明
+全局设置setting.py12345678910111213141516171819202122# 设置节流方案&#39;DEFAULT_THROTTLE_CLASSES&#39;: (    # 开启匿名用户接口请求频率限制   </p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-08-10T11:56:37.000Z" itemprop="datePublished">2017-08-10</time>
+      
+          <a href="/2017/08/10/Throtting/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/07/21/iptables-forward/" title="iptables做端口映射" itemprop="url">
+      
+        iptables做端口映射
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >需求外网需要访问内网的redis(无公网ip)服务器A，而它只能通过内网访问，其中服务器B有公网和内网地址，B通过内网可以访问A的服务；这时可以通过端口转发，通过访问B的端口来实际访问A的redis服务
+解决方案1234567891011# B服务器 外网ip: 120.27.1</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-07-21T12:49:34.000Z" itemprop="datePublished">2017-07-21</time>
+      
+          <a href="/2017/07/21/iptables-forward/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2017/07/15/django-forms/" title="django forms表单" itemprop="url">
       
         django forms表单
@@ -291,66 +341,6 @@ namedtuple功能:将名称映射到序列的元素上 namedtuple是不可变的;
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/17/threading/" title="多线程-threading" itemprop="url">
-      
-        多线程-threading
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >线程5种状态
-新建
-就绪
-运行
-阻塞
-死亡
-
-阻塞的三种情况：
-
-同步阻塞：是指处于竞争锁定的状态，线程请求锁定时将进入这个状态，一旦成功获得锁定又恢复到运行状态；
-等待阻塞：是指等待其他线程通知的状态，线程获得条件锁定后，调用“等待”将进入这个状态，一旦其他线程发出通知，线程将</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-17T12:37:11.000Z" itemprop="datePublished">2017-04-17</time>
-      
-          <a href="/2017/04/17/threading/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/16/importlib/" title="importlib模块" itemprop="url">
-      
-        importlib模块
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >通过字符串导入模块，动态导入模块，3种方式,记录如下：
-方式一：12os1 = __import__(&#39;os&#39;)os1.path.join &amp;lt;==&amp;gt; from os.path import join
-方式二：123import impos2 = imp.load_mo</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-16T07:44:11.000Z" itemprop="datePublished">2017-04-16</time>
-      
-          <a href="/2017/04/16/importlib/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/">下一页 &raquo;</a>
@@ -391,9 +381,15 @@ namedtuple功能:将名称映射到序列的元素上 namedtuple是不可变的;
 		
 			<li><a href="/categories/Angularjs/" title="Angularjs">Angularjs<sup>4</sup></a></li>
 		
+			<li><a href="/categories/Channels/" title="Channels">Channels<sup>1</sup></a></li>
+		
 			<li><a href="/categories/Django/" title="Django">Django<sup>10</sup></a></li>
 		
 			<li><a href="/categories/Docker/" title="Docker">Docker<sup>3</sup></a></li>
+		
+			<li><a href="/categories/Itemloaders/" title="Itemloaders">Itemloaders<sup>1</sup></a></li>
+		
+			<li><a href="/categories/Selectors/" title="Selectors">Selectors<sup>1</sup></a></li>
 		
 			<li><a href="/categories/python/" title="python">python<sup>18</sup></a></li>
 		
@@ -414,9 +410,13 @@ namedtuple功能:将名称映射到序列的元素上 namedtuple是不可变的;
 		
 			<li><a href="/tags/DRF/" title="DRF">DRF<sup>4</sup></a></li>
 		
+			<li><a href="/tags/Django/" title="Django">Django<sup>1</sup></a></li>
+		
 			<li><a href="/tags/Filters/" title="Filters">Filters<sup>1</sup></a></li>
 		
 			<li><a href="/tags/Network/" title="Network">Network<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Scrapy/" title="Scrapy">Scrapy<sup>2</sup></a></li>
 		
 			<li><a href="/tags/TestCase/" title="TestCase">TestCase<sup>1</sup></a></li>
 		
@@ -443,10 +443,6 @@ namedtuple功能:将名称映射到序列的元素上 namedtuple是不可变的;
 			<li><a href="/tags/decorator/" title="decorator">decorator<sup>1</sup></a></li>
 		
 			<li><a href="/tags/descriptor/" title="descriptor">descriptor<sup>1</sup></a></li>
-		
-			<li><a href="/tags/directive/" title="directive">directive<sup>1</sup></a></li>
-		
-			<li><a href="/tags/docker-compose/" title="docker-compose">docker-compose<sup>1</sup></a></li>
 		
 		</ul>
 </div>

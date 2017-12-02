@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Scrapy-itemloaders | ttxsgoto&#39; Blog</title>
+    <title>Scrapy:Itemloaders | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
@@ -90,7 +90,7 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/12/02/Scrapy-itemloaders/" title="Scrapy-itemloaders" itemprop="url">Scrapy-itemloaders</a>
+      <a href="/2017/12/02/Scrapy-itemloaders/" title="Scrapy:Itemloaders" itemprop="url">Scrapy:Itemloaders</a>
   </h1>
   <p class="article-time">
     <time datetime="2017-12-02T14:01:14.000Z" itemprop="datePublished">2017-12-02</time>
@@ -110,57 +110,62 @@ var _hmt = _hmt || [];
 <li>add_css    # 通过css选取数据</li>
 <li>add_value  # 通过value得到数据</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">item = ItemLoader(item=Movietop250Item(), response=response)</div><div class="line"></div><div class="line">item.add_css(&apos;num&apos;, &quot;node.css(&apos;em::text&apos;)&quot;)</div><div class="line">item.add_css(&apos;movie_detail_url&apos;, &apos;.hd a::attr(href)&apos;)</div><div class="line">item.add_css(&apos;img_url&apos;, &apos;a img::attr(src)&apos;)</div><div class="line">item.add_css(&apos;name&apos;, &apos;a img::attr(src)&apos;)</div><div class="line">item.add_css(&apos;grade&apos;, &apos;.rating_num::text&apos;)</div><div class="line">item.add_css(&apos;comment&apos;, &apos;.star span::text&apos;)</div><div class="line">item.add_css(&apos;info&apos;, &apos;.inq::text&apos;)</div><div class="line"></div><div class="line">load_item = item.load_item()    # load_item() 方法,返回通过调用 add_xpath(), add_css(), and add_value() 所提取和收集到的数据的Item.</div><div class="line">yield load_item</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">item = ItemLoader(item=Movietop250Item(), response=response)</div><div class="line"> </div><div class="line">item.add_css(<span class="string">'num'</span>, <span class="string">"node.css('em::text')"</span>)</div><div class="line">item.add_css(<span class="string">'movie_detail_url'</span>, <span class="string">'.hd a::attr(href)'</span>)</div><div class="line">item.add_css(<span class="string">'img_url'</span>, <span class="string">'a img::attr(src)'</span>)</div><div class="line">item.add_css(<span class="string">'name'</span>, <span class="string">'a img::attr(src)'</span>)</div><div class="line">item.add_css(<span class="string">'grade'</span>, <span class="string">'.rating_num::text'</span>)</div><div class="line">item.add_css(<span class="string">'comment'</span>, <span class="string">'.star span::text'</span>)</div><div class="line">item.add_css(<span class="string">'info'</span>, <span class="string">'.inq::text'</span>)</div><div class="line"></div><div class="line">load_item = item.load_item()    <span class="comment"># load_item() 方法,返回通过调用 add_xpath(), add_css(), and add_value() 所提取和收集到的数据的Item.</span></div><div class="line"><span class="keyword">yield</span> load_item</div></pre></td></tr></table></figure>
 <h3 id="输入-输出处理器"><a href="#输入-输出处理器" class="headerlink" title="输入/输出处理器"></a>输入/输出处理器</h3><ul>
 <li>Item Loader每个字段中都包含一个输入处理器和一个输出处理器</li>
 <li>输入处理器收到数据时立刻提取数据 (通过 add_xpath(), add_css() 或者 add_value() 方法) 之后输入处理器的结果被收集起来并且保存在ItemLoader内(但未分配给该Item)</li>
 <li>收集所有的数据后, 调用 ItemLoader.load_item()得到Item 对象。在这步中先调用输出处理器来处理之前收集到的数据，然后再存入Item中。输出处理器的结果是被分配到Item的最终值</li>
-<li></li>
 </ul>
-<h3 id="Items-Loaders"><a href="#Items-Loaders" class="headerlink" title="Items Loaders"></a>Items Loaders</h3><p>Item Loaders 的声明类似于Items，以class的语法来声明：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">from scrapy.loader import ItemLoader</div><div class="line">from scrapy.loader.processors import TakeFirst, MapCompose, Join</div><div class="line"></div><div class="line">class ProductLoader(ItemLoader):</div><div class="line"></div><div class="line">    default_output_processor = TakeFirst()</div><div class="line"></div><div class="line">    name_in = MapCompose(unicode.title)</div><div class="line">    name_out = Join()</div><div class="line"></div><div class="line">    price_in = MapCompose(unicode.strip)</div><div class="line"></div><div class="line">    # ...</div></pre></td></tr></table></figure></p>
+<h3 id="Items-Loaders"><a href="#Items-Loaders" class="headerlink" title="Items Loaders"></a>Items Loaders</h3><p>Item Loaders 的声明类似于Items，以class的语法来声明：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> scrapy.loader <span class="keyword">import</span> ItemLoader</div><div class="line"><span class="keyword">from</span> scrapy.loader.processors <span class="keyword">import</span> TakeFirst, MapCompose, Join</div><div class="line">  </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ProductLoader</span><span class="params">(ItemLoader)</span>:</span></div><div class="line">    default_output_processor = TakeFirst()</div><div class="line">    name_in = MapCompose(unicode.title)</div><div class="line">    name_out = Join()</div><div class="line">    price_in = MapCompose(unicode.strip)</div><div class="line"> </div><div class="line">    <span class="comment"># ...</span></div></pre></td></tr></table></figure></p>
 <p>input processors 以_in为后缀来声明，output processors 以_out 为后缀来声明。也可以用ItemLoader.default_input_processor 和ItemLoader.default_output_processor 属性来声明默认的 input/output processors</p>
-<h3 id="Input-and-Output-Processors"><a href="#Input-and-Output-Processors" class="headerlink" title="Input and Output Processors"></a>Input and Output Processors</h3><p>在定义Item的时候声明输入输出处理器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">import scrapy</div><div class="line">from scrapy.loader.processors import Join, MapCompose, TakeFirst</div><div class="line">from w3lib.html import remove_tags</div><div class="line"></div><div class="line">def filter_price(value):</div><div class="line">    &quot;&quot;&quot;定义方法来处理值&quot;&quot;&quot;</div><div class="line">    if value.isdigit():</div><div class="line">        return value</div><div class="line"></div><div class="line">class Product(scrapy.Item):</div><div class="line">    name = scrapy.Field(</div><div class="line">        input_processor=MapCompose(remove_tags),</div><div class="line">        output_processor=Join(),</div><div class="line">    )</div><div class="line">    price = scrapy.Field(</div><div class="line">        input_processor=MapCompose(remove_tags, filter_price),</div><div class="line">        output_processor=TakeFirst(),</div><div class="line">    )</div></pre></td></tr></table></figure></p>
-<p> input and output processors方式的优先级排序如下:</p>
+<h3 id="Input-and-Output-Processors"><a href="#Input-and-Output-Processors" class="headerlink" title="Input and Output Processors"></a>Input and Output Processors</h3><p>在定义Item的时候声明输入输出处理器<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> scrapy</div><div class="line"><span class="keyword">from</span> scrapy.loader.processors <span class="keyword">import</span> Join, MapCompose, TakeFirst</div><div class="line"><span class="keyword">from</span> w3lib.html <span class="keyword">import</span> remove_tags</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">filter_price</span><span class="params">(value)</span>:</span></div><div class="line">    <span class="string">"""定义方法来处理值"""</span></div><div class="line">    <span class="keyword">if</span> value.isdigit():</div><div class="line">        <span class="keyword">return</span> value</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Product</span><span class="params">(scrapy.Item)</span>:</span></div><div class="line">    name = scrapy.Field(</div><div class="line">        input_processor=MapCompose(remove_tags),</div><div class="line">        output_processor=Join(),</div><div class="line">    )</div><div class="line">    price = scrapy.Field(</div><div class="line">        input_processor=MapCompose(remove_tags, filter_price),</div><div class="line">        output_processor=TakeFirst(),</div><div class="line">    )</div></pre></td></tr></table></figure></p>
+<p>input and output processors方式的优先级排序如下:</p>
 <ul>
-<li>在Item Loader 中声明的 field-specific 属性: field_in and field_out (most precedence)<ul>
+<li>在Item Loader 中声明的 field-specific 属性: field_in and field_out (most precedence)</li>
 <li>Item中的字段元数据(input_processor and output_processor key)</li>
 <li>Item Loader 默认处理器: ItemLoader.default_input_processor() and ItemLoader.default_output_processor() (least precedence)</li>
 </ul>
-</li>
-</ul>
 <h3 id="内置的处理器"><a href="#内置的处理器" class="headerlink" title="内置的处理器"></a>内置的处理器</h3><ul>
 <li><p>Identity 最简单的处理器，不进行任何处理，直接返回原来的数据,无参数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; from scrapy.loader.processors import Identity</div><div class="line">&gt;&gt;&gt; proc = Identity()</div><div class="line">&gt;&gt;&gt; proc([&apos;one&apos;, &apos;two&apos;, &apos;three&apos;])</div><div class="line">[&apos;one&apos;, &apos;two&apos;, &apos;three&apos;]</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> scrapy.loader.processors <span class="keyword">import</span> Identity</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc = Identity()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc([<span class="string">'one'</span>, <span class="string">'two'</span>, <span class="string">'three'</span>])</div><div class="line">[<span class="string">'one'</span>, <span class="string">'two'</span>, <span class="string">'three'</span>]</div></pre></td></tr></table></figure>
 </li>
 <li><p>TakeFirst 返回第一个非空(non-null/non-empty)值，常用于单值字段的输出处理器,无参数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; from scrapy.loader.processors import TakeFirst</div><div class="line">&gt;&gt;&gt; proc = TakeFirst()</div><div class="line">&gt;&gt;&gt; proc([&apos;&apos;, &apos;one&apos;, &apos;two&apos;, &apos;three&apos;])</div><div class="line">&apos;one&apos;</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> scrapy.loader.processors <span class="keyword">import</span> TakeFirst</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc = TakeFirst()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc([<span class="string">''</span>, <span class="string">'one'</span>, <span class="string">'two'</span>, <span class="string">'three'</span>])</div><div class="line"><span class="string">'one'</span></div></pre></td></tr></table></figure>
 </li>
 <li><p>Join(separator=u’ ‘)返回用分隔符连接后的值,分隔符默认为空格 ,默认为空类似于u’’.join</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; from scrapy.loader.processors import Join</div><div class="line">&gt;&gt;&gt; proc = Join()</div><div class="line">&gt;&gt;&gt; proc([&apos;one&apos;, &apos;two&apos;, &apos;three&apos;])</div><div class="line">u&apos;one two three&apos;</div><div class="line">&gt;&gt;&gt; proc = Join(&apos;&lt;br&gt;&apos;)</div><div class="line">&gt;&gt;&gt; proc([&apos;one&apos;, &apos;two&apos;, &apos;three&apos;])</div><div class="line">u&apos;one&lt;br&gt;two&lt;br&gt;three&apos;</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> scrapy.loader.processors <span class="keyword">import</span> Join</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc = Join()</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc([<span class="string">'one'</span>, <span class="string">'two'</span>, <span class="string">'three'</span>])</div><div class="line"><span class="string">u'one two three'</span></div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc = Join(<span class="string">'&lt;br&gt;'</span>)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc([<span class="string">'one'</span>, <span class="string">'two'</span>, <span class="string">'three'</span>])</div><div class="line"><span class="string">u'one&lt;br&gt;two&lt;br&gt;three'</span></div></pre></td></tr></table></figure>
 </li>
 <li><p>Compose(<em>functions, *</em>default_loader_context)给定多个函数组合构造处理器,每个输入值被传递到第一个函数，然后其输出再传递到第二个函数，直到最后一个函数返回整个处理器的输出<br>默认情况下，当遇到None值的时候停止处理。可以通过传递参数stop_on_none=False改变这种行为,每个函数可以选择接收一个loader_context参数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; from scrapy.loader.processors import Compose</div><div class="line">&gt;&gt;&gt; proc = Compose(lambda v: v[0], str.upper)</div><div class="line">&gt;&gt;&gt; proc([&apos;hello&apos;, &apos;world&apos;])</div><div class="line">&apos;HELLO&apos;</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> scrapy.loader.processors <span class="keyword">import</span> Compose</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc = Compose(<span class="keyword">lambda</span> v: v[<span class="number">0</span>], str.upper)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc([<span class="string">'hello'</span>, <span class="string">'world'</span>])</div><div class="line"><span class="string">'HELLO'</span></div></pre></td></tr></table></figure>
 </li>
 <li><p>MapCompose(<em>functions, *</em>default_loader_context)</p>
 </li>
 </ul>
 <p>与Compose处理器类似，区别在于各个函数结果在内部传递的方式</p>
 <pre><code>输入值是被迭代的处理的，每一个元素被单独传入第一个函数进行处理。处理的结果被|连接起来(concatenate)形成一个新的迭代器，并被传入第二个函数，以此类推，直到最后一个函数。最后一个函数的输出被连接起来形成处理器的输出。
-
 每个函数能返回一个值或者一个值列表，也能返回None(会被下一个函数所忽略)
-
 这个处理器提供了方便的方式来组合多个处理单值的函数。因此它常用与输入处理器，因为用extract()函数提取出来的值是一个unicode strings列表。
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; def filter_world(x):</div><div class="line">...     return None if x == &apos;world&apos; else x</div><div class="line">...</div><div class="line">&gt;&gt;&gt; from scrapy.loader.processors import MapCompose</div><div class="line">&gt;&gt;&gt; proc = MapCompose(filter_world, unicode.upper)</div><div class="line">&gt;&gt;&gt; proc([u&apos;hello&apos;, u&apos;world&apos;, u&apos;this&apos;, u&apos;is&apos;, u&apos;scrapy&apos;])</div><div class="line">[u&apos;HELLO, u&apos;THIS&apos;, u&apos;IS&apos;, u&apos;SCRAPY&apos;]</div></pre></td></tr></table></figure>
+</code></pre><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="function"><span class="keyword">def</span> <span class="title">filter_world</span><span class="params">(x)</span>:</span></div><div class="line"><span class="meta">... </span>    <span class="keyword">return</span> <span class="keyword">None</span> <span class="keyword">if</span> x == <span class="string">'world'</span> <span class="keyword">else</span> x</div><div class="line">...</div><div class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> scrapy.loader.processors <span class="keyword">import</span> MapCompose</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc = MapCompose(filter_world, unicode.upper)</div><div class="line"><span class="meta">&gt;&gt;&gt; </span>proc([<span class="string">u'hello'</span>, <span class="string">u'world'</span>, <span class="string">u'this'</span>, <span class="string">u'is'</span>, <span class="string">u'scrapy'</span>])</div><div class="line">[<span class="string">u'HELLO, u'</span>THIS<span class="string">', u'</span>IS<span class="string">', u'</span>SCRAPY<span class="string">']</span></div></pre></td></tr></table></figure>
   
 	</div>
 		<footer class="article-footer clearfix">
 
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Scrapy/">Scrapy</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Itemloaders/">Itemloaders</a>
+</div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2017/12/02/Scrapy-itemloaders/" data-title="Scrapy-itemloaders | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2017/12/02/Scrapy-itemloaders/" data-title="Scrapy:Itemloaders | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -169,11 +174,19 @@ var _hmt = _hmt || [];
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev" >
+ <a href="/2017/12/02/Scrapy-selectors/" title="Scrapy:Selectors">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Scrapy:Selectors</span>
+</a>
+</div>
+
 
 <div class="next">
-<a href="/2017/11/13/django-logging/"  title="django 日志系统">
+<a href="/2017/11/26/django-Channels/"  title="django Channels">
  <strong>旧一篇:</strong><br/> 
- <span>django 日志系统
+ <span>django Channels
 </span>
 </a>
 </div>
@@ -183,7 +196,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Scrapy-itemloaders" data-thread-key="Scrapy-itemloaders" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/Scrapy-itemloaders"></div>
+	<div class="ds-thread" data-title="Scrapy:Itemloaders" data-thread-key="Scrapy-itemloaders" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/Scrapy-itemloaders"></div>
 	
 </section>
 
