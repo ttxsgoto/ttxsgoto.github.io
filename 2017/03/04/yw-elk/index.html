@@ -1,0 +1,378 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>运维 ELK应用 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="ELK说明
+Elasticsearch是个开源分布式搜索引擎，它的特点有：分布式，零配置，自动发现，索引自动分片，索引副本机制，restful风格接口，多数据源，自动搜索负载等
+Logstash是一个完全开源的工具，他可以对你的日志进行收集、分析，并将其存储供以后使用（如，搜索）
+kibana 也是">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/04/yw-elk/" title="运维 ELK应用" itemprop="url">运维 ELK应用</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-03-04T14:46:51.000Z" itemprop="datePublished">2017-03-04</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#ELK说明"><span class="toc-number">1.</span> <span class="toc-text">ELK说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#功能"><span class="toc-number">2.</span> <span class="toc-text">功能</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#组件"><span class="toc-number">3.</span> <span class="toc-text">组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#应用"><span class="toc-number">4.</span> <span class="toc-text">应用</span></a></li></ol>
+		</div>
+		
+		<h4 id="ELK说明"><a href="#ELK说明" class="headerlink" title="ELK说明"></a>ELK说明</h4><ul>
+<li>Elasticsearch是个开源分布式搜索引擎，它的特点有：分布式，零配置，自动发现，索引自动分片，索引副本机制，restful风格接口，多数据源，自动搜索负载等</li>
+<li>Logstash是一个完全开源的工具，他可以对你的日志进行收集、分析，并将其存储供以后使用（如，搜索）</li>
+<li>kibana 也是一个开源和免费的工具，Kibana可以为 Logstash 和 ElasticSearch 提供的日志分析友好的 Web 界面，可以帮助您汇总、分析和搜索重要数据日志</li>
+</ul>
+<h4 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h4><p>1.方便日志查询，统计排查问题<br>2.报表展示，不用登录每台服务器查看日志</p>
+<h4 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h4><p>Logstash: logstash server端用来搜集日志；</p>
+<p>Elasticsearch: 存储各类日志；</p>
+<p>Kibana: web化接口用作查寻和可视化日志；</p>
+<p>搭建部署(略)</p>
+<h4 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h4><p>收集syslog,nginx access/error日志，mongo日志，程序日志，说明如下：</p>
+<p>nignx 访问日志：因nginx访问日志可自定义，这里自定义为json格式，方便ES存储和索引<br>格式定义如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">log_format main_json <span class="string">'&#123; "timestamp": "$time_local", '</span></div><div class="line"><span class="string">'"remote_addr": "$remote_addr", '</span></div><div class="line"><span class="string">'"remote_user": "$remote_user", '</span></div><div class="line"><span class="string">'"body_bytes_sent": "$body_bytes_sent", '</span></div><div class="line"><span class="string">'"request_time": "$request_time", '</span></div><div class="line"><span class="string">'"status": "$status", '</span></div><div class="line"><span class="string">'"domain": "$host", '</span></div><div class="line"><span class="string">'"request": "$request", '</span></div><div class="line"><span class="string">'"request_method": "$request_method", '</span></div><div class="line"><span class="string">'"http_referrer": "$http_referer", '</span></div><div class="line"><span class="string">'"body_bytes_sent":"$body_bytes_sent", '</span></div><div class="line"><span class="string">'"http_x_forwarded_for": "$http_x_forwarded_for", '</span></div><div class="line"><span class="string">'"http_user_agent": "$http_user_agent" &#125;'</span>;</div></pre></td></tr></table></figure></p>
+<p>其他日志收集见配置文件，说明如下：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div></pre></td><td class="code"><pre><div class="line">input &#123;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; [ "/var/log/syslog" ]    #定义日志路径</div><div class="line">        type =&gt; "syslog"                </div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        ignore_older =&gt;0</div><div class="line">    &#125;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; "/var/log/nginx/*access.log"</div><div class="line">        codec =&gt; json</div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        type =&gt; "nginx-acc"</div><div class="line">    &#125;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; "/var/log/nginx/*error.log"</div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        type =&gt; "nginx-error"</div><div class="line">        ignore_older =&gt;0</div><div class="line">    &#125;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; [ "/data/mongo/mongo.log" ]</div><div class="line">        type =&gt; "mongo"</div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        #ignore_older =&gt;0</div><div class="line">        &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line">filter &#123;</div><div class="line">    if [type] == "syslog" &#123;</div><div class="line">        grok &#123;    #grok 功能将字符串转换为相应的字段，方便检索</div><div class="line">            match =&gt; &#123; "message" =&gt; "%&#123;SYSLOGTIMESTAMP:syslog_timestamp&#125; %&#123;SYSLOGHOST:syslog_hostname&#125; %&#123;DATA:syslog_program&#125;(?:\[%&#123;POSINT:syslog_pid&#125;\])?: %&#123;GREEDYDATA:syslog_message&#125;" &#125;</div><div class="line">            add_field =&gt; [ "received_at", "%&#123;@timestamp&#125;" ]</div><div class="line">            add_field =&gt; [ "received_from", "%&#123;host&#125;" ]</div><div class="line">            &#125;    </div><div class="line">            date &#123;</div><div class="line">                    match =&gt; [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">         </div><div class="line">    if [type] == "mongo" &#123;</div><div class="line">                grok &#123;</div><div class="line">#mongo_v3                        match =&gt; ["message","%&#123;TIMESTAMP_ISO8601:timestamp&#125;\s+%&#123;MONGO3_SEVERITY:severity&#125;\s+%&#123;MONGO3_COMPONENT:component&#125;\s+(?:\[%&#123;DATA:context&#125;\])?\s+%&#123;GREEDYDATA:body&#125;"]</div><div class="line">            match =&gt; ["message","%&#123;SYSLOGTIMESTAMP:timestamp&#125; \[%&#123;WORD:component&#125;\] %&#123;GREEDYDATA:body&#125;"]     #mongo_v2</div><div class="line">               &#125;</div><div class="line">                if[body]=~"ms$" &#123;</div><div class="line">                                        grok &#123;</div><div class="line">                                                match =&gt; ["body","query\s+%&#123;WORD:db_name&#125;\.%&#123;WORD:collection_name&#125;.*&#125;.*\&#125;(\s+%&#123;NUMBER:spend_time:int&#125;ms$)?"]</div><div class="line">                                        &#125;</div><div class="line">                                &#125;</div><div class="line">                date &#123;</div><div class="line">                        match =&gt; [ "timestamp", "UNIX", "YYYY-MM-dd HH:mm:ss", "ISO8601" ]</div><div class="line">                        remove_field =&gt; ["timestamp"]</div><div class="line">                &#125;</div><div class="line">        &#125;</div><div class="line">    if [type] == "nginx-error" &#123;</div><div class="line">                grok &#123;</div><div class="line">                        match =&gt; &#123; "message" =&gt; "(?&lt;timestamp&gt;%&#123;YEAR&#125;[./-]%&#123;MONTHNUM&#125;[./-]%&#123;MONTHDAY&#125;[- ]%&#123;TIME&#125;) \[%&#123;LOGLEVEL:severity&#125;\] %&#123;POSINT:pid&#125;#%&#123;NUMBER&#125;: %&#123;GREEDYDATA:errormessage&#125;(?:, client: (?&lt;client&gt;%&#123;IP&#125;|%&#123;HOSTNAME&#125;))(?:, server: %&#123;IPORHOST:server&#125;)(?:, request: %&#123;QS:request&#125;)?(?:, upstream: \"%&#123;URI:upstream&#125;\")?(?:, host: %&#123;QS:host&#125;)?(?: referrer: \"%&#123;URI:referrer&#125;|-\")?" &#125;</div><div class="line">                        overwrite =&gt; [ "message" ]</div><div class="line">                &#125;</div><div class="line">                date &#123;</div><div class="line">                        match =&gt; [ "nginx_error_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]</div><div class="line">                        remove_field =&gt; [ "timestamp" ]</div><div class="line">                &#125;</div><div class="line">        &#125;</div><div class="line">&#125;</div><div class="line">output &#123;</div><div class="line">    if [type] == "nginx-acc" &#123;</div><div class="line">        elasticsearch &#123;    #存储</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">            index =&gt; "nginx_access-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">        &#125;        </div><div class="line">    &#125;</div><div class="line">    if [type] == "nginx-error" &#123;</div><div class="line">        elasticsearch &#123;</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">            index =&gt; "nginx_error-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">        &#125;        </div><div class="line">    &#125;</div><div class="line">    if [type] == "syslog" &#123;</div><div class="line">        elasticsearch &#123;</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">            index =&gt; "syslog-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    if [type] == "mongo" &#123;</div><div class="line">                elasticsearch &#123;</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">                        index =&gt; "mongo-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">                &#125;</div><div class="line">        &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>采集到数据展示如下：<br><img src="https://ttxsgoto.github.io/img/elk/elk.png" alt="elk"></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ELK/">ELK</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/03/04/yw-elk/" data-title="运维 ELK应用 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/03/06/logging/" title="Python Logging模块">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Python Logging模块</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/18/redis/"  title="运维 Redis日常笔记">
+ <strong>旧一篇:</strong><br/> 
+ <span>运维 Redis日常笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="运维 ELK应用" data-thread-key="yw-elk" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-elk"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

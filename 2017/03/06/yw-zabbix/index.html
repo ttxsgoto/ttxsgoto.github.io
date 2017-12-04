@@ -4,13 +4,12 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Python Logging模块 | ttxsgoto&#39; Blog</title>
+    <title>运维 Centos，Ubuntu下安装zabbix遇到的问题 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="logging为python模块提供状态、错误、信息输出的标准接口。日志级别大小关系为：CRITICAL &amp;gt; ERROR &amp;gt; WARNING &amp;gt; INFO &amp;gt; DEBUG &amp;gt; NOTSET
-logging.basicConfig函数各参数说明：filename: 指定日">
+    <meta name="description" content="Ubuntu在Ubuntu系统中，安装zabbix进行configure时会遇到以下4个主要问题123456789101112131415161718192021./configure --enable-server --enable-agent --with-mysql --with-net-sn">
     
     
     
@@ -87,10 +86,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/03/06/logging/" title="Python Logging模块" itemprop="url">Python Logging模块</a>
+      <a href="/2017/03/06/yw-zabbix/" title="运维 Centos，Ubuntu下安装zabbix遇到的问题" itemprop="url">运维 Centos，Ubuntu下安装zabbix遇到的问题</a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-03-06T13:42:55.000Z" itemprop="datePublished">2017-03-06</time>
+    <time datetime="2017-03-06T14:15:20.000Z" itemprop="datePublished">2017-03-06</time>
   </p>
 </header>
 	<div class="article-content">
@@ -98,46 +97,31 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Ubuntu"><span class="toc-number">1.</span> <span class="toc-text">Ubuntu</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CentOS"><span class="toc-number">2.</span> <span class="toc-text">CentOS</span></a></li></ol>
 		</div>
 		
-		<p>logging为python模块提供状态、错误、信息输出的标准接口。<br>日志级别大小关系为：CRITICAL &gt; ERROR &gt; WARNING &gt; INFO &gt; DEBUG &gt; NOTSET</p>
-<p>logging.basicConfig函数各参数说明：<br>filename: 指定日志文件名<br>filemode: 和file函数意义相同，指定日志文件的打开模式，’w’或’a’<br>format: 指定输出的格式和内容：</p>
-<pre><code>%(levelno)s: 打印日志级别的数值
-%(levelname)s: 打印日志级别名称
-%(pathname)s: 打印当前执行程序的路径，其实就是sys.argv[0]
-%(filename)s: 打印当前执行程序名
-%(funcName)s: 打印日志的当前函数
-%(lineno)d: 打印日志的当前行号
-%(asctime)s: 打印日志的时间
-%(thread)d: 打印线程ID
-%(threadName)s: 打印线程名称
-%(process)d: 打印进程ID
-%(message)s: 打印日志信息
-</code></pre><p>datefmt: 指定时间格式，同time.strftime()<br>level: 设置日志级别，默认为logging.WARNING</p>
-<p>stream: 指定将日志的输出流，可以指定输出到sys.stderr,sys.stdout或者文件，默认输出到sys.stderr，当stream和filename同时指定时，stream被忽略</p>
-<p>记录日志信息<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding: utf-8</span></div><div class="line"><span class="keyword">import</span> logging</div><div class="line"></div><div class="line">logname = <span class="string">'log.log'</span></div><div class="line">logging.basicConfig(</div><div class="line">    level = logging.INFO,    <span class="comment">#定义记录大于或等于日志级别</span></div><div class="line">    format=<span class="string">'[%(levelname)s] [%(asctime)s] --- %(message)s'</span>,</div><div class="line">    datefmt=<span class="string">'%Y-%m-%d %H:%M:%S'</span>,</div><div class="line">    filename=logname,</div><div class="line">    filemode=<span class="string">'a'</span>,)</div><div class="line">logging.warning(<span class="string">"log"</span>)</div></pre></td></tr></table></figure></p>
-<p>将日志输出到文件，同时打印匹配的级别到屏幕上<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding: utf-8</span></div><div class="line"><span class="keyword">import</span> logging</div><div class="line">logname = <span class="string">'log.log'</span></div><div class="line">logging.basicConfig(</div><div class="line">    level = logging.INFO,    <span class="comment">#定义记录大于或等于日志级别</span></div><div class="line">    format=<span class="string">'[%(levelname)s] [%(asctime)s] --- %(message)s'</span>,</div><div class="line">    datefmt=<span class="string">'%Y-%m-%d %H:%M:%S'</span>,</div><div class="line">    filename=logname,</div><div class="line">    filemode=<span class="string">'a'</span>,)</div><div class="line">console = logging.StreamHandler()</div><div class="line">console.setLevel(logging.INFO)    <span class="comment">#定义需要显示大于或等于日志级别</span></div><div class="line">formatter = logging.Formatter(<span class="string">'[%(levelname)s] [%(asctime)s]-- %(message)s'</span>)</div><div class="line">console.setFormatter(formatter)</div><div class="line">logging.getLogger(<span class="string">''</span>).addHandler(console)</div><div class="line">logging.warning(<span class="string">'log info'</span>)</div></pre></td></tr></table></figure></p>
+		<h4 id="Ubuntu"><a href="#Ubuntu" class="headerlink" title="Ubuntu"></a>Ubuntu</h4><p>在Ubuntu系统中，安装zabbix进行configure时会遇到以下4个主要问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">./configure --enable-server --enable-agent --with-mysql --with-net-snmp --with-jabber --with-libcurl</div><div class="line"> </div><div class="line">1 configure: error: MySQL library not found</div><div class="line">the problem is not installed mysql-devel</div><div class="line">#apt-get install libghc6-hsql-mysql-dev (ubuntu )</div><div class="line"> </div><div class="line">2 configure: error: Jabber library not found</div><div class="line">the problem is not installed jabber lib</div><div class="line">#apt-get install libphp-jabber</div><div class="line">#apt-get install libnet-jabber-loudmouth-perl</div><div class="line">#apt-get install jabber-dev</div><div class="line">#apt-get install libiksemel-dev (* this packet important)</div><div class="line"> </div><div class="line">3 configure: error: Not found curl Library</div><div class="line">the problem is not installed libcurl4-openssl-dev</div><div class="line">#apt-get install libcurl4-openssl-dev</div><div class="line"> </div><div class="line">4 configure: error : Not found NET-SNMP library</div><div class="line">#apt-get install libsnmp-dev</div><div class="line"></div><div class="line">#apt-get install snmp</div></pre></td></tr></table></figure></p>
+<h4 id="CentOS"><a href="#CentOS" class="headerlink" title="CentOS"></a>CentOS</h4><p>在CentOS系统中，安装zabbix进行configure时会遇到以下4个主要问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">./configure --enable-server --enable-agent --with-mysql --with-net-snmp --with-jabber --with-libcurl</div><div class="line"> </div><div class="line">1 configure: error: MySQL library not found</div><div class="line">the problem is not installed mysql-devel</div><div class="line">#yum install mysql-devel</div><div class="line">#yum install mysql-server</div><div class="line"> </div><div class="line">2 configure: error: Jabber library not found</div><div class="line">the problem is not installed jabber lib</div><div class="line">#wget http://iksemel.googlecode.com/files/iksemel-1.4.tar.gz</div><div class="line">下载完成后解压、配置、安装：</div><div class="line">tar zxvf iksemel-1.4.tar.gz</div><div class="line">cd iksemel-1.4</div><div class="line">configure</div><div class="line">make</div><div class="line">make install</div><div class="line"> </div><div class="line">之后对zabbix进行configure还是会遇到这个问题，那么将jabber目录指定即可：#./configure --enable-server --enable-agent --with-mysql --with-net-snmp --with-jabber=/usr/local/ --with-libcurl</div><div class="line"> </div><div class="line">3 configure: error: Not found curl Library</div><div class="line">#yum install curl-devel (此项未经测试)</div><div class="line"> </div><div class="line">4 configure: error : Not found NET-SNMP library</div><div class="line">yum install net-snmp-devel</div></pre></td></tr></table></figure></p>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Logging/">Logging</a>
+  <span></span> <a href="/tags/Zabbix/">Zabbix</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/python/">python</a>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2017/03/06/logging/" data-title="Python Logging模块 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2017/03/06/yw-zabbix/" data-title="运维 Centos，Ubuntu下安装zabbix遇到的问题 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -147,18 +131,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/03/06/yw-zabbix/" title="运维 Centos，Ubuntu下安装zabbix遇到的问题">
+ <a href="/2017/03/07/ConfigParser/" title="Python ConfigParser模块">
   <strong>新一篇:</strong><br/>
   <span>
-  运维 Centos，Ubuntu下安装zabbix遇到的问题</span>
+  Python ConfigParser模块</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/03/04/yw-elk/"  title="运维 ELK应用">
+<a href="/2017/03/06/logging/"  title="Python Logging模块">
  <strong>旧一篇:</strong><br/> 
- <span>运维 ELK应用
+ <span>Python Logging模块
 </span>
 </a>
 </div>
@@ -168,7 +152,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Python Logging模块" data-thread-key="logging" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/logging"></div>
+	<div class="ds-thread" data-title="运维 Centos，Ubuntu下安装zabbix遇到的问题" data-thread-key="yw-zabbix" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-zabbix"></div>
 	
 </section>
 
