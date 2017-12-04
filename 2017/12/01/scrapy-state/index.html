@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>运维 Centos，Ubuntu下安装zabbix遇到的问题 | ttxsgoto&#39; Blog</title>
+    <title>Scrapy Architecture | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="Ubuntu在Ubuntu系统中，安装zabbix进行configure时会遇到以下4个主要问题1234567891011121314151617181920./configure --enable-server --enable-agent --with-mysql --with-net-snmp">
+    <meta name="description" content="架构所有过程的流向都依赖于 ENGINE 模块1.Engine从Spider中得到初始的Requests，Requests将被用来进行爬取；2.Engine将得到的Requests放入Scheduler中，然后不断从Scheduler询问下次可以进行爬去的Requests；3.Scheduler返回">
     
     
     
@@ -86,10 +86,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/03/06/yw-zabbix/" title="运维 Centos，Ubuntu下安装zabbix遇到的问题" itemprop="url">运维 Centos，Ubuntu下安装zabbix遇到的问题</a>
+      <a href="/2017/12/01/scrapy-state/" title="Scrapy Architecture" itemprop="url">Scrapy Architecture</a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-03-06T14:15:20.000Z" itemprop="datePublished">2017-03-06</time>
+    <time datetime="2017-12-01T14:03:49.000Z" itemprop="datePublished">2017-12-01</time>
   </p>
 </header>
 	<div class="article-content">
@@ -97,31 +97,39 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Ubuntu"><span class="toc-number">1.</span> <span class="toc-text">Ubuntu</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CentOS"><span class="toc-number">2.</span> <span class="toc-text">CentOS</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#架构"><span class="toc-number">1.</span> <span class="toc-text">架构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Scrapy主要模块"><span class="toc-number">2.</span> <span class="toc-text">Scrapy主要模块</span></a></li></ol>
 		</div>
 		
-		<h4 id="Ubuntu"><a href="#Ubuntu" class="headerlink" title="Ubuntu"></a>Ubuntu</h4><p>在Ubuntu系统中，安装zabbix进行configure时会遇到以下4个主要问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">./configure --enable-server --enable-agent --with-mysql --with-net-snmp --with-jabber --with-libcurl</div><div class="line"> </div><div class="line">1 configure: error: MySQL library not found</div><div class="line">the problem is not installed mysql-devel</div><div class="line">#apt-get install libghc6-hsql-mysql-dev (ubuntu )</div><div class="line"> </div><div class="line">2 configure: error: Jabber library not found</div><div class="line">the problem is not installed jabber lib</div><div class="line">#apt-get install libphp-jabber</div><div class="line">#apt-get install libnet-jabber-loudmouth-perl</div><div class="line">#apt-get install jabber-dev</div><div class="line">#apt-get install libiksemel-dev (* this packet important)</div><div class="line"> </div><div class="line">3 configure: error: Not found curl Library</div><div class="line">the problem is not installed libcurl4-openssl-dev</div><div class="line">#apt-get install libcurl4-openssl-dev</div><div class="line"> </div><div class="line">4 configure: error : Not found NET-SNMP library</div><div class="line">#apt-get install libsnmp-dev</div><div class="line">#apt-get install snmp</div></pre></td></tr></table></figure></p>
-<h4 id="CentOS"><a href="#CentOS" class="headerlink" title="CentOS"></a>CentOS</h4><p>在CentOS系统中，安装zabbix进行configure时会遇到以下4个主要问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">./configure --enable-server --enable-agent --with-mysql --with-net-snmp --with-jabber --with-libcurl</div><div class="line"> </div><div class="line">1 configure: error: MySQL library not found</div><div class="line">the problem is not installed mysql-devel</div><div class="line">#yum install mysql-devel</div><div class="line">#yum install mysql-server</div><div class="line"> </div><div class="line">2 configure: error: Jabber library not found</div><div class="line">the problem is not installed jabber lib</div><div class="line">#wget http://iksemel.googlecode.com/files/iksemel-1.4.tar.gz</div><div class="line">下载完成后解压、配置、安装：</div><div class="line">tar zxvf iksemel-1.4.tar.gz</div><div class="line">cd iksemel-1.4</div><div class="line">configure</div><div class="line">make</div><div class="line">make install</div><div class="line"> </div><div class="line">之后对zabbix进行configure还是会遇到这个问题，那么将jabber目录指定即可：#./configure --enable-server --enable-agent --with-mysql --with-net-snmp --with-jabber=/usr/local/ --with-libcurl</div><div class="line"> </div><div class="line">3 configure: error: Not found curl Library</div><div class="line">#yum install curl-devel (此项未经测试)</div><div class="line"> </div><div class="line">4 configure: error : Not found NET-SNMP library</div><div class="line">yum install net-snmp-devel</div></pre></td></tr></table></figure></p>
+		<h4 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h4><p><img src="https://ttxsgoto.github.io/img/scrapy/scrapy.png" alt="Scrapy"><br>所有过程的流向都依赖于 ENGINE 模块<br>1.Engine从Spider中得到初始的Requests，Requests将被用来进行爬取；<br>2.Engine将得到的Requests放入Scheduler中，然后不断从Scheduler询问下次可以进行爬去的Requests；<br>3.Scheduler返回下一次需要被爬取的Requests给Engine；<br>4.Engine将Requests发送给Downloader，通过Downloader Middlewares 的<code>process_request()</code> 方法进行传递；<br>5.Downloader完成了对该页面的下载，Downloader将会生成一个与该页面相关的Response对象，通过Downloader Middlewares的<code>process_response()</code>方法进行传递,将其反馈给Engine；<br>6.Engine从Downloader得到Response再发送给Spider进行处理；通过Spidder Middlewares的<code>process_spider_input()</code>方法进行传递；<br>7.Spider 处理从Engine返回的Reponse对象，返回被爬取的items和新的Requests给Engine继续处理,通过Spider Middlewares的<code>process_spider_output()</code>方法进行传递；<br>8.Engine发送已经被处理的Items到Item Pipelines，然后将新的Requests发送给Scheduler请求下一次可能的新的Request进行爬取；<br>9.再重复整个流程，直到Scheduler中没有新的Requests</p>
+<h4 id="Scrapy主要模块"><a href="#Scrapy主要模块" class="headerlink" title="Scrapy主要模块"></a>Scrapy主要模块</h4><ul>
+<li>Engine:核心引擎来控制所有组件之间的数据流向</li>
+<li>Scheduler:从Engine当中获取Requests，然后将它们放入队列当中，当Engine需要再触发</li>
+<li>Downloader:主要是取得web页面，然后将它们返回给Engine，Engine再反馈给Spider</li>
+<li>Downloader middleware:位于Engine和Downloader之间的一个特殊的“钩子(hook)”，主要处理从Engine发送给 Downloader的Requests，以及从Downloader传递给Engine的Responses</li>
+<li>Spiders:自定义类，用来解析Responses并提取相关的元素items</li>
+<li>Spider middleware:是Engine和Spiders之间的一个特殊的钩子(hook)，主要处理spider的input(reponses)和output(items和requests)</li>
+<li>Item Pipeline:处理Spider提取完成的items,对数据进行清洗，验证和持久化处理</li>
+</ul>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Zabbix/">Zabbix</a>
+  <span></span> <a href="/tags/Architecture/">Architecture</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/运维/">运维</a>
+  <a class="article-category-link" href="/categories/Scrapy/">Scrapy</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2017/03/06/yw-zabbix/" data-title="运维 Centos，Ubuntu下安装zabbix遇到的问题 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2017/12/01/scrapy-state/" data-title="Scrapy Architecture | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -131,18 +139,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/03/07/ConfigParser/" title="Python ConfigParser模块">
+ <a href="/2017/12/02/Scrapy-itemloaders/" title="Scrapy Itemloaders">
   <strong>新一篇:</strong><br/>
   <span>
-  Python ConfigParser模块</span>
+  Scrapy Itemloaders</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/03/06/logging/"  title="Python Logging模块">
+<a href="/2017/11/26/django-Channels/"  title="Django Channels">
  <strong>旧一篇:</strong><br/> 
- <span>Python Logging模块
+ <span>Django Channels
 </span>
 </a>
 </div>
@@ -152,7 +160,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="运维 Centos，Ubuntu下安装zabbix遇到的问题" data-thread-key="yw-zabbix" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-zabbix"></div>
+	<div class="ds-thread" data-title="Scrapy Architecture" data-thread-key="scrapy-state" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/scrapy-state"></div>
 	
 </section>
 
