@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>分类: Python | ttxsgoto&#39; Blog</title>
+    <title>分类: python | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
@@ -84,7 +84,7 @@ var _hmt = _hmt || [];
         
 
 <div class="archive-title" >
-  <h2 class="category-icon">Python</h2>
+  <h2 class="category-icon">python</h2>
   
 </div>
 <div id="main" class="archive-part clearfix">
@@ -94,147 +94,142 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
-        <a href="/2017/07/02/collections/" title="Python Collections模块" itemprop="url">
+        <a href="/2017/02/15/class/" title="Python Class" itemprop="url">
       
-        Python Collections模块
+        Python Class
       </a>
     </h1>
     
     <p class="article-more-link">
-      <time datetime="2017-07-02T12:53:00.000Z" itemprop="datePublished">2017-07-02</time>
+      <time datetime="2017-02-15T12:40:38.000Z" itemprop="datePublished">2017-02-15</time>
       
-          <a href="/2017/07/02/collections/">阅读更多&raquo;</a>
+          <a href="/2017/02/15/class/">阅读更多&raquo;</a>
       
     </p>
 
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/06/14/setup/" title="Python Setuptools模块" itemprop="url">
-      
-        Python Setuptools模块
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-06-14T13:51:32.000Z" itemprop="datePublished">2017-06-14</time>
-      
-          <a href="/2017/06/14/setup/">阅读更多&raquo;</a>
-      
-    </p>
 
-  </article>
-</section>
+  </div>
+</div>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/24/copy-deepcopy/" title="Python 深拷贝/浅拷贝和赋值" itemprop="url">
-      
-        Python 深拷贝/浅拷贝和赋值
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-24T13:38:11.000Z" itemprop="datePublished">2017-05-24</time>
-      
-          <a href="/2017/05/24/copy-deepcopy/">阅读更多&raquo;</a>
-      
-    </p>
+      </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
 
-  </article>
-</section>
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/16/descriptor/" title="Python Descriptor描述符" itemprop="url">
-      
-        Python Descriptor描述符
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-16T12:24:28.000Z" itemprop="datePublished">2017-05-16</time>
-      
-          <a href="/2017/05/16/descriptor/">阅读更多&raquo;</a>
-      
-    </p>
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
 
-  </article>
-</section>
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/05/13/decorator/" title="Python Decorator装饰器" itemprop="url">
-      
-        Python Decorator装饰器
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-05-13T02:57:35.000Z" itemprop="datePublished">2017-05-13</time>
-      
-          <a href="/2017/05/13/decorator/">阅读更多&raquo;</a>
-      
-    </p>
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
 
-  </article>
-</section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/17/threading/" title="Python Threading" itemprop="url">
-      
-        Python Threading
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-17T12:37:11.000Z" itemprop="datePublished">2017-04-17</time>
-      
-          <a href="/2017/04/17/threading/">阅读更多&raquo;</a>
-      
-    </p>
 
-  </article>
-</section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/16/importlib/" title="Python Importlib模块" itemprop="url">
-      
-        Python Importlib模块
-      </a>
-    </h1>
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-16T07:44:11.000Z" itemprop="datePublished">2017-04-16</time>
-      
-          <a href="/2017/04/16/importlib/">阅读更多&raquo;</a>
-      
-    </p>
 
-  </article>
-</section>
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/10/datetime/" title="Python Datetime模块" itemprop="url">
+
+    </body>
+   </html>
+/2017/04/10/datetime/" title="Python Datetime模块" itemprop="url">
       
         Python Datetime模块
       </a>
