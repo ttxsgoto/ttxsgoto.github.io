@@ -4,18 +4,18 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>运维 Linux中密码策略 | ttxsgoto&#39; Blog</title>
+    <title>运维 Chroot限制普通用户登录特定目录 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="需求
-密码必须符合复杂度要求，字母、数字、特殊字符组成。长度大于8位。
-密码定期更改，最长不超过90天。
-用户不能重复使用5次内已使用的口令。
-尝试登陆失败错误次数，必须设置不能超过5次，超过5次后，暂时锁定20分钟或以上。
+    <meta name="description" content="需求普通用户登陆到服务器上只能执行ssh，ls，cat等有限的基础命令，另外要求把用户锁定在特定目录中，不能看到其他任何目录下文件
+实现
+创建查看日志的用户
+ 12useradd -m ttxsgoto -s /bin/bashpasswd ttxsgoto
 
-实现安装 PAM 的 cracklib 模块，cracklib 能提供额">
+初始化chroot环境
+ 123456">
     
     
     
@@ -92,10 +92,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/05/yw-pwd/" title="运维 Linux中密码策略" itemprop="url">运维 Linux中密码策略</a>
+      <a href="/2017/04/07/yw-chroot/" title="运维 Chroot限制普通用户登录特定目录" itemprop="url">运维 Chroot限制普通用户登录特定目录</a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-04-05T14:02:10.000Z" itemprop="datePublished">2017-04-05</time>
+    <time datetime="2017-04-07T14:18:33.000Z" itemprop="datePublished">2017-04-07</time>
   </p>
 </header>
 	<div class="article-content">
@@ -106,30 +106,22 @@ var _hmt = _hmt || [];
 		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#需求"><span class="toc-number">1.</span> <span class="toc-text">需求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实现"><span class="toc-number">2.</span> <span class="toc-text">实现</span></a></li></ol>
 		</div>
 		
-		<h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><ol>
-<li>密码必须符合复杂度要求，字母、数字、特殊字符组成。长度大于8位。</li>
-<li>密码定期更改，最长不超过90天。</li>
-<li>用户不能重复使用5次内已使用的口令。</li>
-<li>尝试登陆失败错误次数，必须设置不能超过5次，超过5次后，暂时锁定20分钟或以上。</li>
-</ol>
-<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>安装 PAM 的 cracklib 模块，cracklib 能提供额外的密码检查能力</p>
-<ol>
-<li><p>密码必须符合复杂度要求，字母、数字、特殊字符组成。长度大于8位。<br>修改文件：/ect/pam.d/system-auth，找到同时有 “password” 和 “pam_cracklib.so” 字段</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">password    requisite     pam_cracklib.so retry=3 difok=3 minlen=8 lcredit=-1 dcredit=-1 ocredit=-1</div></pre></td></tr></table></figure>
+		<h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><p>普通用户登陆到服务器上只能执行ssh，ls，cat等有限的基础命令，另外要求把用户锁定在特定目录中，不能看到其他任何目录下文件</p>
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><ol>
+<li><p>创建查看日志的用户</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">useradd -m ttxsgoto -s /bin/bash</div><div class="line">passwd ttxsgoto</div></pre></td></tr></table></figure>
 </li>
-<li><p>密码定期更改，最长不超过90天</p>
-<p> 配置文件中 /etc/login.defs 修改配置文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">PASS_MAX_DAYS   90</div><div class="line">PASS_MIN_DAYS   0</div><div class="line">PASS_MIN_LEN    5</div><div class="line">PASS_WARN_AGE   7</div></pre></td></tr></table></figure>
-<p> 通过chage -l xxx(用户名)  查看定期修改的时间</p>
+<li><p>初始化chroot环境</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">mkdir /home/chroot</div><div class="line">mkdir /home/chroot/&#123;bin,dev,lib,lib64,etc,home&#125;</div><div class="line"></div><div class="line">CMD=<span class="string">"/bin/bash /bin/ls /bin/cp /bin/mkdir /bin/mv /bin/rm /bin/rmdir /usr/bin/vim /bin/cat /usr/bin/tail"</span></div><div class="line"></div><div class="line">CHROOT=<span class="string">"/home/chroot"</span></div><div class="line"></div><div class="line">lib1=`ldd $CMD | awk <span class="string">'&#123; print $1 &#125;'</span> | grep <span class="string">"/lib"</span> | sort | uniq`</div><div class="line">lib2=`ldd $CMD | awk <span class="string">'&#123; print $3 &#125;'</span> | grep <span class="string">"/lib"</span> | sort | uniq`</div><div class="line"></div><div class="line"><span class="keyword">for</span> i <span class="keyword">in</span> $CMD</div><div class="line">do</div><div class="line">    cp -a $i $CHROOT/bin/ &amp;&amp; echo <span class="string">"$i done"</span></div><div class="line">done</div><div class="line"></div><div class="line"><span class="keyword">for</span> j <span class="keyword">in</span> $lib1</div><div class="line">do</div><div class="line">cp -f $j $CHROOT/lib64/ &amp;&amp; cp -f $j $CHROOT/lib/  &amp;&amp; echo <span class="string">"$j done"</span></div><div class="line">done</div><div class="line"></div><div class="line"><span class="keyword">for</span> k <span class="keyword">in</span> $lib2</div><div class="line">do</div><div class="line">cp -f $k $CHROOT/lib64/ &amp;&amp; cp -f $k $CHROOT/lib/ &amp;&amp; echo <span class="string">"$k done"</span></div><div class="line">done</div><div class="line"></div><div class="line">chown -R root:root /home/chroot</div><div class="line">chmod -R <span class="number">755</span> /home/chroot</div></pre></td></tr></table></figure>
 </li>
-<li><p>用户不能重复使用5次内已使用的口令<br>修改文件：/ect/pam.d/system-auth，找到同时有 “password” 和 “pam_unix.so” 字段</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=5</div></pre></td></tr></table></figure>
-<p> 通过/etc/security/opasswd中查看禁止使用近期用过的5个密码</p>
+<li><p>创建用户目录</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mkdir /home/chroot/home/ttxsgoto</div><div class="line">chown -R ttxsgoto:ttxsgoto /home/chroot/home/ttxsgoto</div></pre></td></tr></table></figure>
 </li>
-<li><p>尝试登陆失败错误次数，必须设置不能超过5次，超过5次后，暂时锁定20分钟或以上<br>查看系统中是否含有pam_tally2.so模块，如果没有，则需要使用pam_tally.so模块<br>find /lib<em> -iname “pam_tally2.so”<br>find /lib</em> -iname “pam_tally.so”<br>在配置文件中/etc/pam.d/sshd中的第二行，如下添加内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">auth       required     pam_tally2.so deny=5 unlock_time=1200</div></pre></td></tr></table></figure>
-<p> 查看用户错误登陆次数：<br> pam_tally2 –user xxx (用户名)</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">pam_cracklib.so比较重要和难于理解的是它的一些参数和计数方法，其常用参数包括:</div><div class="line">debug：将调试信息写入日志；</div><div class="line">type=xxx：当添加/修改密码时，系统给出的缺省提示符是“New UNIX password:”以及“Retype UNIX</div><div class="line">password:”，而使用该参数可以自定义输入密码的提示符，比如指定type=your own word；</div><div class="line">retry=N：定义登录/修改密码失败时，可以重试的次数；</div><div class="line">Difok=N：定义新密码中必须有几个字符要与旧密码不同。但是如果新密码中有1/2以上的字符与旧密码不同时，该新密码将被接受；</div><div class="line">minlen=N：定义用户密码的最小长度；</div><div class="line">dcredit=N：定义用户密码中必须包含多少个数字；</div><div class="line">ucredit=N：定义用户密码中必须包含多少个大写字母；</div><div class="line">lcredit=N：定义用户密码中必须包含多少个小些字母；</div><div class="line">ocredit=N：定义用户密码中必须包含多少个特殊字符（除数字、字母之外）；</div></pre></td></tr></table></figure>
+<li><p>添加sshd_config</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Match User ttxsgoto</div><div class="line">ChrootDirectory /home/chroot</div></pre></td></tr></table></figure>
+</li>
+<li><p>日志目录挂载</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">mount --bind /var/logs /home/chroot/home/ttxsgoto</div><div class="line"><span class="comment">#修改/etc/fstab文件，开机自挂载：</span></div><div class="line">echo <span class="string">"/var/logs     /home/chroot/home/loglooker    none    rw,bind        0    0"</span> &gt;&gt; /etc/fstab</div></pre></td></tr></table></figure>
 </li>
 </ol>
   
@@ -138,7 +130,7 @@ var _hmt = _hmt || [];
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/password/">password</a>
+  <span></span> <a href="/tags/chroot/">chroot</a>
   </div>
 
 
@@ -151,7 +143,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2017/04/05/yw-pwd/" data-title="运维 Linux中密码策略 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2017/04/07/yw-chroot/" data-title="运维 Chroot限制普通用户登录特定目录 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -161,18 +153,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/04/07/yw-chroot/" title="运维 Chroot限制普通用户登录特定目录">
+ <a href="/2017/04/10/datetime/" title="Python Datetime模块">
   <strong>新一篇:</strong><br/>
   <span>
-  运维 Chroot限制普通用户登录特定目录</span>
+  Python Datetime模块</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/04/05/django-models-basic/"  title="Django Models">
+<a href="/2017/04/05/yw-pwd/"  title="运维 Linux中密码策略">
  <strong>旧一篇:</strong><br/> 
- <span>Django Models
+ <span>运维 Linux中密码策略
 </span>
 </a>
 </div>
@@ -182,7 +174,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="运维 Linux中密码策略" data-thread-key="yw-pwd" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-pwd"></div>
+	<div class="ds-thread" data-title="运维 Chroot限制普通用户登录特定目录" data-thread-key="yw-chroot" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-chroot"></div>
 	
 </section>
 
