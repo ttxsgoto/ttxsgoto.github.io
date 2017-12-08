@@ -4,14 +4,16 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Python Importlib模块 | ttxsgoto&#39; Blog</title>
+    <title>运维 Mysql分析性能（存储过程） | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="通过字符串导入模块，动态导入模块，3种方式,记录如下：
-方式一：12os1 = __import__(&#39;os&#39;)os1.path.join &amp;lt;==&amp;gt; from os.path import join
-方式二：123import impos2 = imp.load_module(&#39;os&#39;,">
+    <meta name="description" content="描述之前有一次故障问题，查看数据库慢查询日志，从日志和存储过程本身直接分析，不能得知问题点，之后通过profiling来分析，记录如下
+分析
+查看慢查询日志，发现，出现大量执行等待，使用profiling来分析语句问题点
+先打开profiling： SET profiling=1;
+手动执行有问题的">
     
     
     
@@ -88,10 +90,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/16/importlib/" title="Python Importlib模块" itemprop="url">Python Importlib模块</a>
+      <a href="/2017/04/08/yw-mysql-store/" title="运维 Mysql分析性能（存储过程）" itemprop="url">运维 Mysql分析性能（存储过程）</a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-04-16T07:44:11.000Z" itemprop="datePublished">2017-04-16</time>
+    <time datetime="2017-04-08T14:24:31.000Z" itemprop="datePublished">2017-04-08</time>
   </p>
 </header>
 	<div class="article-content">
@@ -99,33 +101,37 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#描述"><span class="toc-number">1.</span> <span class="toc-text">描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#分析"><span class="toc-number">2.</span> <span class="toc-text">分析</span></a></li></ol>
 		</div>
 		
-		<p>通过字符串导入模块，动态导入模块，3种方式,记录如下：</p>
-<p>方式一：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">os1 = __import__('os')</div><div class="line">os1.path.join &lt;==&gt; from os.path import join</div></pre></td></tr></table></figure></p>
-<p>方式二：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">import imp</div><div class="line">os2 = imp.load_module('os',*imp.find_module('os'))</div><div class="line">os2.path.join &lt;==&gt; from os.path import join</div></pre></td></tr></table></figure></p>
-<p>方式三：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">module = importlib.import_module('os')</div><div class="line">os_path =  getattr(module,'path')</div><div class="line">os_path.join &lt;==&gt; from os.path import join</div></pre></td></tr></table></figure></p>
+		<h4 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h4><p>之前有一次故障问题，查看数据库慢查询日志，从日志和存储过程本身直接分析，不能得知问题点，之后通过profiling来分析，记录如下</p>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><ol>
+<li>查看慢查询日志，发现，出现大量执行等待，使用profiling来分析语句问题点</li>
+<li>先打开profiling： SET profiling=1;</li>
+<li>手动执行有问题的语句： call  GetRoleList(75760);   </li>
+<li>SHOW profiles;  可以查看到每条对应SQL语句执行时间，对于执行慢的sql这部分是需要优化的;</li>
+<li>执行完毕后，关闭 SET profiling=0;</li>
+</ol>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Importlib/">Importlib</a>
+  <span></span> <a href="/tags/Mysql/">Mysql</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/python/">python</a>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2017/04/16/importlib/" data-title="Python Importlib模块 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2017/04/08/yw-mysql-store/" data-title="运维 Mysql分析性能（存储过程） | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -135,18 +141,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/04/17/threading/" title="Python Threading">
+ <a href="/2017/04/10/datetime/" title="Python Datetime模块">
   <strong>新一篇:</strong><br/>
   <span>
-  Python Threading</span>
+  Python Datetime模块</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/04/11/python-contextlib/"  title="Python Contextlib模块">
+<a href="/2017/04/07/yw-chroot/"  title="运维 Chroot限制普通用户登录特定目录">
  <strong>旧一篇:</strong><br/> 
- <span>Python Contextlib模块
+ <span>运维 Chroot限制普通用户登录特定目录
 </span>
 </a>
 </div>
@@ -156,7 +162,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Python Importlib模块" data-thread-key="importlib" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/importlib"></div>
+	<div class="ds-thread" data-title="运维 Mysql分析性能（存储过程）" data-thread-key="yw-mysql-store" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-store"></div>
 	
 </section>
 
