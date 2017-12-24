@@ -1,0 +1,376 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Python elasticsearch_dsl 基本查询 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明 通过elasticsearch_dsl提供的API操作es进行基本查询操作
+创建mapping123456789101112131415161718192021222324252627from elasticsearch_dsl import DocType, Date, Keyword, T">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/24/python-es-elasticsearch-dsl/" title="Python elasticsearch_dsl 基本查询" itemprop="url">Python elasticsearch_dsl 基本查询</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-12-24T07:25:33.000Z" itemprop="datePublished">2017-12-24</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建mapping"><span class="toc-number">2.</span> <span class="toc-text">创建mapping</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#基本查询"><span class="toc-number">3.</span> <span class="toc-text">基本查询</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#查询所有，指定返回数量-设置分页"><span class="toc-number">3.1.</span> <span class="toc-text">查询所有，指定返回数量,设置分页</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#match查询"><span class="toc-number">3.2.</span> <span class="toc-text">match查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#多字段查询"><span class="toc-number">3.3.</span> <span class="toc-text">多字段查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#term查询"><span class="toc-number">3.4.</span> <span class="toc-text">term查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#terms查询-多词条"><span class="toc-number">3.5.</span> <span class="toc-text">terms查询(多词条)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#词条-Term-查询-排序-Sorted"><span class="toc-number">3.6.</span> <span class="toc-text">词条(Term)查询-排序(Sorted)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#range-范围查询"><span class="toc-number">3.7.</span> <span class="toc-text">range 范围查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#bool查询"><span class="toc-number">3.8.</span> <span class="toc-text">bool查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#highlighting高亮"><span class="toc-number">3.9.</span> <span class="toc-text">highlighting高亮</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#模糊-fuzzy-查询"><span class="toc-number">3.10.</span> <span class="toc-text">模糊(fuzzy)查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#通配符-wildcard-查询"><span class="toc-number">3.11.</span> <span class="toc-text">通配符(wildcard)查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#match-phrase查询-短语查询"><span class="toc-number">3.12.</span> <span class="toc-text">match_phrase查询(短语查询)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#短语前缀-Match-Phrase-Prefix-查询"><span class="toc-number">3.13.</span> <span class="toc-text">短语前缀(Match Phrase Prefix)查询</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#aggregation聚合"><span class="toc-number">3.14.</span> <span class="toc-text">aggregation聚合</span></a></li></ol></li></ol>
+		</div>
+		
+		<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p> 通过elasticsearch_dsl提供的API操作es进行基本查询操作</p>
+<h4 id="创建mapping"><a href="#创建mapping" class="headerlink" title="创建mapping"></a>创建mapping</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> elasticsearch_dsl <span class="keyword">import</span> DocType, Date, Keyword, Text, Integer</div><div class="line"><span class="keyword">from</span> elasticsearch_dsl.connections <span class="keyword">import</span> connections</div><div class="line"> </div><div class="line">connections.create_connection(hosts=[<span class="string">"localhost"</span>])</div><div class="line"><span class="comment"># connections.create_connection(hosts=["http://admin:admin@127.0.0.1:8080"])    # 使用认证连接</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ZhihuQ</span><span class="params">(DocType)</span>:</span></div><div class="line">    id = Integer()</div><div class="line">    zhihu_id = Integer()                    <span class="comment"># 知乎idlong</span></div><div class="line">    topics = Keyword()                      <span class="comment"># 主题text</span></div><div class="line">    url = Keyword()                         <span class="comment"># urlkeyword</span></div><div class="line">    title = Text(analyzer=<span class="string">"ik_max_word"</span>)    <span class="comment"># 标题text</span></div><div class="line">    content = Text(analyzer=<span class="string">"ik_max_word"</span>)  <span class="comment"># 内容text</span></div><div class="line">    answer_num = Integer()                  <span class="comment"># 回答数量int</span></div><div class="line">    comments_num = Integer()                <span class="comment"># 评论数量int</span></div><div class="line">    watch_user_num = Integer()              <span class="comment"># 关注者数量int</span></div><div class="line">    click_num = Integer()                   <span class="comment"># 浏览数量int</span></div><div class="line">    crawl_time = Date(format=<span class="string">'date_optional_time||yyyy-MM-dd HH:mm:ss'</span>) <span class="comment"># 创建时间</span></div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        index = <span class="string">"zhihuquestion"</span></div><div class="line">        doc_type = <span class="string">"question"</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    ZhihuQ.init()   <span class="comment"># 初始化mapping</span></div></pre></td></tr></table></figure>
+<h4 id="基本查询"><a href="#基本查询" class="headerlink" title="基本查询"></a>基本查询</h4><h5 id="查询所有，指定返回数量-设置分页"><a href="#查询所有，指定返回数量-设置分页" class="headerlink" title="查询所有，指定返回数量,设置分页"></a>查询所有，指定返回数量,设置分页</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">  <span class="string">"query"</span>: &#123;</div><div class="line">    <span class="string">"match_all"</span>: &#123;&#125;</div><div class="line">  &#125;,</div><div class="line">   <span class="string">"from"</span>: <span class="number">0</span>,</div><div class="line">   <span class="string">"size"</span>: <span class="number">5</span></div><div class="line">&#125;</div><div class="line"><span class="comment"># python：</span></div><div class="line">search = ZhihuQ.search()</div><div class="line">result = search.query().extra(size=<span class="number">1000</span>)[<span class="number">0</span>:<span class="number">5</span>]</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure>
+<h5 id="match查询"><a href="#match查询" class="headerlink" title="match查询"></a>match查询</h5><p>使用分词处理后查询<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"match"</span>: &#123;</div><div class="line">            <span class="string">"title"</span>: <span class="string">"python"</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">result = search.query(<span class="string">"match"</span>, title=<span class="string">'Python'</span>)</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="多字段查询"><a href="#多字段查询" class="headerlink" title="多字段查询"></a>多字段查询</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"multi_match"</span>: &#123;</div><div class="line">            <span class="string">"query"</span>: <span class="string">"python"</span>,</div><div class="line">            <span class="string">"fields"</span>: [</div><div class="line">                <span class="string">"title"</span>,</div><div class="line">                <span class="string">"content"</span></div><div class="line">            ]</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">multi_match = MultiMatch(query=<span class="string">'python'</span>, fields=[<span class="string">'title'</span>, <span class="string">'content'</span>])</div><div class="line">q = search.query(multi_match)</div><div class="line">result = q.query()</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure>
+<h5 id="term查询"><a href="#term查询" class="headerlink" title="term查询"></a>term查询</h5><p>值不做解析处理，直接查询,完全匹配<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"term"</span>: &#123;</div><div class="line">            <span class="string">"topics"</span>: <span class="string">"python"</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">result = search.query(<span class="string">'term'</span>, title=<span class="string">'Python'</span>)</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="terms查询-多词条"><a href="#terms查询-多词条" class="headerlink" title="terms查询(多词条)"></a>terms查询(多词条)</h5><p>任何一个满足都可以返回数据<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"terms"</span>: &#123;</div><div class="line">            <span class="string">"topics"</span>: [</div><div class="line">                <span class="string">"python"</span>,</div><div class="line">                <span class="string">"Python"</span></div><div class="line">            ]</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">result = search.query(<span class="string">'terms'</span>, topics=[<span class="string">'Python'</span>, <span class="string">'python'</span>])</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="词条-Term-查询-排序-Sorted"><a href="#词条-Term-查询-排序-Sorted" class="headerlink" title="词条(Term)查询-排序(Sorted)"></a>词条(Term)查询-排序(Sorted)</h5><p>指定返回字段<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"sort"</span>: [</div><div class="line">        &#123;</div><div class="line">            <span class="string">"crawl_time"</span>: &#123;</div><div class="line">                <span class="string">"order"</span>: <span class="string">"asc"</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    ],</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"terms"</span>: &#123;</div><div class="line">            <span class="string">"title"</span>: [</div><div class="line">                <span class="string">"Python"</span>,</div><div class="line">                <span class="string">"python"</span></div><div class="line">            ]</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    <span class="string">"_source"</span>: [</div><div class="line">        <span class="string">"crawl_time"</span></div><div class="line">    ]</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">result = search.query(<span class="string">'terms'</span>, title=[<span class="string">'Python'</span>, <span class="string">'python'</span>]).source([<span class="string">'crawl_time'</span>]).sort(&#123;<span class="string">'crawl_time'</span>:&#123;<span class="string">"order"</span> : <span class="string">"asc"</span>,&#125;&#125;)</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="range-范围查询"><a href="#range-范围查询" class="headerlink" title="range 范围查询"></a>range 范围查询</h5><p>用于日期、数字和字符串类型的字段<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"bool"</span>: &#123;</div><div class="line">            <span class="string">"must"</span>: [</div><div class="line">                &#123;</div><div class="line">                    <span class="string">"match"</span>: &#123;</div><div class="line">                        <span class="string">"title"</span>: <span class="string">"Python"</span></div><div class="line">                    &#125;</div><div class="line">                &#125;,</div><div class="line">                &#123;</div><div class="line">                    <span class="string">"range"</span>: &#123;</div><div class="line">                        <span class="string">"crawl_time"</span>: &#123;</div><div class="line">                            <span class="string">"gte"</span>: <span class="string">"2017-12-21 19:19:44"</span>,</div><div class="line">                            <span class="string">"lte"</span>: <span class="string">"now"</span></div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            ]</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">result = search.query(<span class="string">"match"</span>, title=<span class="string">'Python'</span>).query(<span class="string">"range"</span>, crawl_time=&#123;<span class="string">'gte'</span>:<span class="string">'2017-12-21 19:19:44'</span>,<span class="string">'lte'</span>: <span class="string">'now'</span>&#125;)</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="bool查询"><a href="#bool查询" class="headerlink" title="bool查询"></a>bool查询</h5><ul>
+<li>must 等同于 AND</li>
+<li>must_not 等同于 NOT</li>
+<li>should 等同于 OR</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"bool"</span>: &#123;</div><div class="line">            <span class="string">"must"</span>: [</div><div class="line">                &#123;</div><div class="line">                    <span class="string">"match"</span>: &#123;</div><div class="line">                        <span class="string">"title"</span>: <span class="string">"python"</span></div><div class="line">                    &#125;</div><div class="line">                &#125;,</div><div class="line">                &#123;</div><div class="line">                    <span class="string">"match"</span>: &#123;</div><div class="line">                        <span class="string">"title"</span>: <span class="string">"c"</span></div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            ]</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">q = Q(<span class="string">"match"</span>, title=<span class="string">'python'</span>) &amp; Q(<span class="string">"match"</span>, title=<span class="string">'c'</span>)</div><div class="line">q = Q(<span class="string">"match"</span>, title=<span class="string">'python'</span>) | Q(<span class="string">"match"</span>, title=<span class="string">'c'</span>)</div><div class="line">q = ~Q(<span class="string">"match"</span>, title=<span class="string">'python'</span>) &amp; ~Q(<span class="string">"match"</span>, title=<span class="string">'c'</span>)</div><div class="line">result = search.query(q)</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure>
+<h5 id="highlighting高亮"><a href="#highlighting高亮" class="headerlink" title="highlighting高亮"></a>highlighting高亮</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"bool"</span>: &#123;</div><div class="line">            <span class="string">"must"</span>: [</div><div class="line">                &#123;</div><div class="line">                    <span class="string">"match"</span>: &#123;</div><div class="line">                        <span class="string">"title"</span>: <span class="string">"python"</span></div><div class="line">                    &#125;</div><div class="line">                &#125;,</div><div class="line">                &#123;</div><div class="line">                    <span class="string">"match"</span>: &#123;</div><div class="line">                        <span class="string">"title"</span>: <span class="string">"c"</span></div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            ]</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    <span class="string">"highlight"</span>: &#123;</div><div class="line">        <span class="string">"fields"</span>: &#123;</div><div class="line">            <span class="string">"title"</span>: &#123;</div><div class="line">                <span class="string">"fragment_size"</span>: <span class="number">50</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">q = Q(<span class="string">"match"</span>, title=<span class="string">'python'</span>) &amp; Q(<span class="string">"match"</span>, title=<span class="string">'c'</span>)</div><div class="line">s = search.query(q)</div><div class="line">result = s.highlight(<span class="string">'title'</span>, fragment_size=<span class="number">50</span>)</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure>
+<h5 id="模糊-fuzzy-查询"><a href="#模糊-fuzzy-查询" class="headerlink" title="模糊(fuzzy)查询"></a>模糊(fuzzy)查询</h5><p>在 Match检索 和多匹配检索中可以启用模糊匹配来捕捉拼写错误;模糊度是基于原始单词的编辑距离来指定,当术语长度大于 5 个字符时，AUTO 的模糊值等同于指定值 “2”。但是，80％ 拼写错误的编辑距离为 1，所以，将模糊值设置为 1 可能会提高您的整体搜索性能<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"multi_match"</span>: &#123;</div><div class="line">            <span class="string">"fields"</span>: [</div><div class="line">                <span class="string">"title"</span>,</div><div class="line">                <span class="string">"content"</span></div><div class="line">            ],</div><div class="line">            <span class="string">"fuzziness"</span>: <span class="string">"AUTO"</span>,</div><div class="line">            <span class="string">"query"</span>: <span class="string">"Python"</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">multi_match = MultiMatch(query=<span class="string">'Python'</span>, fields=[<span class="string">'title'</span>, <span class="string">'content'</span>], fuzziness=<span class="string">'AUTO'</span>)</div><div class="line">q = search.query(multi_match)</div><div class="line">result = q.query()</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="通配符-wildcard-查询"><a href="#通配符-wildcard-查询" class="headerlink" title="通配符(wildcard)查询"></a>通配符(wildcard)查询</h5><p>通配符查询允许指定匹配的模式，而不是整个词组（term）检索</p>
+<p>？ 匹配任何字符, * 匹配零个或多个字符<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"wildcard"</span>: &#123;</div><div class="line">            <span class="string">"title"</span>: <span class="string">"pyth*"</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">result = search.query(<span class="string">'wildcard'</span>, title=<span class="string">'python*'</span>)</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="match-phrase查询-短语查询"><a href="#match-phrase查询-短语查询" class="headerlink" title="match_phrase查询(短语查询)"></a>match_phrase查询(短语查询)</h5><p>匹配短语查询要求查询字符串中的所有词都存在于文档中，按照查询字符串中指定的顺序并且彼此靠近;默认情况下，这些词必须完全相邻，但可以指定偏离值（slop value)，该值指示在仍然考虑文档匹配的情况下词与词之间的偏离值。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"multi_match"</span>: &#123;</div><div class="line">            <span class="string">"fields"</span>: [</div><div class="line">                <span class="string">"title"</span></div><div class="line">            ],</div><div class="line">            <span class="string">"type"</span>: <span class="string">"phrase"</span>,</div><div class="line">            <span class="string">"slop"</span>: <span class="number">6</span>,</div><div class="line">            <span class="string">"query"</span>: <span class="string">"python下载"</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">multi_match = MultiMatch(query=<span class="string">'python下载'</span>, fields=[<span class="string">'title'</span>],</div><div class="line">                                 type=<span class="string">'phrase'</span>,</div><div class="line">                                 slop=<span class="number">4</span></div><div class="line">                                 )</div><div class="line">q = search.query(multi_match)</div><div class="line">result = q.query()</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="短语前缀-Match-Phrase-Prefix-查询"><a href="#短语前缀-Match-Phrase-Prefix-查询" class="headerlink" title="短语前缀(Match Phrase Prefix)查询"></a>短语前缀(Match Phrase Prefix)查询</h5><p>匹配词组前缀查询在查询时提供搜索即时类型或“相对简单”的自动完成版本，而无需以任何方式准备数据<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"multi_match"</span>: &#123;</div><div class="line">            <span class="string">"fields"</span>: [</div><div class="line">                <span class="string">"title"</span></div><div class="line">            ],</div><div class="line">            <span class="string">"type"</span>: <span class="string">"phrase_prefix"</span>,</div><div class="line">            <span class="string">"slop"</span>: <span class="number">2</span>,</div><div class="line">            <span class="string">"query"</span>: <span class="string">"python精通"</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">multi_match = MultiMatch(query=<span class="string">'python精通'</span>, fields=[<span class="string">'title'</span>],</div><div class="line">                                 type=<span class="string">'phrase_prefix'</span>,</div><div class="line">                                 slop=<span class="number">2</span></div><div class="line">                                 )</div><div class="line">q = search.query(multi_match).source([<span class="string">'title'</span>])</div><div class="line">result = q.query()</div><div class="line">data = result.execute()</div><div class="line">data = data.to_dict()[<span class="string">'hits'</span>][<span class="string">'hits'</span>]</div></pre></td></tr></table></figure></p>
+<h5 id="aggregation聚合"><a href="#aggregation聚合" class="headerlink" title="aggregation聚合"></a>aggregation聚合</h5><p>聚合类型: Bucketing, Metric, Matrix, Pipeline<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># metric 计算相关, max, min, avg等</span></div><div class="line">GET zhihuquestion/_search</div><div class="line">&#123;</div><div class="line">    <span class="string">"query"</span>: &#123;</div><div class="line">        <span class="string">"match_all"</span>: &#123;&#125;</div><div class="line">    &#125;,</div><div class="line">    <span class="string">"aggs"</span>: &#123;</div><div class="line">        <span class="string">"max_click_num"</span>: &#123;</div><div class="line">            <span class="string">"max"</span>: &#123;</div><div class="line">                <span class="string">"field"</span>: <span class="string">"click_num"</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"><span class="comment"># python</span></div><div class="line">_agg = A(<span class="string">'max'</span>, field=<span class="string">'click_num'</span>)</div><div class="line">result = search.aggs.metric(<span class="string">'max_click_num'</span>, _agg)</div><div class="line">data = result.execute()</div><div class="line"><span class="keyword">print</span> data.aggregations.max_click_num   <span class="comment"># 得到点击量最大的值</span></div><div class="line"> </div><div class="line"><span class="comment"># bucket</span></div><div class="line">_agg = A(<span class="string">'terms'</span>, field=<span class="string">'comment'</span>)</div><div class="line">f = search.aggs.bucket(<span class="string">'bucket_comment'</span>, _agg)</div><div class="line">query_word = json.dumps(f.to_dict())</div><div class="line"><span class="keyword">print</span> query_word</div><div class="line">response = search.execute()</div><div class="line"><span class="keyword">print</span> response.aggregations.bucket_comment.buckets</div><div class="line"><span class="keyword">print</span> response.to_dict()</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Elasticsearch/">Elasticsearch</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/12/24/python-es-elasticsearch-dsl/" data-title="Python elasticsearch_dsl 基本查询 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2017/12/24/python-sqlalchemy/"  title="Python Sqlalchemy模块">
+ <strong>旧一篇:</strong><br/> 
+ <span>Python Sqlalchemy模块
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Python elasticsearch_dsl 基本查询" data-thread-key="python-es-elasticsearch-dsl" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/python-es-elasticsearch-dsl"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
