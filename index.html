@@ -89,9 +89,88 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
-        <a href="/2017/12/24/python-es-elasticsearch-dsl/" title="Python Elasticsearch_dsl 基本查询" itemprop="url">
+        <a href="/2017/12/27/elasticsearch-mongo-to-es/" title="Elasticsearch Mongo-connector同步mongo数据到ES" itemprop="url">
       
-        Python Elasticsearch_dsl 基本查询
+        Elasticsearch Mongo-connector同步mongo数据到ES
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >说明
+通过mongo-connector将mongo数据实时同步到es中
+mongo运行在replica-set模式，同时需要elastic2_doc_manager将数据写入ES
+开启replica-set模式后，写入mongo的数据都可以同步到es，即使当前mongo-con</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-12-27T13:16:47.000Z" itemprop="datePublished">2017-12-27</time>
+      
+          <a href="/2017/12/27/elasticsearch-mongo-to-es/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/12/27/elasticsearch-mysql-to-es/" title="Elasticsearch Logstash-input-jdbc同步mysql数据到ES" itemprop="url">
+      
+        Elasticsearch Logstash-input-jdbc同步mysql数据到ES
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >说明将Mysql中的数据同步到ES集群中，方便搜索功能，通过logstash自带的插件logstash-input-jdbc来轻松完成
+安装1./logstash-plugin install  logstash-input-jdbc
+配置文件jdbc.conf123456789</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-12-27T13:08:17.000Z" itemprop="datePublished">2017-12-27</time>
+      
+          <a href="/2017/12/27/elasticsearch-mysql-to-es/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/12/26/elasticsearch-elk/" title="Elasticsearch ELK应用" itemprop="url">
+      
+        Elasticsearch ELK应用
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >ELK说明
+Elasticsearch是个开源分布式搜索引擎，它的特点有：分布式，零配置，自动发现，索引自动分片，索引副本机制，restful风格接口，多数据源，自动搜索负载等
+Logstash是一个完全开源的工具，他可以对你的日志进行收集、分析，并将其存储供以后使用（如，搜索）</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-12-26T14:46:51.000Z" itemprop="datePublished">2017-12-26</time>
+      
+          <a href="/2017/12/26/elasticsearch-elk/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/12/24/elasticsearch-elasticsearch-dsl/" title="Elasticsearch Elasticsearch_dsl 基本查询" itemprop="url">
+      
+        Elasticsearch Elasticsearch_dsl 基本查询
       </a>
     </h1>
     
@@ -103,7 +182,7 @@ var _hmt = _hmt || [];
     <p class="article-more-link">
       <time datetime="2017-12-24T07:25:33.000Z" itemprop="datePublished">2017-12-24</time>
       
-          <a href="/2017/12/24/python-es-elasticsearch-dsl/">阅读更多&raquo;</a>
+          <a href="/2017/12/24/elasticsearch-elasticsearch-dsl/">阅读更多&raquo;</a>
       
     </p>
 
@@ -270,84 +349,6 @@ var _hmt = _hmt || [];
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/12/02/Scrapy-itemloaders/" title="Scrapy Itemloaders" itemprop="url">
-      
-        Scrapy Itemloaders
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >Item LoadersItem Loaders 被设计用来提供一个既弹性又高效简便的构件， 以扩展或重写爬虫或源格式(HTML, XML之类的)等区域的解析规则
-使用item loader填充item
-add_xpath  # 通过xpath选取数据
-add_css    # </p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-12-02T14:01:14.000Z" itemprop="datePublished">2017-12-02</time>
-      
-          <a href="/2017/12/02/Scrapy-itemloaders/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/12/01/scrapy-state/" title="Scrapy Architecture" itemprop="url">
-      
-        Scrapy Architecture
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >架构所有过程的流向都依赖于 ENGINE 模块1.Engine从Spider中得到初始的Requests，Requests将被用来进行爬取；2.Engine将得到的Requests放入Scheduler中，然后不断从Scheduler询问下次可以进行爬去的Requests；3.S</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-12-01T14:03:49.000Z" itemprop="datePublished">2017-12-01</time>
-      
-          <a href="/2017/12/01/scrapy-state/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/11/26/django-Channels/" title="Django Channels" itemprop="url">
-      
-        Django Channels
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >背景项目中常使用到实时通信，实时通知等应用，之前使用过第三方提供的接口调用，由于网络原因，不稳定超时，Django 1.8以后支持channel，可实现该功能
-定义Channels基本上就是任务队列：消息被生产者推到通道，然后传递给监听通道的消费者
-Channels工作层：
-接口</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-11-26T14:20:43.000Z" itemprop="datePublished">2017-11-26</time>
-      
-          <a href="/2017/11/26/django-Channels/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
@@ -394,11 +395,13 @@ Channels工作层：
 		
 			<li><a href="/categories/Docker/" title="Docker">Docker<sup>3</sup></a></li>
 		
+			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
+		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		
-			<li><a href="/categories/python/" title="python">python<sup>22</sup></a></li>
+			<li><a href="/categories/python/" title="python">python<sup>21</sup></a></li>
 		
-			<li><a href="/categories/运维/" title="运维">运维<sup>17</sup></a></li>
+			<li><a href="/categories/运维/" title="运维">运维<sup>16</sup></a></li>
 		
 		</ul>
 </div>

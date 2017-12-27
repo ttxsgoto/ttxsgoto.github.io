@@ -89,6 +89,84 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2017/12/02/Scrapy-itemloaders/" title="Scrapy Itemloaders" itemprop="url">
+      
+        Scrapy Itemloaders
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >Item LoadersItem Loaders 被设计用来提供一个既弹性又高效简便的构件， 以扩展或重写爬虫或源格式(HTML, XML之类的)等区域的解析规则
+使用item loader填充item
+add_xpath  # 通过xpath选取数据
+add_css    # </p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-12-02T14:01:14.000Z" itemprop="datePublished">2017-12-02</time>
+      
+          <a href="/2017/12/02/Scrapy-itemloaders/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/12/01/scrapy-state/" title="Scrapy Architecture" itemprop="url">
+      
+        Scrapy Architecture
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >架构所有过程的流向都依赖于 ENGINE 模块1.Engine从Spider中得到初始的Requests，Requests将被用来进行爬取；2.Engine将得到的Requests放入Scheduler中，然后不断从Scheduler询问下次可以进行爬去的Requests；3.S</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-12-01T14:03:49.000Z" itemprop="datePublished">2017-12-01</time>
+      
+          <a href="/2017/12/01/scrapy-state/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/11/26/django-Channels/" title="Django Channels" itemprop="url">
+      
+        Django Channels
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >背景项目中常使用到实时通信，实时通知等应用，之前使用过第三方提供的接口调用，由于网络原因，不稳定超时，Django 1.8以后支持channel，可实现该功能
+定义Channels基本上就是任务队列：消息被生产者推到通道，然后传递给监听通道的消费者
+Channels工作层：
+接口</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-11-26T14:20:43.000Z" itemprop="datePublished">2017-11-26</time>
+      
+          <a href="/2017/11/26/django-Channels/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2017/11/13/django-logging/" title="Django Logging" itemprop="url">
       
         Django Logging
@@ -276,83 +354,6 @@ Constan</p>
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/08/10/Throtting/" title="DRF Throtting" itemprop="url">
-      
-        DRF Throtting
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >Django Rest framework 频率控制配置说明
-全局设置setting.py12345678910111213141516171819202122# 设置节流方案&#39;DEFAULT_THROTTLE_CLASSES&#39;: (    # 开启匿名用户接口请求频率限制   </p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-08-10T11:56:37.000Z" itemprop="datePublished">2017-08-10</time>
-      
-          <a href="/2017/08/10/Throtting/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/07/21/iptables-forward/" title="运维 Iptables做端口映射" itemprop="url">
-      
-        运维 Iptables做端口映射
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >需求外网需要访问内网的redis(无公网ip)服务器A，而它只能通过内网访问，其中服务器B有公网和内网地址，B通过内网可以访问A的服务；这时可以通过端口转发，通过访问B的端口来实际访问A的redis服务
-解决方案1234567891011# B服务器 外网ip: 120.27.1</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-07-21T12:49:34.000Z" itemprop="datePublished">2017-07-21</time>
-      
-          <a href="/2017/07/21/iptables-forward/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/07/15/django-forms/" title="Django Forms表单" itemprop="url">
-      
-        Django Forms表单
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >form表单验证顺序步骤：
-to_python()将值转换为正确的pthon数据类型，如果不能转换，抛出ValidationError
-字段的validate()方法处理字段特殊定义的验证
-字段的run_validators() 方法运行字段的所有Validator，并将所有的错</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-07-15T13:17:58.000Z" itemprop="datePublished">2017-07-15</time>
-      
-          <a href="/2017/07/15/django-forms/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/">下一页 &raquo;</a>
@@ -399,11 +400,13 @@ to_python()将值转换为正确的pthon数据类型，如果不能转换，抛�
 		
 			<li><a href="/categories/Docker/" title="Docker">Docker<sup>3</sup></a></li>
 		
+			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
+		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		
-			<li><a href="/categories/python/" title="python">python<sup>22</sup></a></li>
+			<li><a href="/categories/python/" title="python">python<sup>21</sup></a></li>
 		
-			<li><a href="/categories/运维/" title="运维">运维<sup>17</sup></a></li>
+			<li><a href="/categories/运维/" title="运维">运维<sup>16</sup></a></li>
 		
 		</ul>
 </div>
