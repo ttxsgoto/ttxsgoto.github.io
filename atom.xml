@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2018-01-19T15:50:25.000Z</updated>
+  <updated>2018-01-30T13:00:08.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,55 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Python 动态属性和特性</title>
+    <link href="https://ttxsgoto.github.io/2018/01/30/python-dyn-attr-prop/"/>
+    <id>https://ttxsgoto.github.io/2018/01/30/python-dyn-attr-prop/</id>
+    <published>2018-01-30T14:42:28.000Z</published>
+    <updated>2018-01-30T13:00:08.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="getattr-方法"><a href="#getattr-方法" class="headerlink" title="__getattr__ 方法"></a>__getattr__ 方法</h3><p>__getattr__(self, name) 作用仅当没有指定名称name的属性时才调用__getattr__方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> abc</div><div class="line"><span class="keyword">import</span> keyword</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">FrozenJSON</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, mapping)</span>:</span></div><div class="line">        self.__data = &#123;&#125;</div><div class="line">        <span class="keyword">for</span> key, value <span class="keyword">in</span> mapping.items():</div><div class="line">            <span class="keyword">if</span> keyword.iskeyword(key):</div><div class="line">                key += <span class="string">'_'</span></div><div class="line">            self.__data[key] = value</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span><span class="params">(self, name)</span>:</span></div><div class="line">        <span class="keyword">if</span> hasattr(self.__data, name):</div><div class="line">            <span class="keyword">return</span> getattr(self.__data, name)</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">return</span> FrozenJSON.build(self.__data[name])</div><div class="line"> </div><div class="line"><span class="meta">    @classmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">build</span><span class="params">(cls, obj)</span>:</span>  <span class="comment"># 备选构造器</span></div><div class="line">        <span class="keyword">if</span> isinstance(obj, abc.Mapping):  <span class="comment"># 映射</span></div><div class="line">            <span class="keyword">return</span> cls(obj)</div><div class="line">        <span class="keyword">elif</span> isinstance(obj, abc.MutableSequence):  <span class="comment"># 列表</span></div><div class="line">            <span class="keyword">return</span> [cls.build(item) <span class="keyword">for</span> item <span class="keyword">in</span> obj]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">return</span> obj</div><div class="line"> </div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    grad = FrozenJSON(&#123;<span class="string">'name'</span>: <span class="string">'ttxs'</span>, <span class="string">'class'</span>: <span class="number">123</span>&#125;)</div><div class="line">    print(grod.name)</div><div class="line">    print(grad.class_)</div></pre></td></tr></table></figure></p>
+<h3 id="property-解析"><a href="#property-解析" class="headerlink" title="@property 解析"></a>@property 解析</h3><ul>
+<li>property 本身是一个类</li>
+<li>property(fget=None, fset=None, fdel=None, doc=None)<br>所有的参数都是可选，如果没有把函数传给某个参数，那么得到的特性对象就不允许执行相应的操作</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">LineItem</span>:</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, description, weight, price)</span>:</span></div><div class="line">        self.description = description</div><div class="line">        self.weight = weight</div><div class="line">        self.price = price</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">subtotal</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.weight * self.price</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_weight</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.__weight</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">set_weight</span><span class="params">(self, value)</span>:</span></div><div class="line">        <span class="keyword">if</span> value &gt; <span class="number">0</span>:</div><div class="line">            self.__weight = value</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'value must be &gt; 0'</span>)</div><div class="line"> </div><div class="line">    weight = property(get_weight, set_weight, )</div><div class="line"> </div><div class="line">xxx = LineItem(<span class="string">'ttxs'</span>, <span class="number">10</span>, <span class="number">12.5</span>)</div><div class="line">print(xxx.subtotal())</div><div class="line">xxx.weight=<span class="number">-20</span></div><div class="line">print(xxx.subtotal())</div></pre></td></tr></table></figure>
+<h3 id="处理属性的重要属性和函数"><a href="#处理属性的重要属性和函数" class="headerlink" title="处理属性的重要属性和函数"></a>处理属性的重要属性和函数</h3><ul>
+<li><p>__class__ : 对象所属类的引用(obj.__class__  和type(obj)相同)</p>
+</li>
+<li><p>__getattr__：只在对象的类中寻找，而不在实例中寻找</p>
+</li>
+<li>__dict__： 存储对象或类的可写属性,有dict属性的对象，任何时候都能设置新属性</li>
+<li>__slots__： 类可以定义这个属性，限制实例能有哪些属性</li>
+<li>dir([object])：列出对象的大部分属性</li>
+<li>getattr(obj, name[, defult])：从obj对象中获取name字符串对应的属性</li>
+<li>hasattr(obj, name)：如果obj对象中存在指定的属性，或者能以某种方式通过obj对象获取指定的属性，返回true</li>
+<li>setattr(obj, name, value)：把obj对象指定属性的值设置为value，前提是obj对象能接受这个值；这个函数可能会创建一个新的属性或者覆盖现有的属性</li>
+<li>vars([obj])：返回obj对象的__dict__属性，如果实例所属的类定义了__slots__属性，实例没有__dict__属性，那么vars函数不能处理那个实例</li>
+</ul>
+<h3 id="处理属性的特殊方法"><a href="#处理属性的特殊方法" class="headerlink" title="处理属性的特殊方法"></a>处理属性的特殊方法</h3><ul>
+<li>obj.attr 和 getattr(obj, ‘attr’, 42) 都会触发 Class.__getattribute__(obj, ‘attr’)方法</li>
+<li>__delattr__(self, name) del 语句， 都会触发Class.__delattr__(obj, ‘attr’)方法</li>
+<li>__dir__ 把对象传给dir函数时调用，列出属性</li>
+<li>__getattr__(obj, name) 仅当获取指定的属性失败，搜索过obj，Class和超类之后调用</li>
+<li>__getattribute__(self, name)尝试获取指定的属性时总会获取调用这个方法，寻找的属性是特殊属性或者特殊方法时除外</li>
+<li>__setattr__(self, name, value) 尝试设置指定的属性时总会调用这个方法，点号和setattr内置函数会触发这个方法</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;getattr-方法&quot;&gt;&lt;a href=&quot;#getattr-方法&quot; class=&quot;headerlink&quot; title=&quot;__getattr__ 方法&quot;&gt;&lt;/a&gt;__getattr__ 方法&lt;/h3&gt;&lt;p&gt;__getattr__(self, name) 作用仅当没有
+    
+    </summary>
+    
+      <category term="python" scheme="https://ttxsgoto.github.io/categories/python/"/>
+    
+    
+      <category term="property" scheme="https://ttxsgoto.github.io/tags/property/"/>
+    
+  </entry>
   
   <entry>
     <title>Django 基于URL权限管理模块</title>
@@ -779,7 +828,7 @@
     <updated>2017-12-04T02:01:23.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="apply说明"><a href="#apply说明" class="headerlink" title="$apply说明"></a>$apply说明</h4><p>手动触发脏检查，当我们更改一个不在AngularJS执行上下文中的数据模型(model)，需要人为的调用$apply()来提醒AngularJS数据发生变化</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"firstController"</span>&gt;</span></div><div class="line">    &#123;&#123;date&#125;&#125;</div><div class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></div><div class="line">$scope.date = new Date();</div><div class="line">    setInterval(function()&#123;</div><div class="line">        $scope.$apply(function()    &#123;</div><div class="line">                $scope.date = new Date();</div><div class="line">                // 触发脏检查</div><div class="line">            &#125;)</div><div class="line">    &#125;,1000);</div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"firstController"</span>&gt;</span></div><div class="line">    &#123;&#123;date&#125;&#125;</div><div class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></div><div class="line">$scope.date = <span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line">    setInterval(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        $scope.$apply(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)    </span>&#123;</div><div class="line">                $scope.date = <span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line">                <span class="comment">// 触发脏检查</span></div><div class="line">            &#125;)</div><div class="line">    &#125;,<span class="number">1000</span>);</div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
 <h4 id="digest说明"><a href="#digest说明" class="headerlink" title="digest说明"></a>digest说明</h4><p>当调用ng开头的指令或者服务，在这种情况下，AngularJS就会自动调用$digest()触发$digest循环。当$digest循环开始的时候，他就会启动每一个监听器(watcher)。这些监听器(watcher)会去检查当前的数据模型(model)中的值是否与最后一次计算的值相同，如果不相同，那么，对应的监听函数就会被执行</p>
 <h4 id="watch说明"><a href="#watch说明" class="headerlink" title="$watch说明"></a>$watch说明</h4><ul>
 <li>在digest执行时，如果watch观察到value和上次执行时值不一样时，就会被触发</li>
@@ -794,7 +843,7 @@
 <li><p>$watch会返回一个函数，想要注销这个watch可以使用函数</p>
 </li>
 </ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-app</span>=<span class="string">""</span>&gt;</span></div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"firstController"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">value</span>=<span class="string">""</span> <span class="attr">ng-model</span>=<span class="string">"name"</span>/&gt;</span></div><div class="line">            改变次数:&#123;&#123;count&#125;&#125;-&#123;&#123;name&#125;&#125;</div><div class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"app/index.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"angularjs.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div><div class="line">   </div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></div><div class="line">var firstController = function($scope)&#123;</div><div class="line"> </div><div class="line">    $scope.name = 'ttxsgoto';</div><div class="line">    $scope.data = &#123;</div><div class="line">        name :'ttxs',</div><div class="line">        count:20</div><div class="line">    &#125;</div><div class="line">    $scope.count = 0;</div><div class="line">  </div><div class="line">    // 监听一个model 当一个model每次改变时 都会触发第2个函数</div><div class="line">    $scope.$watch('name',function(newValue,oldValue)&#123;</div><div class="line">  </div><div class="line">        ++$scope.count;</div><div class="line">  </div><div class="line">        if($scope.count &gt; 30)&#123;</div><div class="line">            $scope.name = '已经大于30次了';</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">  </div><div class="line">    $scope.$watch('data',function()&#123;</div><div class="line"> </div><div class="line">    &#125;,true)</div><div class="line">&#125;</div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-app</span>=<span class="string">""</span>&gt;</span></div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"firstController"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">value</span>=<span class="string">""</span> <span class="attr">ng-model</span>=<span class="string">"name"</span>/&gt;</span></div><div class="line">            改变次数:&#123;&#123;count&#125;&#125;-&#123;&#123;name&#125;&#125;</div><div class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"app/index.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"angularjs.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div><div class="line">   </div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></div><div class="line"><span class="keyword">var</span> firstController = <span class="function"><span class="keyword">function</span>(<span class="params">$scope</span>)</span>&#123;</div><div class="line"> </div><div class="line">    $scope.name = <span class="string">'ttxsgoto'</span>;</div><div class="line">    $scope.data = &#123;</div><div class="line">        <span class="attr">name</span> :<span class="string">'ttxs'</span>,</div><div class="line">        <span class="attr">count</span>:<span class="number">20</span></div><div class="line">    &#125;</div><div class="line">    $scope.count = <span class="number">0</span>;</div><div class="line">  </div><div class="line">    <span class="comment">// 监听一个model 当一个model每次改变时 都会触发第2个函数</span></div><div class="line">    $scope.$watch(<span class="string">'name'</span>,<span class="function"><span class="keyword">function</span>(<span class="params">newValue,oldValue</span>)</span>&#123;</div><div class="line">  </div><div class="line">        ++$scope.count;</div><div class="line">  </div><div class="line">        <span class="keyword">if</span>($scope.count &gt; <span class="number">30</span>)&#123;</div><div class="line">            $scope.name = <span class="string">'已经大于30次了'</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">  </div><div class="line">    $scope.$watch(<span class="string">'data'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line"> </div><div class="line">    &#125;,<span class="literal">true</span>)</div><div class="line">&#125;</div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
 ]]></content>
     
     <summary type="html">
@@ -934,107 +983,6 @@
     
     
       <category term="Directive" scheme="https://ttxsgoto.github.io/tags/Directive/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Angularjs Services常用服务</title>
-    <link href="https://ttxsgoto.github.io/2017/08/20/angular-servers/"/>
-    <id>https://ttxsgoto.github.io/2017/08/20/angular-servers/</id>
-    <published>2017-08-20T12:22:02.000Z</published>
-    <updated>2017-12-04T02:02:34.000Z</updated>
-    
-    <content type="html"><![CDATA[<ul>
-<li>Constant</li>
-<li>Value</li>
-<li>Factory</li>
-<li>Service</li>
-<li>Run</li>
-<li>Provider</li>
-<li>Decorator</li>
-</ul>
-<p>应用里大部分的业务逻辑和持久化数据都应该放在service里<br>service可以用来永久保存应用的数据，并且这些数据可以在不同的controller之间使用</p>
-<h4 id="Constant"><a href="#Constant" class="headerlink" title="Constant"></a>Constant</h4><ul>
-<li>定义常量，从注册后就不会在改变</li>
-<li>constant创建服务返回一个json对象,这个对象里可以有参数,可以有方法,一般constant创建的服务不会去修改它的内容</li>
-<li>可以在注入到任何方法中调用</li>
-<li>constant服务不能通过decorator进行装饰<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">'myApp'</span>, [])</div><div class="line">  .constant(<span class="string">'getData'</span>,&#123;</div><div class="line">        <span class="attr">url</span>:<span class="string">'http://localhost:5500/products'</span>,</div><div class="line">        <span class="attr">name</span>:<span class="string">'ttxs'</span>,</div><div class="line">        <span class="attr">age</span>:<span class="number">28</span>,</div><div class="line">        <span class="attr">getId</span>:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="number">1</span></div><div class="line">        &#125;</div><div class="line">    &#125;)</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="Value"><a href="#Value" class="headerlink" title="Value"></a>Value</h4><ul>
-<li>value创建服务返回一个json对象,这个对象里可以有参数,可以有方法,如果属性和方法需要被修改内容,就用value来创建服务</li>
-<li>可以注入到controller，directive</li>
-<li>value可以被装饰</li>
-</ul>
-<p>constant和value主要就是用于存放一些数据或方法以供使用,区别是constant一般是存放固定内容,value存放可能会被修改的内容</p>
-<h4 id="Factory"><a href="#Factory" class="headerlink" title="Factory"></a>Factory</h4><ul>
-<li>一个可注入的函数，调用factory时只是调用普通的function，所以factory可以返回任何东西，函数需要有返回值obj，而service可以不用返回</li>
-<li>Factory 一般就是创建一个对象，然后在对这个对象添加方法与数据，最后将些对象返回即可</li>
-<li>和constant,value的区别:factory服务是有一个处理过程,经过这个过程,才返回结果的</li>
-</ul>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">'myApp'</span>, [])</div><div class="line">    .factory(<span class="string">'getData'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        <span class="keyword">var</span> myname = <span class="string">'ttxs'</span>;</div><div class="line">        <span class="keyword">var</span> age = <span class="number">28</span>;</div><div class="line">        <span class="keyword">var</span> id = <span class="number">1</span>;</div><div class="line">        <span class="keyword">return</span> &#123;</div><div class="line">            <span class="attr">name</span>: myname,</div><div class="line">            <span class="attr">age</span>: age,</div><div class="line">            <span class="attr">getId</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">                <span class="keyword">return</span> id</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
-<h4 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h4><ul>
-<li>可注入的构造器，它用在controller中通信或者共享数据,适合使用在功能控制比较多的service里面</li>
-<li>service里可以不返回东西，因为angularJS会调用new关键字来创建对象</li>
-<li>seivce定义的服务不能在.config中使用！只有provider定义的才可以</li>
-<li>这里的值都应该使用this定义</li>
-<li>自定义服务return 返回值必须为对象,不能为字符串,数字等<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> app = angular.module(<span class="string">'myApp'</span>, []);</div><div class="line">app.controller(<span class="string">'myController'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope, myService</span>) </span>&#123;</div><div class="line">    $scope.getPrivate = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        alert(myService.getPrivate());</div><div class="line">    &#125;;</div><div class="line">    $scope.getPUbluc = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        alert(myService.variable);</div><div class="line">    &#125;;</div><div class="line">&#125;);</div><div class="line"> </div><div class="line">app.controller(<span class="string">'myController2'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope, myService</span>) </span>&#123;</div><div class="line">	<span class="comment">// do something</span></div><div class="line">&#125;);</div><div class="line"> </div><div class="line">app.service(<span class="string">'myService'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">     <span class="built_in">console</span>.log(<span class="string">'myService'</span>);</div><div class="line">    <span class="keyword">var</span> privateValue = <span class="string">"I am Private"</span>;</div><div class="line">    <span class="keyword">this</span>.variable = <span class="string">"This is public"</span>;</div><div class="line">    <span class="keyword">this</span>.getPrivate = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> privateValue;</div><div class="line">    &#125;;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="Run"><a href="#Run" class="headerlink" title="Run"></a>Run</h4><ul>
-<li>在注入启动之后执行某些操作，而这些操作需要在页面对用户可用之前执行，使用run方法；即在config方法之后controller方法之前调用</li>
-<li>使用场景：远程加载模板，需要在使用前加入缓存，或者在操作前判断用户是否登录，未登录需先跳转到登录页面</li>
-</ul>
-<h4 id="Provider"><a href="#Provider" class="headerlink" title="Provider"></a>Provider</h4><ul>
-<li>$provide服务负责告诉Angular如何创造一个新的可注入的东西：即服务;服务会被叫做供应商的东西来定义，你可以使用$provide来创建一个供应商。你需要使用$provide中的provider()方法来定义一个供应商，同时你也可以通过要求$provide被注入到一个应用的config函数中来获得$provide服务</li>
-<li>provider必须有一个$get方法，是所有封装函数都是由provider封装的</li>
-<li>provider是一个可配置的factory</li>
-</ul>
-<pre><code class="js"><span class="keyword">var</span> myApp = angular.module(<span class="string">'myApp'</span>,[],<span class="function"><span class="keyword">function</span>(<span class="params">$provide</span>)</span>{
-
-    <span class="comment">// 自定义服务</span>
-    $provide.provider(<span class="string">'CustomService'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
-
-        <span class="keyword">this</span>.$get = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
-            <span class="keyword">return</span> {
-                <span class="attr">message</span> : <span class="string">'CustomService Message'</span>
-            }
-        }
-    });
-
-    <span class="comment">// 自定义工厂,返回值为任意值</span>
-    $provide.factory(<span class="string">'CustomFactory'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
-        <span class="keyword">return</span> [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>];
-    });
-
-    <span class="comment">// 自定义服务, 返回值必须为对象,不能为字符串,数字等</span>
-    $provide.service(<span class="string">'CustomService2'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
-        <span class="keyword">return</span> [<span class="string">'xxx'</span>];
-        <span class="comment">// return 'abc';</span>
-    })
-</code></pre>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>1) 服务的实例被注入到控制器以后,都是一个引用对象,无论被注入多少个控制器中,实际都指向同一个对象,无论修改其中的哪一个,其它所有的服务都会被改变<br>2) constant服务不能通过decorator进行装饰<br>3) 固定的参数和方法,使用constant;可能被修改的参数和方法,使用value<br>4) 逻辑处理后得到的参数或方法,使用factory<br>5) Service 是用”new”关键字实例化的。因此，你应该给”this”添加属性，然后 service 返回”this”。你把 service 传进 controller 之后，在controller里 “this” 上的属性就可以通过 service 来使用<br>6) Providers 是唯一一种你可以传进 .config() 函数的 service。当你想要在 service 对象启用之前，先进行模块范围的配置，那就应该用 provider<br>7) Factory/service是第一个注入时才实例化，而provider不是，它是在config之前就已实例化</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;ul&gt;
-&lt;li&gt;Constant&lt;/li&gt;
-&lt;li&gt;Value&lt;/li&gt;
-&lt;li&gt;Factory&lt;/li&gt;
-&lt;li&gt;Service&lt;/li&gt;
-&lt;li&gt;Run&lt;/li&gt;
-&lt;li&gt;Provider&lt;/li&gt;
-&lt;li&gt;Decorator&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;应用里大部分的业务
-    
-    </summary>
-    
-      <category term="Angularjs" scheme="https://ttxsgoto.github.io/categories/Angularjs/"/>
-    
-    
-      <category term="Services" scheme="https://ttxsgoto.github.io/tags/Services/"/>
     
   </entry>
   
