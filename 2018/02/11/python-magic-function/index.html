@@ -1,0 +1,362 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Python 特殊方法 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明主要说明类的特殊方法(也叫魔法方法)，了解使用场景和方法，使用时方便查询
+具体说明创建实例和销毁__new____init____del__1234567891011121314151617181920class Foo01:    def __new__(cls, *args, **kwarg">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/02/11/python-magic-function/" title="Python 特殊方法" itemprop="url">Python 特殊方法</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-02-11T13:13:59.000Z" itemprop="datePublished">2018-02-11</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#具体说明"><span class="toc-number">2.</span> <span class="toc-text">具体说明</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#创建实例和销毁"><span class="toc-number">2.1.</span> <span class="toc-text">创建实例和销毁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#new"><span class="toc-number">2.1.1.</span> <span class="toc-text">__new__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#init"><span class="toc-number">2.1.2.</span> <span class="toc-text">__init__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#del"><span class="toc-number">2.1.3.</span> <span class="toc-text">__del__</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#属性管理"><span class="toc-number">2.2.</span> <span class="toc-text">属性管理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#getattr"><span class="toc-number">2.2.1.</span> <span class="toc-text">__getattr__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#getattribute"><span class="toc-number">2.2.2.</span> <span class="toc-text">__getattribute__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#setattr"><span class="toc-number">2.2.3.</span> <span class="toc-text">__setattr__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#delattr"><span class="toc-number">2.2.4.</span> <span class="toc-text">__delattr__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#dir"><span class="toc-number">2.2.5.</span> <span class="toc-text">__dir__</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#序列表示形式"><span class="toc-number">2.3.</span> <span class="toc-text">序列表示形式</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#str"><span class="toc-number">2.3.1.</span> <span class="toc-text">__str__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#repr"><span class="toc-number">2.3.2.</span> <span class="toc-text">__repr__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#bytes"><span class="toc-number">2.3.3.</span> <span class="toc-text">__bytes__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#doc"><span class="toc-number">2.3.4.</span> <span class="toc-text">__doc__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#format"><span class="toc-number">2.3.5.</span> <span class="toc-text">__format__</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#集合管理"><span class="toc-number">2.4.</span> <span class="toc-text">集合管理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#len"><span class="toc-number">2.4.1.</span> <span class="toc-text">__len__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#getitem"><span class="toc-number">2.4.2.</span> <span class="toc-text">__getitem__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#setitem"><span class="toc-number">2.4.3.</span> <span class="toc-text">__setitem__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#delitem"><span class="toc-number">2.4.4.</span> <span class="toc-text">__delitem__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#contains"><span class="toc-number">2.4.5.</span> <span class="toc-text">__contains__</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#迭代枚举"><span class="toc-number">2.5.</span> <span class="toc-text">迭代枚举</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#iter"><span class="toc-number">2.5.1.</span> <span class="toc-text">__iter__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#next"><span class="toc-number">2.5.2.</span> <span class="toc-text">__next__</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#上下文管理"><span class="toc-number">2.6.</span> <span class="toc-text">上下文管理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#enter"><span class="toc-number">2.6.1.</span> <span class="toc-text">__enter__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#exit"><span class="toc-number">2.6.2.</span> <span class="toc-text">__exit__</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#描述符"><span class="toc-number">2.7.</span> <span class="toc-text">描述符</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#get"><span class="toc-number">2.7.1.</span> <span class="toc-text">__get__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#set"><span class="toc-number">2.7.2.</span> <span class="toc-text">__set__</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#delete"><span class="toc-number">2.7.3.</span> <span class="toc-text">__delete__</span></a></li></ol></li></ol></li></ol>
+		</div>
+		
+		<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>主要说明类的特殊方法(也叫魔法方法)，了解使用场景和方法，使用时方便查询</p>
+<h3 id="具体说明"><a href="#具体说明" class="headerlink" title="具体说明"></a>具体说明</h3><h4 id="创建实例和销毁"><a href="#创建实例和销毁" class="headerlink" title="创建实例和销毁"></a>创建实例和销毁</h4><h5 id="new"><a href="#new" class="headerlink" title="__new__"></a>__new__</h5><h5 id="init"><a href="#init" class="headerlink" title="__init__"></a>__init__</h5><h5 id="del"><a href="#del" class="headerlink" title="__del__"></a>__del__</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo01</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__new__</span><span class="params">(cls, *args, **kwargs)</span>:</span></div><div class="line">        <span class="string">"""对象实例化调用的第一个方法,在__init__之前, args,kwargs传递给init方法"""</span></div><div class="line">        print(<span class="string">'__new__'</span>)</div><div class="line">        <span class="keyword">return</span> super().__new__(cls)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></div><div class="line">    	<span class="string">"""初始化实例操作"""</span></div><div class="line">        print(<span class="string">'__init__'</span>)</div><div class="line">        self.name = name</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">    	<span class="string">""" del 时调用，或实例自行销毁时调用"""</span></div><div class="line">        print(<span class="string">'__del__'</span>)</div><div class="line">        <span class="keyword">return</span></div><div class="line"> </div><div class="line"> </div><div class="line">foo = Foo01(name=<span class="string">'ttxs'</span>)  <span class="comment"># __init__</span></div><div class="line">print(foo.name)  <span class="comment"># ttxs</span></div><div class="line"><span class="keyword">del</span> foo  <span class="comment"># __del__</span></div></pre></td></tr></table></figure>
+<h4 id="属性管理"><a href="#属性管理" class="headerlink" title="属性管理"></a>属性管理</h4><h5 id="getattr"><a href="#getattr" class="headerlink" title="__getattr__"></a>__getattr__</h5><h5 id="getattribute"><a href="#getattribute" class="headerlink" title="__getattribute__"></a>__getattribute__</h5><h5 id="setattr"><a href="#setattr" class="headerlink" title="__setattr__"></a>__setattr__</h5><h5 id="delattr"><a href="#delattr" class="headerlink" title="__delattr__"></a>__delattr__</h5><h5 id="dir"><a href="#dir" class="headerlink" title="__dir__"></a>__dir__</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo02</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span><span class="params">(self, item)</span>:</span></div><div class="line">        <span class="string">""" 该方法在访问一个不存在的属性时调用 """</span></div><div class="line">        print(<span class="string">'__getattr__'</span>)</div><div class="line">        <span class="keyword">if</span> item <span class="keyword">not</span> <span class="keyword">in</span> self.__dict__:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line">        <span class="keyword">return</span> super(Foo02, self).__getattr__(item)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__setattr__</span><span class="params">(self, key, value)</span>:</span></div><div class="line">        <span class="string">""" 该方法在对属性进行赋值和修改时调用,应该避免"无限递归"错误,如: self.name = 'xxx' """</span></div><div class="line">        print(<span class="string">'__setattr__'</span>)</div><div class="line">        <span class="comment"># self.key = value    # 每一次属性赋值时, __setattr__都会被调用，因此不断调用自身导致无限递归</span></div><div class="line">        self.__dict__[key] = value</div><div class="line">        <span class="keyword">return</span> super(Foo02, self).__setattr__(key, value)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__delattr__</span><span class="params">(self, item)</span>:</span></div><div class="line">        <span class="string">""" 该方法在删除属性时调用 """</span></div><div class="line">        print(<span class="string">'__delattr__'</span>)</div><div class="line">        <span class="comment"># del self.item         # 无限递归, 原因同上</span></div><div class="line">        <span class="keyword">return</span> super(Foo02, self).__delattr__(item)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getattribute__</span><span class="params">(self, item)</span>:</span></div><div class="line">        <span class="string">""" 该方法在属性被访问时调用,调用__getattr__前必定会调用 __getattribute__ """</span></div><div class="line">        print(<span class="string">'__getattribute__'</span>)</div><div class="line">        <span class="keyword">return</span> super(Foo02, self).__getattribute__(item)</div><div class="line"> </div><div class="line"> </div><div class="line">foo02 = Foo02()</div><div class="line">foo02.abc = <span class="string">'abc'</span>  <span class="comment"># 调用__setattr__方法</span></div><div class="line">print(foo02.abc)  <span class="comment"># 调用__getattribute__方法</span></div><div class="line">print(<span class="string">'error---'</span>, foo02.x)  <span class="comment"># 调用__getattr__方法</span></div><div class="line">foo02.__dict__  <span class="comment"># 调用__getattribute__方法</span></div><div class="line"><span class="keyword">del</span> foo02.abc  <span class="comment"># 调用__delattr__方法</span></div></pre></td></tr></table></figure>
+<h4 id="序列表示形式"><a href="#序列表示形式" class="headerlink" title="序列表示形式"></a>序列表示形式</h4><h5 id="str"><a href="#str" class="headerlink" title="__str__"></a>__str__</h5><h5 id="repr"><a href="#repr" class="headerlink" title="__repr__"></a>__repr__</h5><h5 id="bytes"><a href="#bytes" class="headerlink" title="__bytes__"></a>__bytes__</h5><h5 id="doc"><a href="#doc" class="headerlink" title="__doc__"></a>__doc__</h5><h5 id="format"><a href="#format" class="headerlink" title="__format__"></a>__format__</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo03</span>:</span></div><div class="line">    <span class="string">""" 文档展示说明表示 (__doc__)"""</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, id)</span>:</span></div><div class="line">        self.name = name</div><div class="line">        self.id = id</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">""" 主要针对程序的调试,调用和使用,如果定义了str函数print会调用str,没有就调用repr函数 """</span></div><div class="line">        print(<span class="string">'__repr__'</span>)</div><div class="line">        <span class="keyword">return</span> <span class="string">'%s with %s id'</span> % (self.name, self.id)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""print方法时调用"""</span></div><div class="line">        print(<span class="string">'__str__'</span>)</div><div class="line">        <span class="keyword">return</span> self.name.capitalize()</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__bytes__</span><span class="params">(self)</span>:</span></div><div class="line">        print(<span class="string">'__bytes__'</span>)</div><div class="line">        <span class="keyword">return</span> <span class="string">'%s in bytes is %s'</span> % (self.name, self.id)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__format__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">""" 调用format方法时 """</span></div><div class="line">        print(<span class="string">'__format__'</span>)</div><div class="line">        <span class="keyword">return</span> <span class="string">'%s in format is %s'</span> % (self.name, self.id)</div><div class="line"> </div><div class="line"> </div><div class="line">foo03 = Foo03(name=<span class="string">'ttxsgoto'</span>, id=<span class="number">666</span>)</div><div class="line">print(Foo05.__doc__)    <span class="comment"># 说明文档信息</span></div><div class="line">print(foo05)            <span class="comment"># __str__()方法</span></div><div class="line"> </div><div class="line">f = Foo03(name=<span class="string">'ttxsgoto'</span>, id=<span class="number">666</span>)</div><div class="line">f.__format__()</div><div class="line">ff = bytes(f)  <span class="comment"># bytes调用</span></div></pre></td></tr></table></figure>
+<h4 id="集合管理"><a href="#集合管理" class="headerlink" title="集合管理"></a>集合管理</h4><h5 id="len"><a href="#len" class="headerlink" title="__len__"></a>__len__</h5><h5 id="getitem"><a href="#getitem" class="headerlink" title="__getitem__"></a>__getitem__</h5><h5 id="setitem"><a href="#setitem" class="headerlink" title="__setitem__"></a>__setitem__</h5><h5 id="delitem"><a href="#delitem" class="headerlink" title="__delitem__"></a>__delitem__</h5><h5 id="contains"><a href="#contains" class="headerlink" title="__contains__"></a>__contains__</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo04</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></div><div class="line">        <span class="keyword">if</span> value <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            self.value = &#123;&#125;</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            self.value = value</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""表示集合长度"""</span></div><div class="line">        <span class="keyword">return</span> len(self.value)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span><span class="params">(self, item)</span>:</span></div><div class="line">        <span class="string">"""执行self[item],调用该方法"""</span></div><div class="line">        print(<span class="string">'__getitem__'</span>)</div><div class="line">        <span class="keyword">return</span> self.value[item]</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__setitem__</span><span class="params">(self, key, value)</span>:</span></div><div class="line">        <span class="string">"""执行self[key]=value,调用该方法"""</span></div><div class="line">        print(<span class="string">'__setitem__'</span>)</div><div class="line">        self.value[key] = value</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__delitem__</span><span class="params">(self, key)</span>:</span></div><div class="line">        <span class="string">"""执行 del self[key],调用该方法"""</span></div><div class="line">        print(<span class="string">'__delitem__'</span>)</div><div class="line">        <span class="keyword">del</span> self.value[key]</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__contains__</span><span class="params">(self, item)</span>:</span></div><div class="line">        <span class="string">"""判断item是否在容器中,调用该方法in/not in,如 item in container"""</span></div><div class="line">        print(<span class="string">'__contains__'</span>)</div><div class="line">        <span class="keyword">if</span> item <span class="keyword">in</span> self.value:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">True</span></div><div class="line">        <span class="keyword">return</span> <span class="keyword">False</span></div><div class="line"> </div><div class="line"> </div><div class="line">foo04 = Foo04(value=&#123;<span class="string">'a'</span>: <span class="string">'a'</span>&#125;)</div><div class="line">foo04[<span class="string">'xx'</span>] = <span class="string">'abc'</span>  <span class="comment"># 调用__setitem__方法</span></div><div class="line">print(foo04[<span class="string">'xx'</span>])  <span class="comment"># 调用__getitem__方法</span></div><div class="line">print(len(foo04))  <span class="comment"># 调用__len__方法</span></div><div class="line"> </div><div class="line"><span class="keyword">if</span> <span class="string">'xx'</span> <span class="keyword">in</span> foo04:  <span class="comment"># 调用__contains__方法</span></div><div class="line">    print(<span class="string">'ok'</span>)</div><div class="line"><span class="keyword">else</span>:</div><div class="line">    print(<span class="string">'error'</span>)</div></pre></td></tr></table></figure>
+<h4 id="迭代枚举"><a href="#迭代枚举" class="headerlink" title="迭代枚举"></a>迭代枚举</h4><h5 id="iter"><a href="#iter" class="headerlink" title="__iter__"></a>__iter__</h5><h5 id="next"><a href="#next" class="headerlink" title="__next__"></a>__next__</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> re</div><div class="line"><span class="keyword">import</span> reprlib</div><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> abc</div><div class="line"> </div><div class="line">RE_WORD = re.compile(<span class="string">'\w+'</span>)</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo04</span>:</span></div><div class="line">    <span class="string">""" 通过索引从文本中提取单词 """</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, text)</span>:</span></div><div class="line">        self.text = text</div><div class="line">        self.words = RE_WORD.findall(text)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">""" 可迭代对象 """</span></div><div class="line">        <span class="keyword">return</span> SentenceIterator(self.words)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self, index)</span>:</span></div><div class="line">        <span class="keyword">return</span> len(self.words)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'Sentence(%s)'</span> % reprlib.repr(self.text)  <span class="comment"># 用于生成大型数据结构的简略字符串表示形式, 默认情况下最多30个字符</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SentenceIterator</span>:</span></div><div class="line">    <span class="string">""" 迭代器 """</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, words)</span>:</span></div><div class="line">        self.words = words</div><div class="line">        self.index = <span class="number">0</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__next__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">""" 返回下一个可用的元素，如果没有，抛出StopIteration异常 """</span></div><div class="line">        <span class="keyword">try</span>:</div><div class="line">            word = self.words[self.index]</div><div class="line">        <span class="keyword">except</span> IndexError:</div><div class="line">            <span class="keyword">raise</span> StopIteration()</div><div class="line">        self.index += <span class="number">1</span></div><div class="line">        <span class="keyword">return</span> word</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">""" 返回self，以便在应该使用可迭代对象的地方使用迭代器 """</span></div><div class="line">        <span class="keyword">return</span> self</div><div class="line"> </div><div class="line"> </div><div class="line">foo04 = Foo04(text=<span class="string">'"The time has come," the Walrus said,'</span>)</div><div class="line"> </div><div class="line">print(foo04)</div><div class="line">print(iter(foo04))</div><div class="line"><span class="keyword">for</span> foo <span class="keyword">in</span> foo04:</div><div class="line">    print(foo)</div><div class="line"> </div><div class="line">print(issubclass(SentenceIterator, abc.Iterator))</div></pre></td></tr></table></figure>
+<h4 id="上下文管理"><a href="#上下文管理" class="headerlink" title="上下文管理"></a>上下文管理</h4><h5 id="enter"><a href="#enter" class="headerlink" title="__enter__"></a>__enter__</h5><h5 id="exit"><a href="#exit" class="headerlink" title="__exit__"></a>__exit__</h5><p>参考链接<br><a href="https://ttxsgoto.github.io/2017/04/11/python-contextlib/">https://ttxsgoto.github.io/2017/04/11/python-contextlib/</a></p>
+<h4 id="描述符"><a href="#描述符" class="headerlink" title="描述符"></a>描述符</h4><h5 id="get"><a href="#get" class="headerlink" title="__get__"></a>__get__</h5><h5 id="set"><a href="#set" class="headerlink" title="__set__"></a>__set__</h5><h5 id="delete"><a href="#delete" class="headerlink" title="__delete__"></a>__delete__</h5><p>参考链接<br><a href="https://ttxsgoto.github.io/2018/01/31/descriptor/">https://ttxsgoto.github.io/2018/01/31/descriptor/</a><br><a href="https://ttxsgoto.github.io/2018/02/01/python-descriptor02/">https://ttxsgoto.github.io/2018/02/01/python-descriptor02/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/class/">class</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/02/11/python-magic-function/" data-title="Python 特殊方法 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2018/02/05/django-define-auth/"  title="Django 自定义认证字段">
+ <strong>旧一篇:</strong><br/> 
+ <span>Django 自定义认证字段
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Python 特殊方法" data-thread-key="python-magic-function" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/python-magic-function"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
