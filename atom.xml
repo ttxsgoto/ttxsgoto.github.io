@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2018-04-14T04:14:40.000Z</updated>
+  <updated>2018-04-16T02:39:53.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,82 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Mysql索引</title>
+    <link href="https://ttxsgoto.github.io/2018/04/15/yw-mysql-index/"/>
+    <id>https://ttxsgoto.github.io/2018/04/15/yw-mysql-index/</id>
+    <published>2018-04-15T14:34:24.000Z</published>
+    <updated>2018-04-16T02:39:53.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="索引类型"><a href="#索引类型" class="headerlink" title="索引类型"></a>索引类型</h4><p>B-Tree索引：mysql引擎默认支持这种索引</p>
+<p>MyISAM 使用前缀技术使索引更小<br>InnoDB 按照原数据格式进行存储</p>
+<p>B-Tree索引可以快速访问数据，不再需要进行全表扫描获取需要的数据，从索引的根节点开始进行搜索</p>
+<h4 id="Mysql索引原理"><a href="#Mysql索引原理" class="headerlink" title="Mysql索引原理"></a>Mysql索引原理</h4><h5 id="b-树介绍"><a href="#b-树介绍" class="headerlink" title="b+树介绍"></a>b+树介绍</h5><p><img src="https://ttxsgoto.github.io/img/mysql/btree_index.jpg" alt=""><br>如上图，是一颗b+树。浅蓝色的块我们称之为一个磁盘块，可以看到每个磁盘块包含<br>几个数据项（深蓝色所示）和指针（黄色所示），如磁盘块1包含数据项17和35，包含指针P1、P2、P3，P1表示小于17的磁盘块，P2表示在17和35之间的磁盘块，P3表示大于35的磁盘块。</p>
+<p>真实的数据存在于叶子节点，即3、5、9、10、13、15、28、29、36、60、75、79、90、99。非叶子节点不存储真实的数据，只存储指引搜索方向的数据项，如17、35并不真实存在于数据表中</p>
+<h5 id="查找过程"><a href="#查找过程" class="headerlink" title="查找过程"></a>查找过程</h5><p>在上图中，如果要查找数据项29，那么首先会把磁盘块1由磁盘加载到内存，此时发生一次IO，在内存中用二分查找确定29在17和35之间，锁定磁盘块1的P2指针，内存时间因为非常短（相比磁盘的IO）可以忽略不计，通过磁盘块1的P2指针的磁盘地址把磁盘块3由磁盘加载到内存，发生第二次IO，29在26和30之间，锁定磁盘块3的P2指针，通过指针加载磁盘块8到内存，发生第三次IO，同时内存中做二分查找找到29，结束查询，总计三次IO。真实的情况是，3层的b+树可以表示上百万的数据，如果上百万的数据查找只需要三次IO，性能提高将是巨大的，如果没有索引，每个数据项都要发生一次IO，那么总共需要百万次的IO，显然成本非常非常高</p>
+<h5 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h5><p>(1) 索引字段要尽量的小。</p>
+<p>通过上面b+树的查找过程，或者通过真实的数据存在于叶子节点这个事实可知，IO次数取决于b+数的高度h。</p>
+<p>假设当前数据表的数据量为N，每个磁盘块的数据项的数量是m，则树高h=㏒(m+1)N，当数据量N一定的情况下，m越大，h越小；</p>
+<p>而m = 磁盘块的大小/数据项的大小，磁盘块的大小也就是一个数据页的大小，是固定的；如果数据项占的空间越小，数据项的数量m越多，树的高度h越低。这就是为什么每个数据项，即索引字段要尽量的小，比如int占4字节，要比bigint8字节少一半。</p>
+<p>(2) 索引的最左匹配特性</p>
+<p>当b+树的数据项是复合的数据结构，比如(name,age,sex)的时候，b+数是按照从左到右的顺序来建立搜索树的，比如当(张三,20,F)这样的数据来检索的时候，b+树会优先比较name来确定下一步的所搜方向，如果name相同再依次比较age和sex，最后得到检索的数据；但当(20,F)这样的没有name的数据来的时候，b+树就不知道下一步该查哪个节点，因为建立搜索树的时候name就是第一个比较因子，必须要先根据name来搜索才能知道下一步去哪里查询。比如当(张三,F)这样的数据来检索时，b+树可以用name来指定搜索方向，但下一个字段age的缺失，所以只能把名字等于张三的数据都找到，然后再匹配性别是F的数据了， 这个是非常重要的性质，即索引的最左匹配特性。</p>
+<h4 id="Mysql索引类型"><a href="#Mysql索引类型" class="headerlink" title="Mysql索引类型"></a>Mysql索引类型</h4><ul>
+<li><p>主键索引 PRIMARY KEY</p>
+<p>  它是一种特殊的唯一索引，不允许有空值,一般是在建表的时候同时创建主键索引</p>
+</li>
+<li><p>唯一索引 UNIQUE</p>
+<p>  唯一索引列的值必须唯一，但允许有空值。如果是组合索引，则列值的组合必须唯一。可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD UNIQUE (column)</p>
+</li>
+<li><p>普通索引 INDEX</p>
+<p>  这是最基本的索引，它没有任何限制。可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD INDEX index_name (column)</p>
+</li>
+<li><p>组合索引 INDEX</p>
+<p>  组合索引，即一个索引包含多个列。可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD INDEX index_name(column1, column2, column3)</p>
+</li>
+<li><p>全文索引 FULLTEXT</p>
+<p>  全文索引（也称全文检索）是目前搜索引擎使用的一种关键技术。它能够利用分词技术等多种算法智能分析出文本文字中关键字词的频率及重要性，然后按照一定的算法规则智能地筛选出我们想要的搜索结果。<br>  可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD FULLTEXT (column)</p>
+</li>
+</ul>
+<h4 id="索引优点"><a href="#索引优点" class="headerlink" title="索引优点"></a>索引优点</h4><ul>
+<li>索引大大减少了服务器需要扫描的数据量</li>
+<li>索引可以帮助服务器避免排序和临时表</li>
+<li>索引可以将随机IO变成顺序IO</li>
+</ul>
+<h4 id="建索引的策略"><a href="#建索引的策略" class="headerlink" title="建索引的策略"></a>建索引的策略</h4><ol>
+<li><p>最左前缀匹配原则</p>
+<p> mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整</p>
+<p> 一般情况，在创建多列索引时，where子句中使用最频繁的一列放在最左边</p>
+</li>
+<li><p>=和in可以乱序</p>
+<p> 比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</p>
+</li>
+<li><p>尽量选择区分度高的作为索引</p>
+<p> 区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少，唯一键的区分度是1，而一些状态、性别字段可能在大数据面前区分度就是0，那可能有人会问，这个比例有什么经验值吗？使用场景不同，这个值也很难确定，一般需要join的字段我们都要求是0.1以上，即平均1条扫描10条记录</p>
+</li>
+<li><p>索引列不能参与计算，保持列“干净”</p>
+</li>
+<li><p>尽量的扩展索引，不要新建索引</p>
+<p> 比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</p>
+</li>
+</ol>
+<h4 id="查询分析器-explain命令"><a href="#查询分析器-explain命令" class="headerlink" title="查询分析器-explain命令"></a>查询分析器-explain命令</h4><p> EXPLAIN SELECT * from trip_coord WHERE city=”cd”\G;<br> 对应的字段说明：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- id: SELECT 查询的标识符. 每个 SELECT 都会自动分配一个唯一的标识符.</div><div class="line">- select_type: SELECT 查询的类型.</div><div class="line">- table: 查询的是哪个表</div><div class="line">- type: join 类型</div><div class="line">- possible_keys: 此次查询中可能选用的索引</div><div class="line">- key: 此次查询中确切使用到的索引.</div><div class="line">- key_len: 索引长度</div><div class="line">- ref: 哪个字段或常数与 key 一起被使用</div><div class="line">- rows: 显示此查询一共扫描了多少行. 这个是一个估计值.</div><div class="line">- extra: 额外的信息</div></pre></td></tr></table></figure></p>
+<p>其中重要的字段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">select_type:</div><div class="line">- SIMPLE, 表示此查询不包含 UNION 查询或子查询</div><div class="line">- PRIMARY, 表示此查询是最外层的查询</div><div class="line">- UNION, 表示此查询是 UNION 的第二或随后的查询</div><div class="line">- DEPENDENT UNION, UNION 中的第二个或后面的查询语句, 取决于外面的查询</div><div class="line">- UNION RESULT, UNION 的结果</div><div class="line">- SUBQUERY, 子查询中的第一个 SELECT</div><div class="line">- DEPENDENT SUBQUERY: 子查询中的第一个 SELECT, 取决于外面的查询. 即子查询依赖于外层查询的结果.</div><div class="line">- DERIVED：派生表的 SELECT(FROM 子句的子查询)</div><div class="line">type:</div><div class="line">system &gt; const &gt; eq_ref &gt; ref &gt; fulltext &gt; ref_or_null &gt; index_merge &gt; unique_subquery &gt; index_subquery &gt; range &gt; index &gt; ALL</div><div class="line">ALL 类型因为是全表扫描, 因此在相同的查询条件下, 它是速度最慢的.</div><div class="line">key:</div><div class="line">MySQL 在当前查询时所真正使用到的索引.</div><div class="line">key_len:</div><div class="line">表示查询优化器使用了索引的字节数. 这个字段可以评估组合索引是否完全被使用, 或只有最左部分字段被使用到</div><div class="line">ref:</div><div class="line">显示索引的哪一列被使用了，如果可能的话，是一个常数</div><div class="line">rows:</div><div class="line">估算 SQL 要查找到结果集需要扫描读取的数据行数,原则上rows越小越好</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;索引类型&quot;&gt;&lt;a href=&quot;#索引类型&quot; class=&quot;headerlink&quot; title=&quot;索引类型&quot;&gt;&lt;/a&gt;索引类型&lt;/h4&gt;&lt;p&gt;B-Tree索引：mysql引擎默认支持这种索引&lt;/p&gt;
+&lt;p&gt;MyISAM 使用前缀技术使索引更小&lt;br&gt;InnoDB 按
+    
+    </summary>
+    
+      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
+    
+    
+      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
+    
+  </entry>
   
   <entry>
     <title>(转)优化DRF的性能</title>
@@ -899,38 +975,6 @@
     
     
       <category term="Itemloaders" scheme="https://ttxsgoto.github.io/tags/Itemloaders/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Scrapy Architecture</title>
-    <link href="https://ttxsgoto.github.io/2017/12/01/scrapy-state/"/>
-    <id>https://ttxsgoto.github.io/2017/12/01/scrapy-state/</id>
-    <published>2017-12-01T14:03:49.000Z</published>
-    <updated>2017-12-04T08:41:39.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h4><p><img src="https://ttxsgoto.github.io/img/scrapy/scrapy.png" alt="Scrapy"><br>所有过程的流向都依赖于 ENGINE 模块<br>1.Engine从Spider中得到初始的Requests，Requests将被用来进行爬取；<br>2.Engine将得到的Requests放入Scheduler中，然后不断从Scheduler询问下次可以进行爬去的Requests；<br>3.Scheduler返回下一次需要被爬取的Requests给Engine；<br>4.Engine将Requests发送给Downloader，通过Downloader Middlewares 的<code>process_request()</code> 方法进行传递；<br>5.Downloader完成了对该页面的下载，Downloader将会生成一个与该页面相关的Response对象，通过Downloader Middlewares的<code>process_response()</code>方法进行传递,将其反馈给Engine；<br>6.Engine从Downloader得到Response再发送给Spider进行处理；通过Spidder Middlewares的<code>process_spider_input()</code>方法进行传递；<br>7.Spider 处理从Engine返回的Reponse对象，返回被爬取的items和新的Requests给Engine继续处理,通过Spider Middlewares的<code>process_spider_output()</code>方法进行传递；<br>8.Engine发送已经被处理的Items到Item Pipelines，然后将新的Requests发送给Scheduler请求下一次可能的新的Request进行爬取；<br>9.再重复整个流程，直到Scheduler中没有新的Requests</p>
-<h4 id="Scrapy主要模块"><a href="#Scrapy主要模块" class="headerlink" title="Scrapy主要模块"></a>Scrapy主要模块</h4><ul>
-<li>Engine:核心引擎来控制所有组件之间的数据流向</li>
-<li>Scheduler:从Engine当中获取Requests，然后将它们放入队列当中，当Engine需要再触发</li>
-<li>Downloader:主要是取得web页面，然后将它们返回给Engine，Engine再反馈给Spider</li>
-<li>Downloader middleware:位于Engine和Downloader之间的一个特殊的“钩子(hook)”，主要处理从Engine发送给 Downloader的Requests，以及从Downloader传递给Engine的Responses</li>
-<li>Spiders:自定义类，用来解析Responses并提取相关的元素items</li>
-<li>Spider middleware:是Engine和Spiders之间的一个特殊的钩子(hook)，主要处理spider的input(reponses)和output(items和requests)</li>
-<li>Item Pipeline:处理Spider提取完成的items,对数据进行清洗，验证和持久化处理</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;架构&quot;&gt;&lt;a href=&quot;#架构&quot; class=&quot;headerlink&quot; title=&quot;架构&quot;&gt;&lt;/a&gt;架构&lt;/h4&gt;&lt;p&gt;&lt;img src=&quot;https://ttxsgoto.github.io/img/scrapy/scrapy.png&quot; alt=&quot;Scrap
-    
-    </summary>
-    
-      <category term="Scrapy" scheme="https://ttxsgoto.github.io/categories/Scrapy/"/>
-    
-    
-      <category term="Architecture" scheme="https://ttxsgoto.github.io/tags/Architecture/"/>
     
   </entry>
   

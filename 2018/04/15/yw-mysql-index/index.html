@@ -1,0 +1,409 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Mysql索引 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="索引类型B-Tree索引：mysql引擎默认支持这种索引
+MyISAM 使用前缀技术使索引更小InnoDB 按照原数据格式进行存储
+B-Tree索引可以快速访问数据，不再需要进行全表扫描获取需要的数据，从索引的根节点开始进行搜索
+Mysql索引原理b+树介绍如上图，是一颗b+树。浅蓝色的块我们称之为">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/04/15/yw-mysql-index/" title="Mysql索引" itemprop="url">Mysql索引</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-04-15T14:34:24.000Z" itemprop="datePublished">2018-04-15</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#索引类型"><span class="toc-number">1.</span> <span class="toc-text">索引类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Mysql索引原理"><span class="toc-number">2.</span> <span class="toc-text">Mysql索引原理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#b-树介绍"><span class="toc-number">2.1.</span> <span class="toc-text">b+树介绍</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#查找过程"><span class="toc-number">2.2.</span> <span class="toc-text">查找过程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#性质"><span class="toc-number">2.3.</span> <span class="toc-text">性质</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Mysql索引类型"><span class="toc-number">3.</span> <span class="toc-text">Mysql索引类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#索引优点"><span class="toc-number">4.</span> <span class="toc-text">索引优点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#建索引的策略"><span class="toc-number">5.</span> <span class="toc-text">建索引的策略</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查询分析器-explain命令"><span class="toc-number">6.</span> <span class="toc-text">查询分析器-explain命令</span></a></li></ol>
+		</div>
+		
+		<h4 id="索引类型"><a href="#索引类型" class="headerlink" title="索引类型"></a>索引类型</h4><p>B-Tree索引：mysql引擎默认支持这种索引</p>
+<p>MyISAM 使用前缀技术使索引更小<br>InnoDB 按照原数据格式进行存储</p>
+<p>B-Tree索引可以快速访问数据，不再需要进行全表扫描获取需要的数据，从索引的根节点开始进行搜索</p>
+<h4 id="Mysql索引原理"><a href="#Mysql索引原理" class="headerlink" title="Mysql索引原理"></a>Mysql索引原理</h4><h5 id="b-树介绍"><a href="#b-树介绍" class="headerlink" title="b+树介绍"></a>b+树介绍</h5><p><img src="https://ttxsgoto.github.io/img/mysql/btree_index.jpg" alt=""><br>如上图，是一颗b+树。浅蓝色的块我们称之为一个磁盘块，可以看到每个磁盘块包含<br>几个数据项（深蓝色所示）和指针（黄色所示），如磁盘块1包含数据项17和35，包含指针P1、P2、P3，P1表示小于17的磁盘块，P2表示在17和35之间的磁盘块，P3表示大于35的磁盘块。</p>
+<p>真实的数据存在于叶子节点，即3、5、9、10、13、15、28、29、36、60、75、79、90、99。非叶子节点不存储真实的数据，只存储指引搜索方向的数据项，如17、35并不真实存在于数据表中</p>
+<h5 id="查找过程"><a href="#查找过程" class="headerlink" title="查找过程"></a>查找过程</h5><p>在上图中，如果要查找数据项29，那么首先会把磁盘块1由磁盘加载到内存，此时发生一次IO，在内存中用二分查找确定29在17和35之间，锁定磁盘块1的P2指针，内存时间因为非常短（相比磁盘的IO）可以忽略不计，通过磁盘块1的P2指针的磁盘地址把磁盘块3由磁盘加载到内存，发生第二次IO，29在26和30之间，锁定磁盘块3的P2指针，通过指针加载磁盘块8到内存，发生第三次IO，同时内存中做二分查找找到29，结束查询，总计三次IO。真实的情况是，3层的b+树可以表示上百万的数据，如果上百万的数据查找只需要三次IO，性能提高将是巨大的，如果没有索引，每个数据项都要发生一次IO，那么总共需要百万次的IO，显然成本非常非常高</p>
+<h5 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h5><p>(1) 索引字段要尽量的小。</p>
+<p>通过上面b+树的查找过程，或者通过真实的数据存在于叶子节点这个事实可知，IO次数取决于b+数的高度h。</p>
+<p>假设当前数据表的数据量为N，每个磁盘块的数据项的数量是m，则树高h=㏒(m+1)N，当数据量N一定的情况下，m越大，h越小；</p>
+<p>而m = 磁盘块的大小/数据项的大小，磁盘块的大小也就是一个数据页的大小，是固定的；如果数据项占的空间越小，数据项的数量m越多，树的高度h越低。这就是为什么每个数据项，即索引字段要尽量的小，比如int占4字节，要比bigint8字节少一半。</p>
+<p>(2) 索引的最左匹配特性</p>
+<p>当b+树的数据项是复合的数据结构，比如(name,age,sex)的时候，b+数是按照从左到右的顺序来建立搜索树的，比如当(张三,20,F)这样的数据来检索的时候，b+树会优先比较name来确定下一步的所搜方向，如果name相同再依次比较age和sex，最后得到检索的数据；但当(20,F)这样的没有name的数据来的时候，b+树就不知道下一步该查哪个节点，因为建立搜索树的时候name就是第一个比较因子，必须要先根据name来搜索才能知道下一步去哪里查询。比如当(张三,F)这样的数据来检索时，b+树可以用name来指定搜索方向，但下一个字段age的缺失，所以只能把名字等于张三的数据都找到，然后再匹配性别是F的数据了， 这个是非常重要的性质，即索引的最左匹配特性。</p>
+<h4 id="Mysql索引类型"><a href="#Mysql索引类型" class="headerlink" title="Mysql索引类型"></a>Mysql索引类型</h4><ul>
+<li><p>主键索引 PRIMARY KEY</p>
+<p>  它是一种特殊的唯一索引，不允许有空值,一般是在建表的时候同时创建主键索引</p>
+</li>
+<li><p>唯一索引 UNIQUE</p>
+<p>  唯一索引列的值必须唯一，但允许有空值。如果是组合索引，则列值的组合必须唯一。可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD UNIQUE (column)</p>
+</li>
+<li><p>普通索引 INDEX</p>
+<p>  这是最基本的索引，它没有任何限制。可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD INDEX index_name (column)</p>
+</li>
+<li><p>组合索引 INDEX</p>
+<p>  组合索引，即一个索引包含多个列。可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD INDEX index_name(column1, column2, column3)</p>
+</li>
+<li><p>全文索引 FULLTEXT</p>
+<p>  全文索引（也称全文检索）是目前搜索引擎使用的一种关键技术。它能够利用分词技术等多种算法智能分析出文本文字中关键字词的频率及重要性，然后按照一定的算法规则智能地筛选出我们想要的搜索结果。<br>  可以在创建表的时候指定，也可以修改表结构，如：<br>  ALTER TABLE table_name ADD FULLTEXT (column)</p>
+</li>
+</ul>
+<h4 id="索引优点"><a href="#索引优点" class="headerlink" title="索引优点"></a>索引优点</h4><ul>
+<li>索引大大减少了服务器需要扫描的数据量</li>
+<li>索引可以帮助服务器避免排序和临时表</li>
+<li>索引可以将随机IO变成顺序IO</li>
+</ul>
+<h4 id="建索引的策略"><a href="#建索引的策略" class="headerlink" title="建索引的策略"></a>建索引的策略</h4><ol>
+<li><p>最左前缀匹配原则</p>
+<p> mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整</p>
+<p> 一般情况，在创建多列索引时，where子句中使用最频繁的一列放在最左边</p>
+</li>
+<li><p>=和in可以乱序</p>
+<p> 比如a = 1 and b = 2 and c = 3 建立(a,b,c)索引可以任意顺序，mysql的查询优化器会帮你优化成索引可以识别的形式</p>
+</li>
+<li><p>尽量选择区分度高的作为索引</p>
+<p> 区分度的公式是count(distinct col)/count(*)，表示字段不重复的比例，比例越大我们扫描的记录数越少，唯一键的区分度是1，而一些状态、性别字段可能在大数据面前区分度就是0，那可能有人会问，这个比例有什么经验值吗？使用场景不同，这个值也很难确定，一般需要join的字段我们都要求是0.1以上，即平均1条扫描10条记录</p>
+</li>
+<li><p>索引列不能参与计算，保持列“干净”</p>
+</li>
+<li><p>尽量的扩展索引，不要新建索引</p>
+<p> 比如表中已经有a的索引，现在要加(a,b)的索引，那么只需要修改原来的索引即可</p>
+</li>
+</ol>
+<h4 id="查询分析器-explain命令"><a href="#查询分析器-explain命令" class="headerlink" title="查询分析器-explain命令"></a>查询分析器-explain命令</h4><p> EXPLAIN SELECT * from trip_coord WHERE city=”cd”\G;<br> 对应的字段说明：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- id: SELECT 查询的标识符. 每个 SELECT 都会自动分配一个唯一的标识符.</div><div class="line">- select_type: SELECT 查询的类型.</div><div class="line">- table: 查询的是哪个表</div><div class="line">- type: join 类型</div><div class="line">- possible_keys: 此次查询中可能选用的索引</div><div class="line">- key: 此次查询中确切使用到的索引.</div><div class="line">- key_len: 索引长度</div><div class="line">- ref: 哪个字段或常数与 key 一起被使用</div><div class="line">- rows: 显示此查询一共扫描了多少行. 这个是一个估计值.</div><div class="line">- extra: 额外的信息</div></pre></td></tr></table></figure></p>
+<p>其中重要的字段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">select_type:</div><div class="line">- SIMPLE, 表示此查询不包含 UNION 查询或子查询</div><div class="line">- PRIMARY, 表示此查询是最外层的查询</div><div class="line">- UNION, 表示此查询是 UNION 的第二或随后的查询</div><div class="line">- DEPENDENT UNION, UNION 中的第二个或后面的查询语句, 取决于外面的查询</div><div class="line">- UNION RESULT, UNION 的结果</div><div class="line">- SUBQUERY, 子查询中的第一个 SELECT</div><div class="line">- DEPENDENT SUBQUERY: 子查询中的第一个 SELECT, 取决于外面的查询. 即子查询依赖于外层查询的结果.</div><div class="line">- DERIVED：派生表的 SELECT(FROM 子句的子查询)</div><div class="line">type:</div><div class="line">system &gt; const &gt; eq_ref &gt; ref &gt; fulltext &gt; ref_or_null &gt; index_merge &gt; unique_subquery &gt; index_subquery &gt; range &gt; index &gt; ALL</div><div class="line">ALL 类型因为是全表扫描, 因此在相同的查询条件下, 它是速度最慢的.</div><div class="line">key:</div><div class="line">MySQL 在当前查询时所真正使用到的索引.</div><div class="line">key_len:</div><div class="line">表示查询优化器使用了索引的字节数. 这个字段可以评估组合索引是否完全被使用, 或只有最左部分字段被使用到</div><div class="line">ref:</div><div class="line">显示索引的哪一列被使用了，如果可能的话，是一个常数</div><div class="line">rows:</div><div class="line">估算 SQL 要查找到结果集需要扫描读取的数据行数,原则上rows越小越好</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Index/">Index</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Mysql/">Mysql</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/04/15/yw-mysql-index/" data-title="Mysql索引 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2018/04/14/rest-framwork-serializer-efficient/"  title="(转)优化DRF的性能">
+ <strong>旧一篇:</strong><br/> 
+ <span>(转)优化DRF的性能
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Mysql索引" data-thread-key="yw-mysql-index" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-index"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
