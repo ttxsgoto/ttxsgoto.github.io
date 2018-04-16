@@ -1,0 +1,393 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>(转)优化DRF的性能 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="看似简单直观的 Django REST Framework 及其嵌套序列化可能会大大降低你的 API 端的性能。你的服务器的其他部分的响应能力也会被某一个低效的 REST API 影响问题的根源就是 「N+1 selects problem」；首先查询数据库一次得到表中的数据（例如，Customer">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/04/14/rest-framwork-serializer-efficient/" title="(转)优化DRF的性能" itemprop="url">(转)优化DRF的性能</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-04-14T04:05:12.000Z" itemprop="datePublished">2018-04-14</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#为什么-Django-REST-Framework-那么容易造成这个问题"><span class="toc-number">1.</span> <span class="toc-text">为什么 Django REST Framework 那么容易造成这个问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#解决-Django-「懒惰」的基本方法"><span class="toc-number">2.</span> <span class="toc-text">解决 Django 「懒惰」的基本方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#解决-Django-REST-Framework-性能问题的标准化模式"><span class="toc-number">3.</span> <span class="toc-text">解决 Django REST Framework 性能问题的标准化模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#那么怎样编写-setup-eager-loading"><span class="toc-number">4.</span> <span class="toc-text">那么怎样编写 setup_eager_loading</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#链接"><span class="toc-number">5.</span> <span class="toc-text">链接</span></a></li></ol>
+		</div>
+		
+		<p>看似简单直观的 Django REST Framework 及其<a href="http://www.django-rest-framework.org/api-guide/relations/#nested-relationships" target="_blank" rel="external">嵌套序列化</a>可能会大大降低你的 API 端的性能。你的服务器的其他部分的响应能力也会被某一个低效的 REST API 影响<br>问题的根源就是 「N+1 selects problem」；首先查询数据库一次得到表中的数据（例如，Customers），然后每个用户的其他字段又需要循环不止一次地查询数据库（例如 customer.country.Name）。使用 Django 的 ORM，很容易造成这个问题，而使用 DRF，同样会造成这个问题。</p>
+<p>幸运的是，目前有修复 Django REST Framework 性能问题的解决方法，而且不需要对代码进行重大重组。它只是需要使用未充分利用的 select_related 和 prefetch_related 方法来执行所谓的「预加载」。</p>
+<h4 id="为什么-Django-REST-Framework-那么容易造成这个问题"><a href="#为什么-Django-REST-Framework-那么容易造成这个问题" class="headerlink" title="为什么 Django REST Framework 那么容易造成这个问题"></a>为什么 Django REST Framework 那么容易造成这个问题</h4><p>当你建立一个 DRF 视图时，你经常需要从多个相关表中返回相应的数据。写这样的功能是很简单的，DRF文档中有详细的介绍。不过不幸的是，只要你在序列化中使用嵌套关系，你就在拿你的性能开玩笑，像很多的性能问题一样，它往往只出现有大型数据集的真实生产环境中。</p>
+<p>这种情况发生就是因为 Django 的 ORM 是惰性的，它只取出当前查询所需响应最小的数据。它不知道你是否有成百上千的相同或相似的数据也需要取出来。</p>
+<p>况且如今，当我们谈到数据库型网站时，一般情况下，最重要的响应指标就是数据库的访问次数。</p>
+<p>在 DRF 视图中，我们每次序列化有嵌套关系的数据时都会出现问题，如下面的例子：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">CustomerSerializer</span><span class="params">(serializers.ModelSerializer)</span>:</span>  </div><div class="line">    <span class="comment"># This can kill performance!</span></div><div class="line">    order_descriptions = serializers.StringRelatedField(many=<span class="keyword">True</span>) </div><div class="line">    <span class="comment"># So can this, same exact problem...</span></div><div class="line">    orders = OrderSerializer(many=<span class="keyword">True</span>, read_only=<span class="keyword">True</span>) <span class="comment"># This can kill performance!</span></div></pre></td></tr></table></figure></p>
+<p>CustomerSerializer 函数里面是这么运行的：</p>
+<ul>
+<li>获取所有的 customers (需要往返到数据库)</li>
+<li>对于第一个返回的客户，获取他们的 orders (又需要去往返一趟数据库)</li>
+<li>对于第二个返回的客户，获取他们的 orders (又需要去往返一趟数据库)</li>
+<li>对于第三个返回的客户，获取他们的 orders (又需要去往返一趟数据库)</li>
+<li>对于第四个返回的客户，获取他们的 orders (又需要去往返一趟数据库)</li>
+<li>对于第五个返回的客户，获取他们的 orders (又需要去往返一趟数据库)</li>
+<li>对于第六个返回的客户，获取他们的 orders (又需要去往返一趟数据库)</li>
+<li>。。。。终于意识到，千万不要有更多的用户</li>
+</ul>
+<h4 id="解决-Django-「懒惰」的基本方法"><a href="#解决-Django-「懒惰」的基本方法" class="headerlink" title="解决 Django 「懒惰」的基本方法"></a>解决 Django 「懒惰」的基本方法</h4><p>现在我们解决这个问题的方法就是「预加载」。从本质上讲，就是你提前警告 Django ORM 你要一遍又一遍的告诉它同样无聊的指令。在上面的例子中，在 DRF 开始获取前很简单地加上这句话就搞定了：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">queryset = queryset.prefetch_related(<span class="string">'orders'</span>)</div></pre></td></tr></table></figure></p>
+<p>当 DRF 调用上述相同序列化 customers 时，出现的是这种情况：</p>
+<ul>
+<li>获取所有 customers（执行两个往返数据库操作，第一个是获取 customers，第二个获取相关 customers 的所有相关的 orders。）</li>
+<li>对于第一个返回的 customers，获取其 order（不需要访问数据库，我们已经在上一步中获取了所需要的数据）</li>
+<li>对于第二个返回的 customers，获取其 order （不需要访问数据库）</li>
+<li>对于第三个返回的 customers，获取其 order （不需要访问数据库）</li>
+<li>对于第四个返回的 customers，获取其 order （不需要访问数据库）</li>
+<li>对于第五个返回的 customers，获取其 order （不需要访问数据库）</li>
+<li>对于第六个返回的 customers，获取其 order （不需要访问数据库）</li>
+<li>你又意识到，你可以有了很多 customers，已经不需要再继续等待去数据库。</li>
+</ul>
+<p>其实 Django ORM 的「预备」是在第1步进行请求，它在本地高速缓存的数据能够提供步骤2+所要求的数据。与之前往返数据库相比从本地缓存数据中读取数据基本上是瞬时的，所以我们在有很多 customers 时就获得了巨大的性能加速。</p>
+<h4 id="解决-Django-REST-Framework-性能问题的标准化模式"><a href="#解决-Django-REST-Framework-性能问题的标准化模式" class="headerlink" title="解决 Django REST Framework 性能问题的标准化模式"></a>解决 Django REST Framework 性能问题的标准化模式</h4><p>我们已经确定了一个优化 Django REST Framework 性能问题的通用模式，那就是每当序列化查询嵌套字段时，我们就添加一个新的 @staticmethod 名叫 setup_eager_loading，像这样：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">CustomerSerializer</span><span class="params">(serializers.ModelSerializer)</span>:</span>  </div><div class="line">    orders = OrderSerializer(many=<span class="keyword">True</span>, read_only=<span class="keyword">True</span>)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">setup_eager_loading</span><span class="params">(cls, queryset)</span>:</span></div><div class="line">        <span class="string">""" Perform necessary eager loading of data. """</span></div><div class="line">        queryset = queryset.prefetch_related(<span class="string">'orders'</span>)</div><div class="line">        <span class="keyword">return</span> queryset</div></pre></td></tr></table></figure></p>
+<p>这样，不管哪里要用到这个序列化，都只需在调用序列化前简单调用 setup_eager_loading ，就像这样：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">customer_qs = Customers.objects.all()  </div><div class="line">customer_qs = CustomerSerializer.setup_eager_loading(customer_qs)  <span class="comment"># Set up eager loading to avoid N+1 selects  </span></div><div class="line">post_data = CustomerSerializer(customer_qs, many=<span class="keyword">True</span>).data</div></pre></td></tr></table></figure></p>
+<p>或者，如果你有一个 APIView 或 ViewSet，你可以在 get_queryset 方法里调用 setup_eager_loading：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_queryset</span><span class="params">(self)</span>:</span>  </div><div class="line">    queryset = Customers.objects.all()</div><div class="line">    <span class="comment"># Set up eager loading to avoid N+1 selects</span></div><div class="line">    queryset = self.get_serializer_class().setup_eager_loading(queryset)  </div><div class="line">    <span class="keyword">return</span> queryset</div></pre></td></tr></table></figure></p>
+<h4 id="那么怎样编写-setup-eager-loading"><a href="#那么怎样编写-setup-eager-loading" class="headerlink" title="那么怎样编写 setup_eager_loading"></a>那么怎样编写 setup_eager_loading</h4><p>想要解决 Django 的性能问题，最困难的部分就是要熟悉 select_related ，我们将详细介绍它们在 Django ORM 和 Django REST Framework 中怎样使用。</p>
+<ul>
+<li>select_related：Django ORM 最简单的预加载工具，对于所有一对一或多对一的数据关系，你都需要从同一个父对象获取数据，如客户的公司名称。这个会被翻译成 SQL 的 join 操作，这样父对象的数据就和子对象的数据一起取回来了。（<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.select_related" target="_blank" rel="external">参见官方文档</a>）</li>
+<li>prefetch_related：对于更复杂的关系，即每个结果有多行（例如 many=True ），像多对一或多对多的数据关系，比如上述客户的订单，这转化一个二级 SQL 查询，通常有很长的 WHERE … IN ，从中只选择相关的行。（<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.select_related" target="_blank" rel="external">参见官方文档</a>）</li>
+<li>Prefetch：用于复杂 prefetch_related 查询，例如过滤子集。它也可以嵌套setup_eager_loading 进行调用。 （<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.select_related" target="_blank" rel="external">参见官方文档</a>）</li>
+</ul>
+<h4 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h4><p><a href="http://blog.oneapm.com/apm-tech/304.html" target="_blank" rel="external">http://blog.oneapm.com/apm-tech/304.html</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ORM/">ORM</a><a href="/tags/Serializer/">Serializer</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/DRF/">DRF</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/04/14/rest-framwork-serializer-efficient/" data-title="(转)优化DRF的性能 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2018/04/13/django-orm-queryset/"  title="Django ORM数据查询操作优化">
+ <strong>旧一篇:</strong><br/> 
+ <span>Django ORM数据查询操作优化
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="(转)优化DRF的性能" data-thread-key="rest-framwork-serializer-efficient" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/rest-framwork-serializer-efficient"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
