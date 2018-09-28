@@ -89,6 +89,35 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2017/04/07/yw-chroot/" title="运维 Chroot限制普通用户登录特定目录" itemprop="url">
+      
+        运维 Chroot限制普通用户登录特定目录
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >需求普通用户登陆到服务器上只能执行ssh，ls，cat等有限的基础命令，另外要求把用户锁定在特定目录中，不能看到其他任何目录下文件
+实现
+创建查看日志的用户
+ 12useradd -m ttxsgoto -s /bin/bashpasswd ttxsgoto
+
+初始化chroot</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-04-07T14:18:33.000Z" itemprop="datePublished">2017-04-07</time>
+      
+          <a href="/2017/04/07/yw-chroot/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2017/04/05/yw-pwd/" title="运维 Linux中密码策略" itemprop="url">
       
         运维 Linux中密码策略
@@ -319,37 +348,6 @@ SimpleTestCase:扩展了unittest.TestCase的一些基本功能
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/03/18/ansible/" title="运维 Ansible" itemprop="url">
-      
-        运维 Ansible
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >Ansible架构图
-Ansible特性- 基于python实现，由Paramike，PyYAML和Jinjia2三个关键模块
-- 部署简单，agentless
-- 使用ssh协议
-- 主从集中化模式
-- 支持自定义模块
-- 支持playbook
-- 幂等性：一种操作可重复多次结</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-03-18T13:19:30.000Z" itemprop="datePublished">2017-03-18</time>
-      
-          <a href="/2017/03/18/ansible/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/page/5/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/">下一页 &raquo;</a>
@@ -406,7 +404,7 @@ Ansible特性- 基于python实现，由Paramike，PyYAML和Jinjia2三个关键�
 		
 			<li><a href="/categories/中间件/" title="中间件">中间件<sup>1</sup></a></li>
 		
-			<li><a href="/categories/运维/" title="运维">运维<sup>15</sup></a></li>
+			<li><a href="/categories/运维/" title="运维">运维<sup>16</sup></a></li>
 		
 		</ul>
 </div>

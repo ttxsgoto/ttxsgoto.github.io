@@ -1,0 +1,448 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>运维 Redis进阶 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发
+使用redis目的
+高性能：将数据缓存在redis中，访问数据从缓存中取，不直接访问数据库，提高页面响应效率
+高并发：在大的并发情况下，直接操作缓存能够承受的请求远大于直接访问数据库，这时我们需要使用redis">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/09/28/redis-advance/" title="运维 Redis进阶" itemprop="url">运维 Redis进阶</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-09-28T13:14:53.000Z" itemprop="datePublished">2018-09-28</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#使用redis目的"><span class="toc-number">1.</span> <span class="toc-text">使用redis目的</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#一般应用场景："><span class="toc-number">2.</span> <span class="toc-text">一般应用场景：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常见数据结构和使用场景"><span class="toc-number">3.</span> <span class="toc-text">常见数据结构和使用场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#过期策略以及内存淘汰机制"><span class="toc-number">4.</span> <span class="toc-text">过期策略以及内存淘汰机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#持久化机制"><span class="toc-number">5.</span> <span class="toc-text">持久化机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#缓存雪崩"><span class="toc-number">6.</span> <span class="toc-text">缓存雪崩</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#缓存穿透"><span class="toc-number">7.</span> <span class="toc-text">缓存穿透</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#如何解决redis的并发竞争key问题"><span class="toc-number">8.</span> <span class="toc-text">如何解决redis的并发竞争key问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#redis和数据库双写一致性问题"><span class="toc-number">9.</span> <span class="toc-text">redis和数据库双写一致性问题</span></a></li></ol>
+		</div>
+		
+		<p>Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发</p>
+<h4 id="使用redis目的"><a href="#使用redis目的" class="headerlink" title="使用redis目的"></a>使用redis目的</h4><ul>
+<li>高性能：将数据缓存在redis中，访问数据从缓存中取，不直接访问数据库，提高页面响应效率</li>
+<li>高并发：在大的并发情况下，直接操作缓存能够承受的请求远大于直接访问数据库，这时我们需要使用redis做一个缓冲操作，让请求先访问到redis，而不是直接访问数据库</li>
+</ul>
+<h4 id="一般应用场景："><a href="#一般应用场景：" class="headerlink" title="一般应用场景："></a>一般应用场景：</h4><ul>
+<li>缓存-热数据：需要执行耗时久，计算结果不频繁变动的sql查询</li>
+<li>异步队列</li>
+<li>计数器：如统计点击数，INCRBY</li>
+<li>分布式锁与单线程机制</li>
+<li>最新列表：使用LPUSH命令构建List</li>
+<li>排行榜应用： 使用ZADD(有续集，sorted set)</li>
+<li>位操作(大数据处理)</li>
+</ul>
+<h4 id="常见数据结构和使用场景"><a href="#常见数据结构和使用场景" class="headerlink" title="常见数据结构和使用场景"></a>常见数据结构和使用场景</h4><ul>
+<li>String </li>
+</ul>
+<p>常用的命令： set、get、decr、incr、mget、mset<br>String 数据结构是简单的 Key-Value 类型，Value 可为字符和数值和其他类型的值<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 设置和获取key-value</span></div><div class="line">set mykey ttxsgoto</div><div class="line">get mykey</div><div class="line"> </div><div class="line"><span class="comment"># 原子递增</span></div><div class="line">set counter <span class="number">100</span></div><div class="line">incr counter ((integer) <span class="number">101</span>)</div><div class="line"> </div><div class="line"><span class="comment"># 一次性存储和获取多个key对应的值,mget 命令返回由值组成的数组</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; mset a <span class="number">10</span> b <span class="number">20</span> c <span class="number">30</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; mget a b c</div><div class="line"><span class="number">1</span>) <span class="string">"10"</span></div><div class="line"><span class="number">2</span>) <span class="string">"20"</span></div><div class="line"><span class="number">3</span>) <span class="string">"30"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; keys *</div><div class="line"><span class="number">1</span>) <span class="string">"ttxs"</span></div><div class="line"><span class="number">2</span>) <span class="string">"c"</span></div><div class="line"><span class="number">3</span>) <span class="string">"a"</span></div><div class="line"><span class="number">4</span>) <span class="string">"counter"</span></div><div class="line"><span class="number">5</span>) <span class="string">"b"</span></div><div class="line"><span class="number">6</span>) <span class="string">"mykey"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; exists a</div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; exists x</div><div class="line">(integer) <span class="number">0</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; type a</div><div class="line">string</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; <span class="keyword">del</span> a</div><div class="line">(integer) <span class="number">1</span></div><div class="line"> </div><div class="line"><span class="comment"># 设置过期时间</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; get b</div><div class="line"><span class="string">"20"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; expire b <span class="number">5</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; get b</div><div class="line">(nil)</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; set bbb <span class="number">1000</span> ex <span class="number">100</span></div><div class="line">OK</div><div class="line"><span class="comment"># 查看过期时间</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; ttl bbb</div><div class="line">(integer) <span class="number">95</span></div></pre></td></tr></table></figure></p>
+<ul>
+<li>Hash</li>
+</ul>
+<p>常用命令：hget、hset、 hmget、hmset、hgetall<br>Hash 是一个 String 类型的 Field 和 Value 的映射表，Hash 特别适合用于存储对象；后续操作的时候，你可以直接仅仅修改这个对象中的某个字段的值<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 由键值对组成</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hmset user:<span class="number">1000</span> username antirez birthyear <span class="number">1977</span> verified <span class="number">1</span></div><div class="line">OK</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hget user:<span class="number">1000</span> username</div><div class="line"><span class="string">"antirez"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hgetall user:<span class="number">1000</span></div><div class="line"><span class="number">1</span>) <span class="string">"username"</span></div><div class="line"><span class="number">2</span>) <span class="string">"antirez"</span></div><div class="line"><span class="number">3</span>) <span class="string">"birthyear"</span></div><div class="line"><span class="number">4</span>) <span class="string">"1977"</span></div><div class="line"><span class="number">5</span>) <span class="string">"verified"</span></div><div class="line"><span class="number">6</span>) <span class="string">"1"</span></div><div class="line"> </div><div class="line"><span class="comment"># 返回多个值</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hmget user:<span class="number">1000</span> username birthyear xxx</div><div class="line"><span class="number">1</span>) <span class="string">"antirez"</span></div><div class="line"><span class="number">2</span>) <span class="string">"1977"</span></div><div class="line"><span class="number">3</span>) (nil)</div></pre></td></tr></table></figure></p>
+<ul>
+<li>List</li>
+</ul>
+<p>常用命令：lpush、rpush、lpop、rpop、lrange<br>List 就是链表，Redis List 的应用场景非常多，也是 Redis 最重要的数据结构之一<br>Redis List 的实现为一个双向链表，即可以支持反向查找和遍历，更方便操作，不过带来了部分额外的内存开销<br>另外可以通过 lrange 命令，就是从某个元素开始读取多少个元素，可以基于 List 实现分页查询</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># lpush 向list的左边（头部）添加一个新元素</span></div><div class="line"><span class="comment"># rpush 向list的右边（尾部）添加一个新元素</span></div><div class="line"><span class="comment"># lrange 从list中取出一定范围的元素</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist A</div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist B</div><div class="line">(integer) <span class="number">2</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; lpush mylist first</div><div class="line">(integer) <span class="number">3</span></div><div class="line"><span class="comment"># </span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; lrange mylist <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"first"</span></div><div class="line"><span class="number">2</span>) <span class="string">"A"</span></div><div class="line"><span class="number">3</span>) <span class="string">"B"</span></div><div class="line"><span class="comment"># 写入多个值</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="string">"foo bar"</span></div><div class="line">(integer) <span class="number">9</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; lrange mylist <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"first"</span></div><div class="line"><span class="number">2</span>) <span class="string">"A"</span></div><div class="line"><span class="number">3</span>) <span class="string">"B"</span></div><div class="line"><span class="number">4</span>) <span class="string">"1"</span></div><div class="line"><span class="number">5</span>) <span class="string">"2"</span></div><div class="line"><span class="number">6</span>) <span class="string">"3"</span></div><div class="line"><span class="number">7</span>) <span class="string">"4"</span></div><div class="line"><span class="number">8</span>) <span class="string">"5"</span></div><div class="line"><span class="number">9</span>) <span class="string">"foo bar"</span></div><div class="line"> </div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist001 a b c</div><div class="line"><span class="comment"># 删除元素并同时返回删除的值</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpop mylist001</div><div class="line"><span class="string">"c"</span></div><div class="line"> </div><div class="line"><span class="comment"># ltrim把list从左边截取指定长度</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; ltrim mylist <span class="number">0</span> <span class="number">2</span></div><div class="line">OK</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; LRANGE mylist <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"first"</span></div><div class="line"><span class="number">2</span>) <span class="string">"A"</span></div><div class="line"><span class="number">3</span>) <span class="string">"B"</span></div><div class="line"><span class="comment"># 查看list中元素的个数</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; llen mylist</div><div class="line">(integer) <span class="number">6</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; <span class="keyword">del</span> mylist</div><div class="line">(integer) <span class="number">1</span></div></pre></td></tr></table></figure>
+<ul>
+<li>Set</li>
+</ul>
+<p>常用命令：sadd、spop、smembers、sunion<br>Set 对外提供的功能与 List 类似是一个列表的功能，特殊之处在于 Set 是可以自动排重<br>当你需要存储一个列表数据，又不希望出现重复数据时，可以使用Set，同时也支持交集、并集、差集操作<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 添加</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; sadd myset <span class="number">1</span> <span class="number">2</span> <span class="number">3</span></div><div class="line">(integer) <span class="number">3</span></div><div class="line"><span class="comment"># 查看所有</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; smembers myset</div><div class="line"><span class="number">1</span>) <span class="string">"1"</span></div><div class="line"><span class="number">2</span>) <span class="string">"2"</span></div><div class="line"><span class="number">3</span>) <span class="string">"3"</span></div><div class="line"><span class="comment"># 检查元素是否存在</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; sismember myset <span class="number">1</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; sismember myset <span class="number">4</span></div><div class="line">(integer) <span class="number">0</span></div></pre></td></tr></table></figure></p>
+<ul>
+<li>Sorted Set</li>
+</ul>
+<p>常用命令：zadd、zrange、zrem、zcard<br>和 Set 相比，Sorted Set 增加了一个权重参数 Score，使得集合中的元素能够按 Score 进行有序排列<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># zadd 添加</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1940</span> <span class="string">"Alan Kay"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1957</span> <span class="string">"Sophie Wilson"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1953</span> <span class="string">"Richard Stallman"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1949</span> <span class="string">"Anita Borg"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1965</span> <span class="string">"Yukihiro Matsumoto"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1914</span> <span class="string">"Hedy Lamarr"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1916</span> <span class="string">"Claude Shannon"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1969</span> <span class="string">"Linus Torvalds"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1912</span> <span class="string">"Alan Turing"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"> </div><div class="line"><span class="comment"># 查看数据</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrange hackers <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"Alan Turing"</span></div><div class="line"><span class="number">2</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"><span class="number">3</span>) <span class="string">"Claude Shannon"</span></div><div class="line"><span class="number">4</span>) <span class="string">"Alan Kay"</span></div><div class="line"><span class="number">5</span>) <span class="string">"Anita Borg"</span></div><div class="line"><span class="number">6</span>) <span class="string">"Richard Stallman"</span></div><div class="line"><span class="number">7</span>) <span class="string">"Sophie Wilson"</span></div><div class="line"><span class="number">8</span>) <span class="string">"Yukihiro Matsumoto"</span></div><div class="line"><span class="number">9</span>) <span class="string">"Linus Torvalds"</span></div><div class="line"> </div><div class="line"><span class="comment"># 反向查看数据</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrevrange hackers <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"Linus Torvalds"</span></div><div class="line"><span class="number">2</span>) <span class="string">"Yukihiro Matsumoto"</span></div><div class="line"><span class="number">3</span>) <span class="string">"Sophie Wilson"</span></div><div class="line"><span class="number">4</span>) <span class="string">"Richard Stallman"</span></div><div class="line"><span class="number">5</span>) <span class="string">"Anita Borg"</span></div><div class="line"><span class="number">6</span>) <span class="string">"Alan Kay"</span></div><div class="line"><span class="number">7</span>) <span class="string">"Claude Shannon"</span></div><div class="line"><span class="number">8</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"><span class="number">9</span>) <span class="string">"Alan Turing"</span></div><div class="line"> </div><div class="line"><span class="comment"># 查看对应的得分</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrange hackers <span class="number">0</span> <span class="number">-1</span> withscores</div><div class="line"> <span class="number">1</span>) <span class="string">"Alan Turing"</span></div><div class="line"> <span class="number">2</span>) <span class="string">"1912"</span></div><div class="line"> <span class="number">3</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"> <span class="number">4</span>) <span class="string">"1914"</span></div><div class="line"> <span class="number">5</span>) <span class="string">"Claude Shannon"</span></div><div class="line"> <span class="number">6</span>) <span class="string">"1916"</span></div><div class="line"> <span class="number">7</span>) <span class="string">"Alan Kay"</span></div><div class="line"> <span class="number">8</span>) <span class="string">"1940"</span></div><div class="line"> <span class="number">9</span>) <span class="string">"Anita Borg"</span></div><div class="line"><span class="number">10</span>) <span class="string">"1949"</span></div><div class="line"><span class="number">11</span>) <span class="string">"Richard Stallman"</span></div><div class="line"><span class="number">12</span>) <span class="string">"1953"</span></div><div class="line"><span class="number">13</span>) <span class="string">"Sophie Wilson"</span></div><div class="line"><span class="number">14</span>) <span class="string">"1957"</span></div><div class="line"><span class="number">15</span>) <span class="string">"Yukihiro Matsumoto"</span></div><div class="line"><span class="number">16</span>) <span class="string">"1965"</span></div><div class="line"><span class="number">17</span>) <span class="string">"Linus Torvalds"</span></div><div class="line"><span class="number">18</span>) <span class="string">"1969"</span></div><div class="line">  </div><div class="line"><span class="comment"># 小于1950的数据</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrangebyscore hackers -inf <span class="number">1950</span></div><div class="line"><span class="number">1</span>) <span class="string">"Alan Turing"</span></div><div class="line"><span class="number">2</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"><span class="number">3</span>) <span class="string">"Claude Shannon"</span></div><div class="line"><span class="number">4</span>) <span class="string">"Alan Kay"</span></div><div class="line"><span class="number">5</span>) <span class="string">"Anita Borg"</span></div></pre></td></tr></table></figure></p>
+<h4 id="过期策略以及内存淘汰机制"><a href="#过期策略以及内存淘汰机制" class="headerlink" title="过期策略以及内存淘汰机制"></a>过期策略以及内存淘汰机制</h4><p>redis采用的是定期删除+惰性删除策略</p>
+<ul>
+<li>定期删除：Redis 默认是每隔 100ms 就随机抽取一些设置了过期时间的 Key，检查其是否过期，如果过期就删除。注意这里是随机抽取的。为什么要随机？假如 Redis 存了几十万个 Key ，每隔 100ms 就遍历所有的设置过期时间的 Key 的话，就会给 CPU 带来很大的负载</li>
+<li><p>惰性删除 ：定期删除可能会导致很多过期 Key 到了时间并没有被删除掉。所以就有了惰性删除，也就是说在你获取某个key的时候，redis会检查一下，这个key如果设置了过期时间那么是否过期了？如果过期了此时就会删除</p>
+</li>
+<li><p>内存淘汰机制： 在redis配置文件中配置 # maxmemory-policy volatile-lru<br>Redis 提供 6 种数据淘汰策略：</p>
+</li>
+</ul>
+<pre><code>- volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰
+- volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰
+- volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰
+- allkeys-lru：当内存不足以容纳新写入数据时，在键空间中，移除最近最少使用的key（这个是最常用的）
+- allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰
+- no-enviction：禁止驱逐数据，也就是说当内存不足以容纳新写入数据时，新写入操作会报错
+</code></pre><h4 id="持久化机制"><a href="#持久化机制" class="headerlink" title="持久化机制"></a>持久化机制</h4><p>Redis 的一种持久化方式叫快照（snapshotting，RDB），另一种方式是只追加文件（append-only file，AOF）。</p>
+<ul>
+<li><p>RDB 快照持久化是 Redis 默认采用的持久化方式，在 redis.conf 配置文件中默认有此下配置：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">save <span class="number">900</span> <span class="number">1</span>              <span class="comment">#在900秒(15分钟)之后，如果至少有1个key发生变化，Redis就会自动触发BGSAVE命令创建快照。</span></div><div class="line">save <span class="number">300</span> <span class="number">10</span>            <span class="comment">#在300秒(5分钟)之后，如果至少有10个key发生变化，Redis就会自动触发BGSAVE命令创建快照。</span></div><div class="line">save <span class="number">60</span> <span class="number">10000</span>        <span class="comment">#在60秒(1分钟)之后，如果至少有10000个key发生变化，Redis就会自动触发BGSAVE命令创建快照。</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>AOF<br>与快照持久化相比，AOF 持久化的实时性更好，因此已成为主流的持久化方案<br>默认情况下 Redis 没有开启 AOF（append only file）方式的持久化，可以通过 appendonly 参数开启：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">appendonly yes</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>开启 AOF 持久化后每执行一条会更改 Redis 中的数据的命令，Redis 就会将该命令写入硬盘中的 AOF 文件。</p>
+<p>AOF 文件的保存位置和 RDB 文件的位置相同，都是通过 dir 参数设置的，默认的文件名是 appendonly.aof。</p>
+<p>在 Redis 的配置文件中存在三种不同的 AOF 持久化方式，它们分别是：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">appendfsync always     <span class="comment">#每次有数据修改发生时都会写入AOF文件,这样会严重降低Redis的速度</span></div><div class="line">appendfsync everysec  <span class="comment">#每秒钟同步一次，显示地将多个写命令同步到硬盘</span></div><div class="line">appendfsync no      <span class="comment">#让操作系统决定何时进行同步</span></div></pre></td></tr></table></figure></p>
+<p>为了兼顾数据和写入性能，用户可以考虑 appendfsync everysec 选项 ，让 Redis 每秒同步一次 AOF 文件，Redis 性能几乎没受到任何影响。</p>
+<ul>
+<li>Redis 4.0 对于持久化机制的优化</li>
+</ul>
+<p>Redis 4.0 开始支持 RDB 和 AOF 的混合持久化（默认关闭，可以通过配置项 aof-use-rdb-preamble 开启）。</p>
+<p>如果把混合持久化打开，AOF 重写的时候就直接把 RDB 的内容写到 AOF 文件开头。</p>
+<p>这样做的好处是可以结合 RDB 和 AOF 的优点, 快速加载同时避免丢失过多的数据。</p>
+<p>当然缺点也是有的，AOF 里面的 RDB 部分是压缩格式不再是 AOF 格式，可读性较差。</p>
+<h4 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h4><p>当缓存失效(过期)后引起系统性能急剧下降的情况</p>
+<p>解决方案：</p>
+<ul>
+<li><p>更新锁机制</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">对缓存更新操作进行加锁保护，保证只有一个线程进行缓存更新，未能获取更新锁的线程要么等待锁释放后重新读取缓存，要么返回一个空值或者默认值</div></pre></td></tr></table></figure>
+</li>
+<li><p>后台更新机制</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">由后台线程更新缓存， 不是由业务来更新缓存，缓存本身的有效期设置为永久，后台线程定时更新缓存</div></pre></td></tr></table></figure>
+</li>
+<li><p>给缓存的失效时间加一个随机值，避免集体失效</p>
+</li>
+<li>使用双缓存，缓存A和B,A设置失效时间，B不设置失效  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">- 从缓存A读取数据，有就返回</div><div class="line">- A没有数据，直接从B读取数据，直接返回，并异步启动一个更新线程</div><div class="line">- 更新线程同时更新A，B的缓存数据</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h4><p>请求缓存中不存在的数据，导致所有的请求都落到数据库上，造成数据库短时间内承受大量请求而崩掉</p>
+<p>解决方案：</p>
+<ul>
+<li>利用互斥锁，缓存失效的时候，先去获得锁，得到锁了，再去请求数据库。没得到锁，则休眠一段时间重试</li>
+<li>采用异步更新策略，无论key是否取到值，都直接返回，如果查询返回的数据为空也缓存清理。value值中维护一个缓存失效时间，缓存如果过期，异步起一个线程去读数据库，更新缓存。需要做缓存预热(项目启动前，先加载缓存)操作</li>
+</ul>
+<h4 id="如何解决redis的并发竞争key问题"><a href="#如何解决redis的并发竞争key问题" class="headerlink" title="如何解决redis的并发竞争key问题"></a>如何解决redis的并发竞争key问题</h4><p>所谓 Redis 的并发竞争 Key 的问题也就是多个系统同时对一个 Key 进行操作，但是最后执行的顺序和我们期望的顺序不同，这样也就导致了结果的不同</p>
+<p>推荐方案： 分布式锁（ZooKeeper 和 Redis 都可以实现分布式锁）。（如果不存在 Redis 的并发竞争 Key 问题，不要使用分布式锁，这样会影响性能），大家去抢锁，抢到锁就做set操作即可；</p>
+<h4 id="redis和数据库双写一致性问题"><a href="#redis和数据库双写一致性问题" class="headerlink" title="redis和数据库双写一致性问题"></a>redis和数据库双写一致性问题</h4><p>首先，采取正确更新策略，先更新数据库，再删缓存。其次，因为可能存在删除缓存失败的问题，提供一个补偿措施即可，例如利用消息队列</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Redis/">Redis</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/09/28/redis-advance/" data-title="运维 Redis进阶 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2018/09/17/django-migrations-error/"  title="Django mgirate 错误">
+ <strong>旧一篇:</strong><br/> 
+ <span>Django mgirate 错误
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="运维 Redis进阶" data-thread-key="redis-advance" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/redis-advance"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
