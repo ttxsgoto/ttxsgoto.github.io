@@ -4,15 +4,20 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>事务隔离 | ttxsgoto&#39; Blog</title>
+    <title>索引选择 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="事务隔离级别
-读未提交(read uncommitted) 一个事务还没提交时，它做的变更就能被别的事务看到
-读提交(read committed) 一个事务提交之后，它做的变更才会被其他事务看到
-可重复读(repeatable read) 一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的">
+    <meta name="description" content="优化器选择索引逻辑
+扫描行数
+使用临时表
+是否排序
+
+基数一个索引上不同值的个数，称之为“基数(cardinality)”;基数越大，索引的区分度越好
+show index from x 查看索引对应的基数
+
+采样统计， 通过设置参数innodb_stats_persistent来设置  12设置为">
     
     
     
@@ -89,10 +94,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/12/21/yw-mysql-isolation/" title="事务隔离" itemprop="url">事务隔离</a>
+      <a href="/2018/12/21/yw-mysql-select-index/" title="索引选择" itemprop="url">索引选择</a>
   </h1>
   <p class="article-time">
-    <time datetime="2018-12-21T03:06:31.000Z" itemprop="datePublished">2018-12-21</time>
+    <time datetime="2018-12-21T03:14:08.000Z" itemprop="datePublished">2018-12-21</time>
   </p>
 </header>
 	<div class="article-content">
@@ -100,40 +105,28 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#事务隔离级别"><span class="toc-number">1.</span> <span class="toc-text">事务隔离级别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#事务隔离-or-不隔离"><span class="toc-number">2.</span> <span class="toc-text">事务隔离 or 不隔离</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#“快照”在MVCC里是怎么工作的？"><span class="toc-number">3.</span> <span class="toc-text">“快照”在MVCC里是怎么工作的？</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#快照实现"><span class="toc-number">3.1.</span> <span class="toc-text">快照实现</span></a></li></ol></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#优化器选择索引逻辑"><span class="toc-number">1.</span> <span class="toc-text">优化器选择索引逻辑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#基数"><span class="toc-number">2.</span> <span class="toc-text">基数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#索引选择异常和处理"><span class="toc-number">3.</span> <span class="toc-text">索引选择异常和处理</span></a></li></ol>
 		</div>
 		
-		<h4 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h4><ul>
-<li>读未提交(read uncommitted) 一个事务还没提交时，它做的变更就能被别的事务看到</li>
-<li>读提交(read committed) 一个事务提交之后，它做的变更才会被其他事务看到</li>
-<li><p>可重复读(repeatable read) 一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数…</p>
-</li>
-<li><p>串行化(serializable) “写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时…</p>
-</li>
+		<h4 id="优化器选择索引逻辑"><a href="#优化器选择索引逻辑" class="headerlink" title="优化器选择索引逻辑"></a>优化器选择索引逻辑</h4><ul>
+<li>扫描行数</li>
+<li>使用临时表</li>
+<li>是否排序</li>
 </ul>
-<p>1、事务的特性：原子性、一致性、隔离性、持久性</p>
-<p>2、多事务同时执行的时候，可能会出现的问题：脏读、不可重复读、幻读</p>
-<p>3、事务隔离级别：读未提交、读提交、可重复读、串行化</p>
-<p>4、不同事务隔离级别的区别：<br>读未提交：一个事务还未提交，它所做的变更就可以被别的事务看到<br>读提交：一个事务提交之后，它所做的变更才可以被别的事务看到<br>可重复读：一个事务执行过程中看到的数据是一致的。未提交的更改对其他事务是不可见的<br>串行化：对应一个记录会加读写锁，出现冲突的时候，后访问的事务必须等前一个事务执行完成才能继续执行</p>
-<p>5、配置方法：启动参数transaction-isolation</p>
-<p>6、事务隔离的实现：每条记录在更新的时候都会同时记录一条回滚操作。同一条记录在系统中可以存在多个版本，这就是数据库的多版本并发控制（MVCC）。</p>
-<p>7、回滚日志什么时候删除？系统会判断当没有事务需要用到这些回滚日志的时候，回滚日志会被删除。</p>
-<p>8、什么时候不需要了？当系统里么有比这个回滚日志更早的read-view的时候。</p>
-<p>9、为什么尽量不要使用长事务。长事务意味着系统里面会存在很老的事务视图，在这个事务提交之前，回滚记录都要保留，这会导致大量占用存储空间。除此之外，长事务还占用锁资源，可能会拖垮库。</p>
-<p>10、事务启动方式：一、显式启动事务语句，begin或者start transaction,提交commit，回滚rollback；二、set autocommit=0，该命令会把这个线程的自动提交关掉。这样只要执行一个select语句，事务就启动，并不会自动提交，直到主动执行commit或rollback或断开连接。</p>
-<p>11、建议使用方法一，如果考虑多一次交互问题，可以使用commit work and chain语法。在autocommit=1的情况下用begin显式启动事务，如果执行commit则提交事务。如果执行commit work and chain则提交事务并自动启动下一个事务。</p>
-<h4 id="事务隔离-or-不隔离"><a href="#事务隔离-or-不隔离" class="headerlink" title="事务隔离 or 不隔离"></a>事务隔离 or 不隔离</h4><p>启动事务命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">begin tracsaction; #  不是一个事务的起点，在执行到它之后的第一个操作InnoDB语句，事务才真正启动</div><div class="line">start transaction with consistent snapshot; # 马上启动一个事务</div><div class="line"></div><div class="line">commit;     # 提交事务</div><div class="line">autocommit=1;</div></pre></td></tr></table></figure></p>
-<p>Mysql中的两个“视图”：</p>
+<h4 id="基数"><a href="#基数" class="headerlink" title="基数"></a>基数</h4><p>一个索引上不同值的个数，称之为“基数(cardinality)”;基数越大，索引的区分度越好</p>
+<p>show index from x 查看索引对应的基数</p>
 <ul>
-<li>一个view，用于查询语句定义的虚拟表，在调用的时候执行查询语句并生成结果</li>
-<li>InnoDB在实现MCVV时用到的一致性读视图，即consistent read view，用于支持RC(Read Committed，读提交)和RR(Repeatable Read，可重复读)隔离级别的实现，作用在事务执行期间用来定义”我能看到什么数据”</li>
+<li>采样统计， 通过设置参数innodb_stats_persistent来设置  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">设置为on，表示统计信息会持久化存储，默认值N为20，M为10</div><div class="line">设置为off, 表示统计信息只存储在内存中，默认值N为8，M为16</div></pre></td></tr></table></figure>
+</li>
 </ul>
-<h4 id="“快照”在MVCC里是怎么工作的？"><a href="#“快照”在MVCC里是怎么工作的？" class="headerlink" title="“快照”在MVCC里是怎么工作的？"></a>“快照”在MVCC里是怎么工作的？</h4><p>在可重复读隔离级别下，事务在启动的时候就拍下快照，这个快照是基于整库</p>
-<p>InnoDB利用了“所有数据都有多个版本”的特性，实现了“秒级创建快照的能力”</p>
-<h5 id="快照实现"><a href="#快照实现" class="headerlink" title="快照实现"></a>快照实现</h5><ul>
-<li>唯一事务id，即transaction id，自动申请，顺序严格递增</li>
-<li>每行数据都有多个版本，每次事务更新数据，都会生成一个新的数据版本，并把transaction id赋值给这个数据版本的事务id，记为row trx_id，旧的数据版本也要保留，并且杂新的数据版本中，能够有信息可以直接拿到</li>
-<li>数据表中的一行记录，其实可能有多个版本(row),每个版本有自己的row trx_id;</li>
+<p>analyze table t # 用于重新统计索引信息，当发现explain中rows值和实际情况差距比较大时，可以采用使用该命令来处理</p>
+<h4 id="索引选择异常和处理"><a href="#索引选择异常和处理" class="headerlink" title="索引选择异常和处理"></a>索引选择异常和处理</h4><ul>
+<li><p>使用force index强制选择一个索引</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">select * from t force index(a) where a between 1000 and 2000;</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改查询语句</p>
+</li>
+<li>新建更合适的索引，来提供优化器来选择，或者删掉误用的索引</li>
 </ul>
   
 	</div>
@@ -141,7 +134,7 @@ var _hmt = _hmt || [];
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/isolation/">isolation</a>
+  <span></span> <a href="/tags/Index/">Index</a>
   </div>
 
 
@@ -154,7 +147,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2018/12/21/yw-mysql-isolation/" data-title="事务隔离 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2018/12/21/yw-mysql-select-index/" data-title="索引选择 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -165,9 +158,9 @@ var _hmt = _hmt || [];
  
 
 <div class="next">
-<a href="/2018/12/03/yw-mysql-question/"  title="Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法">
+<a href="/2018/12/20/yw-mysql-unique-index/"  title="普通索引和唯一索引的区别">
  <strong>旧一篇:</strong><br/> 
- <span>Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法
+ <span>普通索引和唯一索引的区别
 </span>
 </a>
 </div>
@@ -177,7 +170,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="事务隔离" data-thread-key="yw-mysql-isolation" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-isolation"></div>
+	<div class="ds-thread" data-title="索引选择" data-thread-key="yw-mysql-select-index" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-select-index"></div>
 	
 </section>
 

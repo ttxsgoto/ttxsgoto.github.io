@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2018-12-21T03:07:43.000Z</updated>
+  <updated>2018-12-21T03:16:46.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -16,57 +16,155 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>事务隔离</title>
-    <link href="https://ttxsgoto.github.io/2018/12/21/yw-mysql-isolation/"/>
-    <id>https://ttxsgoto.github.io/2018/12/21/yw-mysql-isolation/</id>
-    <published>2018-12-21T03:06:31.000Z</published>
-    <updated>2018-12-21T03:07:43.000Z</updated>
+    <title>索引选择</title>
+    <link href="https://ttxsgoto.github.io/2018/12/21/yw-mysql-select-index/"/>
+    <id>https://ttxsgoto.github.io/2018/12/21/yw-mysql-select-index/</id>
+    <published>2018-12-21T03:14:08.000Z</published>
+    <updated>2018-12-21T03:16:46.000Z</updated>
     
-    <content type="html"><![CDATA[<h4 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h4><ul>
-<li>读未提交(read uncommitted) 一个事务还没提交时，它做的变更就能被别的事务看到</li>
-<li>读提交(read committed) 一个事务提交之后，它做的变更才会被其他事务看到</li>
-<li><p>可重复读(repeatable read) 一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数…</p>
-</li>
-<li><p>串行化(serializable) “写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时…</p>
-</li>
+    <content type="html"><![CDATA[<h4 id="优化器选择索引逻辑"><a href="#优化器选择索引逻辑" class="headerlink" title="优化器选择索引逻辑"></a>优化器选择索引逻辑</h4><ul>
+<li>扫描行数</li>
+<li>使用临时表</li>
+<li>是否排序</li>
 </ul>
-<p>1、事务的特性：原子性、一致性、隔离性、持久性</p>
-<p>2、多事务同时执行的时候，可能会出现的问题：脏读、不可重复读、幻读</p>
-<p>3、事务隔离级别：读未提交、读提交、可重复读、串行化</p>
-<p>4、不同事务隔离级别的区别：<br>读未提交：一个事务还未提交，它所做的变更就可以被别的事务看到<br>读提交：一个事务提交之后，它所做的变更才可以被别的事务看到<br>可重复读：一个事务执行过程中看到的数据是一致的。未提交的更改对其他事务是不可见的<br>串行化：对应一个记录会加读写锁，出现冲突的时候，后访问的事务必须等前一个事务执行完成才能继续执行</p>
-<p>5、配置方法：启动参数transaction-isolation</p>
-<p>6、事务隔离的实现：每条记录在更新的时候都会同时记录一条回滚操作。同一条记录在系统中可以存在多个版本，这就是数据库的多版本并发控制（MVCC）。</p>
-<p>7、回滚日志什么时候删除？系统会判断当没有事务需要用到这些回滚日志的时候，回滚日志会被删除。</p>
-<p>8、什么时候不需要了？当系统里么有比这个回滚日志更早的read-view的时候。</p>
-<p>9、为什么尽量不要使用长事务。长事务意味着系统里面会存在很老的事务视图，在这个事务提交之前，回滚记录都要保留，这会导致大量占用存储空间。除此之外，长事务还占用锁资源，可能会拖垮库。</p>
-<p>10、事务启动方式：一、显式启动事务语句，begin或者start transaction,提交commit，回滚rollback；二、set autocommit=0，该命令会把这个线程的自动提交关掉。这样只要执行一个select语句，事务就启动，并不会自动提交，直到主动执行commit或rollback或断开连接。</p>
-<p>11、建议使用方法一，如果考虑多一次交互问题，可以使用commit work and chain语法。在autocommit=1的情况下用begin显式启动事务，如果执行commit则提交事务。如果执行commit work and chain则提交事务并自动启动下一个事务。</p>
-<h4 id="事务隔离-or-不隔离"><a href="#事务隔离-or-不隔离" class="headerlink" title="事务隔离 or 不隔离"></a>事务隔离 or 不隔离</h4><p>启动事务命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">begin tracsaction; #  不是一个事务的起点，在执行到它之后的第一个操作InnoDB语句，事务才真正启动</div><div class="line">start transaction with consistent snapshot; # 马上启动一个事务</div><div class="line"></div><div class="line">commit;     # 提交事务</div><div class="line">autocommit=1;</div></pre></td></tr></table></figure></p>
-<p>Mysql中的两个“视图”：</p>
+<h4 id="基数"><a href="#基数" class="headerlink" title="基数"></a>基数</h4><p>一个索引上不同值的个数，称之为“基数(cardinality)”;基数越大，索引的区分度越好</p>
+<p>show index from x 查看索引对应的基数</p>
 <ul>
-<li>一个view，用于查询语句定义的虚拟表，在调用的时候执行查询语句并生成结果</li>
-<li>InnoDB在实现MCVV时用到的一致性读视图，即consistent read view，用于支持RC(Read Committed，读提交)和RR(Repeatable Read，可重复读)隔离级别的实现，作用在事务执行期间用来定义”我能看到什么数据”</li>
+<li>采样统计， 通过设置参数innodb_stats_persistent来设置  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">设置为on，表示统计信息会持久化存储，默认值N为20，M为10</div><div class="line">设置为off, 表示统计信息只存储在内存中，默认值N为8，M为16</div></pre></td></tr></table></figure>
+</li>
 </ul>
-<h4 id="“快照”在MVCC里是怎么工作的？"><a href="#“快照”在MVCC里是怎么工作的？" class="headerlink" title="“快照”在MVCC里是怎么工作的？"></a>“快照”在MVCC里是怎么工作的？</h4><p>在可重复读隔离级别下，事务在启动的时候就拍下快照，这个快照是基于整库</p>
-<p>InnoDB利用了“所有数据都有多个版本”的特性，实现了“秒级创建快照的能力”</p>
-<h5 id="快照实现"><a href="#快照实现" class="headerlink" title="快照实现"></a>快照实现</h5><ul>
-<li>唯一事务id，即transaction id，自动申请，顺序严格递增</li>
-<li>每行数据都有多个版本，每次事务更新数据，都会生成一个新的数据版本，并把transaction id赋值给这个数据版本的事务id，记为row trx_id，旧的数据版本也要保留，并且杂新的数据版本中，能够有信息可以直接拿到</li>
-<li>数据表中的一行记录，其实可能有多个版本(row),每个版本有自己的row trx_id;</li>
+<p>analyze table t # 用于重新统计索引信息，当发现explain中rows值和实际情况差距比较大时，可以采用使用该命令来处理</p>
+<h4 id="索引选择异常和处理"><a href="#索引选择异常和处理" class="headerlink" title="索引选择异常和处理"></a>索引选择异常和处理</h4><ul>
+<li><p>使用force index强制选择一个索引</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">select * from t force index(a) where a between 1000 and 2000;</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改查询语句</p>
+</li>
+<li>新建更合适的索引，来提供优化器来选择，或者删掉误用的索引</li>
 </ul>
 ]]></content>
     
     <summary type="html">
     
-      &lt;h4 id=&quot;事务隔离级别&quot;&gt;&lt;a href=&quot;#事务隔离级别&quot; class=&quot;headerlink&quot; title=&quot;事务隔离级别&quot;&gt;&lt;/a&gt;事务隔离级别&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;读未提交(read uncommitted) 一个事务还没提交时，它做的变更就能被别的事务看到&lt;
+      &lt;h4 id=&quot;优化器选择索引逻辑&quot;&gt;&lt;a href=&quot;#优化器选择索引逻辑&quot; class=&quot;headerlink&quot; title=&quot;优化器选择索引逻辑&quot;&gt;&lt;/a&gt;优化器选择索引逻辑&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;扫描行数&lt;/li&gt;
+&lt;li&gt;使用临时表&lt;/li&gt;
+&lt;li&gt;是否排序&lt;/l
     
     </summary>
     
       <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
     
     
-      <category term="isolation" scheme="https://ttxsgoto.github.io/tags/isolation/"/>
+      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>普通索引和唯一索引的区别</title>
+    <link href="https://ttxsgoto.github.io/2018/12/20/yw-mysql-unique-index/"/>
+    <id>https://ttxsgoto.github.io/2018/12/20/yw-mysql-unique-index/</id>
+    <published>2018-12-20T12:11:46.000Z</published>
+    <updated>2018-12-21T03:14:36.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="查询操作"><a href="#查询操作" class="headerlink" title="查询操作"></a>查询操作</h4><ul>
+<li>查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止</li>
+<li>唯一索引，找到第一个满足条件记录，停止检索</li>
+</ul>
+<h4 id="更新操作"><a href="#更新操作" class="headerlink" title="更新操作"></a>更新操作</h4><p>change buffer:如果数据页没有在内存中，innodb会将更新操作缓存在change buffer中，这样不需要从磁盘中读取数据页；下次查询访问这个数据页时，将数据页读入内存，然后执行change buffer中和这个页有关的操作</p>
+<ul>
+<li>唯一索引更新操作不能使用change buffer，因为判断记录是否存在，必须将数据页读入内存，只有普通索引更新操作可以使用change buffer</li>
+<li>change buffer使用的是buffer pool里的内存，大小可以通过参数innodb_change_buffer_max_size来设置</li>
+</ul>
+<h4 id="插入操作"><a href="#插入操作" class="headerlink" title="插入操作"></a>插入操作</h4><ol>
+<li>记录要更新的目标页在内存中，此时插入操作基本一致，从内存中读取数据对应的位置，执行插入语句</li>
+<li>记录要更新的目标页不在内存中<ul>
+<li>唯一索引，需要将数据页读入到内存，判断有没有冲突，执行语句</li>
+<li>普通索引，将更新记录到change buffer，执行语句</li>
+</ul>
+</li>
+</ol>
+<p>将数据从磁盘读入内存涉及到随机IO访问，成本高；change buffer减少了随机磁盘访问，所以对更新性能的提升更明显</p>
+<h4 id="change-buffer使用场景"><a href="#change-buffer使用场景" class="headerlink" title="change buffer使用场景"></a>change buffer使用场景</h4><p>适用于写多读少的业务场景，写入后不立即读取，常见业务系统如日志、账单类系统</p>
+<p>如果业务更新后马上需要做查询，即更新先记录change buffer，之后查询这个数据页，会立刻触发merge操作，这样随机访问io次数不会减少，反而增加了change buffer的维护代价</p>
+<h4 id="索引选择"><a href="#索引选择" class="headerlink" title="索引选择"></a>索引选择</h4><ul>
+<li>查询性能方面无差异</li>
+<li>更新操作，因为有change buffer机制，所以普通索引更新操作性能更好</li>
+</ul>
+<h4 id="change-buffer-amp-amp-redo-log"><a href="#change-buffer-amp-amp-redo-log" class="headerlink" title="change buffer &amp;&amp; redo log"></a>change buffer &amp;&amp; redo log</h4><ul>
+<li>redo log 主要节省的是随机写磁盘IO消耗(转成顺序写)</li>
+<li>change buffer主要节省的是随机读磁盘io的消耗</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;查询操作&quot;&gt;&lt;a href=&quot;#查询操作&quot; class=&quot;headerlink&quot; title=&quot;查询操作&quot;&gt;&lt;/a&gt;查询操作&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止&lt;/li&gt;
+&lt;li&gt;唯一索引，找到第一个满足
+    
+    </summary>
+    
+      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
+    
+    
+      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Mysql索引02</title>
+    <link href="https://ttxsgoto.github.io/2018/12/11/yw-mysql-index02/"/>
+    <id>https://ttxsgoto.github.io/2018/12/11/yw-mysql-index02/</id>
+    <published>2018-12-11T03:33:20.000Z</published>
+    <updated>2018-12-21T03:37:13.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="索引常见模型"><a href="#索引常见模型" class="headerlink" title="索引常见模型"></a>索引常见模型</h4><ul>
+<li>哈希表<ul>
+<li>适用于只有等值查询的场景</li>
+<li>哈希冲突的处理办法：链表</li>
+</ul>
+</li>
+<li>有序数组<ul>
+<li>在等值查询和范围查询场景中性能都非常优秀</li>
+<li>只适用于静态存储引擎</li>
+<li>在更新数据时，需要挪动后面所有的记录，成本高</li>
+</ul>
+</li>
+<li>搜索树</li>
+</ul>
+<p>每一个索引在InnoDB里面对应一棵B+树<br>主键索引的叶子节点内容是主键的值，主键索引也称为聚簇索引(clustered index)<br>非主键索引的叶子节点内容是主键的值，非主键索引也被称为二级索引(secondary index)</p>
+<p>基于非主键索引的查询需要多扫描一棵索引数，扫描主键索引<br>回到主键索引树搜索的过程，我们称为回表</p>
+<h4 id="索引维护"><a href="#索引维护" class="headerlink" title="索引维护"></a>索引维护</h4><p>在插入数据时，索引的数据也会变化<br>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也越小</p>
+<h4 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h4><p>select id from table where k between 3 and 5;<br>索引K 已经“覆盖了”我们查询需求，我们称之为覆盖索引<br>由于覆盖索引可以减少树的搜索次数，显著提升查询性能，所以使用覆盖索引为一个常用的性能优化手动<br>实例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `tuser` (</div><div class="line">    `id` int(11) NOT NULL,</div><div class="line">    `id_card` varchar(32) DEFAULT NULL,</div><div class="line">    `name` varchar(32) DEFAULT NULL,</div><div class="line">    `age` int(11) DEFAULT NULL,</div><div class="line">    `ismale` tinyint(1) DEFAULT NULL,</div><div class="line">    PRIMARY KEY (`id`),</div><div class="line">    KEY `id_card` (`id_card`),</div><div class="line">    KEY `name_age` (`name`,`age`)</div><div class="line">) ENGINE=InnoDB;</div></pre></td></tr></table></figure></p>
+<p>如果现在有一个高频请求，要根据市民的身份证号查询他的姓名和年龄，这个联合索引就有意义了。它可以在这个高频请求上用到覆盖索引，不再需要回表查整行记录，减少语句的执行时间</p>
+<h4 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h4><ul>
+<li>B+树这种索引结构，可利用索引的“最左前缀”，来定位记录</li>
+<li>最左前缀可以是联合索引的最左N个字段，也可以是字符串索引的最左M个字符</li>
+<li>最左前缀评估标准，索引的复用能力</li>
+</ul>
+<p>建立联合索引时，如果安排索引内的字段顺序？</p>
+<ul>
+<li>如果通过调整顺序，可以少维护一个索引，那么这个顺序往往就是需要优先考虑采用的</li>
+<li>在联合索引时，建立单个索引考虑的原则为空间</li>
+</ul>
+<h4 id="索引下推-Mysql5-6之后"><a href="#索引下推-Mysql5-6之后" class="headerlink" title="索引下推(Mysql5.6之后)"></a>索引下推(Mysql5.6之后)</h4><p>在索引遍历的过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数<br>name like “zhang%” and age&gt;10,会对匹配的数据进行回表查询，如果有索引下推机制，那么会先过滤掉age&lt;10的数据，在执行回表查询，提高检索速度</p>
+<p>alter table T engine=InnoDB 是用来释放 delete 操作引起的页的空洞,也就是碎片空间 操作时候尽量避免当前表的dml 操作.<br>表数据很大情况 建议使用 Percona Toolkit 工具来执行</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;索引常见模型&quot;&gt;&lt;a href=&quot;#索引常见模型&quot; class=&quot;headerlink&quot; title=&quot;索引常见模型&quot;&gt;&lt;/a&gt;索引常见模型&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;哈希表&lt;ul&gt;
+&lt;li&gt;适用于只有等值查询的场景&lt;/li&gt;
+&lt;li&gt;哈希冲突的处理办法：链表&lt;/
+    
+    </summary>
+    
+      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
+    
+    
+      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
     
   </entry>
   
@@ -522,11 +620,11 @@
   </entry>
   
   <entry>
-    <title>Mysql索引</title>
+    <title>Mysql索引01</title>
     <link href="https://ttxsgoto.github.io/2018/04/15/yw-mysql-index/"/>
     <id>https://ttxsgoto.github.io/2018/04/15/yw-mysql-index/</id>
     <published>2018-04-15T14:34:24.000Z</published>
-    <updated>2018-11-19T10:00:33.000Z</updated>
+    <updated>2018-12-21T03:34:32.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="索引类型"><a href="#索引类型" class="headerlink" title="索引类型"></a>索引类型</h4><p>B-Tree索引：mysql引擎默认支持这种索引</p>
 <p>MyISAM 使用前缀技术使索引更小<br>InnoDB 按照原数据格式进行存储</p>
@@ -1004,71 +1102,6 @@
     
     
       <category term="Mongo-connector" scheme="https://ttxsgoto.github.io/tags/Mongo-connector/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Elasticsearch Logstash-input-jdbc同步mysql数据到ES</title>
-    <link href="https://ttxsgoto.github.io/2017/12/27/elasticsearch-mysql-to-es/"/>
-    <id>https://ttxsgoto.github.io/2017/12/27/elasticsearch-mysql-to-es/</id>
-    <published>2017-12-27T13:08:17.000Z</published>
-    <updated>2017-12-27T13:32:47.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>将Mysql中的数据同步到ES集群中，方便搜索功能，通过logstash自带的插件logstash-input-jdbc来轻松完成</p>
-<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./logstash-plugin install  logstash-input-jdbc</div></pre></td></tr></table></figure>
-<h4 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h4><p>jdbc.conf<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line">input &#123;</div><div class="line">    stdin &#123;</div><div class="line">    &#125;</div><div class="line">    jdbc &#123;</div><div class="line">      jdbc_connection_string =&gt; "jdbc:mysql://127.0.0.1:3307/test"</div><div class="line">      jdbc_user =&gt; "root"</div><div class="line">      jdbc_password =&gt; "root"</div><div class="line">      # jdbc driver</div><div class="line">      jdbc_driver_library =&gt; "/data/es/mysql-connector-java-5.1.39.jar"</div><div class="line">      jdbc_driver_class =&gt; "com.mysql.jdbc.Driver"</div><div class="line">      jdbc_paging_enabled =&gt; "true"</div><div class="line">      jdbc_page_size =&gt; "50000"</div><div class="line">      # 执行的sql的路径</div><div class="line">      statement_filepath =&gt; "sql.sql"</div><div class="line">      # 需要导入的sql语句查出来的数据</div><div class="line">      #statement =&gt; "SELECT * FROM zhihuquestion"</div><div class="line">      # 定时字段 各字段含义（由左至右）分、时、天、月、年，全部为*默认含义为每分钟都更新</div><div class="line">      schedule =&gt; "* * * * *"</div><div class="line">      #schedule =&gt; "*/2 * * * *"    # 每2分钟更新一次</div><div class="line">      type =&gt; "test_index"</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line">filter &#123;</div><div class="line">    json &#123;</div><div class="line">        source =&gt; "message"</div><div class="line">        remove_field =&gt; ["message"]</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line">output &#123;</div><div class="line">    elasticsearch &#123;</div><div class="line">        hosts =&gt; ["http://127.0.0.1:9200"]</div><div class="line">        index =&gt; "test_index"</div><div class="line">        document_type =&gt; "test"</div><div class="line">        #自增ID编号</div><div class="line">        document_id =&gt; "%&#123;id&#125;"</div><div class="line">    &#125;</div><div class="line">    # 以json格式输出</div><div class="line">    stdout &#123;</div><div class="line">        codec =&gt; json_lines</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<h4 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">../bin/logstash -f jdbc.conf</div></pre></td></tr></table></figure>
-<h4 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h4><p><a href="https://www.elastic.co/guide/en/logstash/current/plugins-inputs-jdbc.html" target="_blank" rel="external">https://www.elastic.co/guide/en/logstash/current/plugins-inputs-jdbc.html</a><br><a href="https://qbox.io/blog/migrating-mysql-data-into-elasticsearch-using-logstash" target="_blank" rel="external">https://qbox.io/blog/migrating-mysql-data-into-elasticsearch-using-logstash</a><br><a href="http://blog.csdn.net/laoyang360/article/details/51747266" target="_blank" rel="external">http://blog.csdn.net/laoyang360/article/details/51747266</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h4&gt;&lt;p&gt;将Mysql中的数据同步到ES集群中，方便搜索功能，通过logstash自带的插件logstash-input-jdbc来轻松完成&lt;/p&gt;
-
-    
-    </summary>
-    
-      <category term="Elasticsearch" scheme="https://ttxsgoto.github.io/categories/Elasticsearch/"/>
-    
-    
-      <category term="Logstash-input-jdbc" scheme="https://ttxsgoto.github.io/tags/Logstash-input-jdbc/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Elasticsearch ELK应用</title>
-    <link href="https://ttxsgoto.github.io/2017/12/26/elasticsearch-elk/"/>
-    <id>https://ttxsgoto.github.io/2017/12/26/elasticsearch-elk/</id>
-    <published>2017-12-26T14:46:51.000Z</published>
-    <updated>2017-12-27T13:27:02.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="ELK说明"><a href="#ELK说明" class="headerlink" title="ELK说明"></a>ELK说明</h4><ul>
-<li>Elasticsearch是个开源分布式搜索引擎，它的特点有：分布式，零配置，自动发现，索引自动分片，索引副本机制，restful风格接口，多数据源，自动搜索负载等</li>
-<li>Logstash是一个完全开源的工具，他可以对你的日志进行收集、分析，并将其存储供以后使用（如，搜索）</li>
-<li>kibana 也是一个开源和免费的工具，Kibana可以为 Logstash 和 ElasticSearch 提供的日志分析友好的 Web 界面，可以帮助您汇总、分析和搜索重要数据日志</li>
-</ul>
-<h4 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h4><p>1.方便日志查询，统计排查问题<br>2.报表展示，不用登录每台服务器查看日志</p>
-<h4 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h4><p>Logstash: logstash server端用来搜集日志；</p>
-<p>Elasticsearch: 存储各类日志；</p>
-<p>Kibana: web化接口用作查寻和可视化日志；</p>
-<p>搭建部署(略)</p>
-<h4 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h4><p>收集syslog,nginx access/error日志，mongo日志，程序日志，说明如下：</p>
-<p>nignx 访问日志：因nginx访问日志可自定义，这里自定义为json格式，方便ES存储和索引<br>格式定义如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">log_format main_json <span class="string">'&#123; "timestamp": "$time_local", '</span></div><div class="line"><span class="string">'"remote_addr": "$remote_addr", '</span></div><div class="line"><span class="string">'"remote_user": "$remote_user", '</span></div><div class="line"><span class="string">'"body_bytes_sent": "$body_bytes_sent", '</span></div><div class="line"><span class="string">'"request_time": "$request_time", '</span></div><div class="line"><span class="string">'"status": "$status", '</span></div><div class="line"><span class="string">'"domain": "$host", '</span></div><div class="line"><span class="string">'"request": "$request", '</span></div><div class="line"><span class="string">'"request_method": "$request_method", '</span></div><div class="line"><span class="string">'"http_referrer": "$http_referer", '</span></div><div class="line"><span class="string">'"body_bytes_sent":"$body_bytes_sent", '</span></div><div class="line"><span class="string">'"http_x_forwarded_for": "$http_x_forwarded_for", '</span></div><div class="line"><span class="string">'"http_user_agent": "$http_user_agent" &#125;'</span>;</div></pre></td></tr></table></figure></p>
-<p>其他日志收集见配置文件，说明如下：<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div></pre></td><td class="code"><pre><div class="line">input &#123;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; [ "/var/log/syslog" ]    #定义日志路径</div><div class="line">        type =&gt; "syslog"                </div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        ignore_older =&gt;0</div><div class="line">    &#125;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; "/var/log/nginx/*access.log"</div><div class="line">        codec =&gt; json</div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        type =&gt; "nginx-acc"</div><div class="line">    &#125;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; "/var/log/nginx/*error.log"</div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        type =&gt; "nginx-error"</div><div class="line">        ignore_older =&gt;0</div><div class="line">    &#125;</div><div class="line">    file &#123;</div><div class="line">        path =&gt; [ "/data/mongo/mongo.log" ]</div><div class="line">        type =&gt; "mongo"</div><div class="line">        start_position =&gt; "beginning"</div><div class="line">        #ignore_older =&gt;0</div><div class="line">        &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line">filter &#123;</div><div class="line">    if [type] == "syslog" &#123;</div><div class="line">        grok &#123;    #grok 功能将字符串转换为相应的字段，方便检索</div><div class="line">            match =&gt; &#123; "message" =&gt; "%&#123;SYSLOGTIMESTAMP:syslog_timestamp&#125; %&#123;SYSLOGHOST:syslog_hostname&#125; %&#123;DATA:syslog_program&#125;(?:\[%&#123;POSINT:syslog_pid&#125;\])?: %&#123;GREEDYDATA:syslog_message&#125;" &#125;</div><div class="line">            add_field =&gt; [ "received_at", "%&#123;@timestamp&#125;" ]</div><div class="line">            add_field =&gt; [ "received_from", "%&#123;host&#125;" ]</div><div class="line">            &#125;    </div><div class="line">            date &#123;</div><div class="line">                    match =&gt; [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">         </div><div class="line">    if [type] == "mongo" &#123;</div><div class="line">                grok &#123;</div><div class="line">#mongo_v3                        match =&gt; ["message","%&#123;TIMESTAMP_ISO8601:timestamp&#125;\s+%&#123;MONGO3_SEVERITY:severity&#125;\s+%&#123;MONGO3_COMPONENT:component&#125;\s+(?:\[%&#123;DATA:context&#125;\])?\s+%&#123;GREEDYDATA:body&#125;"]</div><div class="line">            match =&gt; ["message","%&#123;SYSLOGTIMESTAMP:timestamp&#125; \[%&#123;WORD:component&#125;\] %&#123;GREEDYDATA:body&#125;"]     #mongo_v2</div><div class="line">               &#125;</div><div class="line">                if[body]=~"ms$" &#123;</div><div class="line">                                        grok &#123;</div><div class="line">                                                match =&gt; ["body","query\s+%&#123;WORD:db_name&#125;\.%&#123;WORD:collection_name&#125;.*&#125;.*\&#125;(\s+%&#123;NUMBER:spend_time:int&#125;ms$)?"]</div><div class="line">                                        &#125;</div><div class="line">                                &#125;</div><div class="line">                date &#123;</div><div class="line">                        match =&gt; [ "timestamp", "UNIX", "YYYY-MM-dd HH:mm:ss", "ISO8601" ]</div><div class="line">                        remove_field =&gt; ["timestamp"]</div><div class="line">                &#125;</div><div class="line">        &#125;</div><div class="line">    if [type] == "nginx-error" &#123;</div><div class="line">                grok &#123;</div><div class="line">                        match =&gt; &#123; "message" =&gt; "(?&lt;timestamp&gt;%&#123;YEAR&#125;[./-]%&#123;MONTHNUM&#125;[./-]%&#123;MONTHDAY&#125;[- ]%&#123;TIME&#125;) \[%&#123;LOGLEVEL:severity&#125;\] %&#123;POSINT:pid&#125;#%&#123;NUMBER&#125;: %&#123;GREEDYDATA:errormessage&#125;(?:, client: (?&lt;client&gt;%&#123;IP&#125;|%&#123;HOSTNAME&#125;))(?:, server: %&#123;IPORHOST:server&#125;)(?:, request: %&#123;QS:request&#125;)?(?:, upstream: \"%&#123;URI:upstream&#125;\")?(?:, host: %&#123;QS:host&#125;)?(?: referrer: \"%&#123;URI:referrer&#125;|-\")?" &#125;</div><div class="line">                        overwrite =&gt; [ "message" ]</div><div class="line">                &#125;</div><div class="line">                date &#123;</div><div class="line">                        match =&gt; [ "nginx_error_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]</div><div class="line">                        remove_field =&gt; [ "timestamp" ]</div><div class="line">                &#125;</div><div class="line">        &#125;</div><div class="line">&#125;</div><div class="line">output &#123;</div><div class="line">    if [type] == "nginx-acc" &#123;</div><div class="line">        elasticsearch &#123;    #存储</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">            index =&gt; "nginx_access-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">        &#125;        </div><div class="line">    &#125;</div><div class="line">    if [type] == "nginx-error" &#123;</div><div class="line">        elasticsearch &#123;</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">            index =&gt; "nginx_error-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">        &#125;        </div><div class="line">    &#125;</div><div class="line">    if [type] == "syslog" &#123;</div><div class="line">        elasticsearch &#123;</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">            index =&gt; "syslog-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    if [type] == "mongo" &#123;</div><div class="line">                elasticsearch &#123;</div><div class="line">            hosts =&gt; ["127.0.0.1:9200"]</div><div class="line">                        index =&gt; "mongo-%&#123;+YYYY.MM.dd&#125;"</div><div class="line">                &#125;</div><div class="line">        &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>采集到数据展示如下：<br><img src="https://ttxsgoto.github.io/img/elk/elk.png" alt="elk"></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;ELK说明&quot;&gt;&lt;a href=&quot;#ELK说明&quot; class=&quot;headerlink&quot; title=&quot;ELK说明&quot;&gt;&lt;/a&gt;ELK说明&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;Elasticsearch是个开源分布式搜索引擎，它的特点有：分布式，零配置，自动发现，索引自动分片，索
-    
-    </summary>
-    
-      <category term="Elasticsearch" scheme="https://ttxsgoto.github.io/categories/Elasticsearch/"/>
-    
-    
-      <category term="ELK" scheme="https://ttxsgoto.github.io/tags/ELK/"/>
     
   </entry>
   

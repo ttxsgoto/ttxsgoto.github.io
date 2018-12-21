@@ -89,23 +89,94 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
-        <a href="/2018/12/21/yw-mysql-isolation/" title="事务隔离" itemprop="url">
+        <a href="/2018/12/21/yw-mysql-select-index/" title="索引选择" itemprop="url">
       
-        事务隔离
+        索引选择
       </a>
     </h1>
     
      
-           <p itemprop="description" >事务隔离级别
-读未提交(read uncommitted) 一个事务还没提交时，它做的变更就能被别的事务看到
-读提交(read committed) 一个事务提交之后，它做的变更才会被其他事务看到
-可重复读(repeatable read) 一个事务执行过程中看到的数据，总是跟这</p>
+           <p itemprop="description" >优化器选择索引逻辑
+扫描行数
+使用临时表
+是否排序
+
+基数一个索引上不同值的个数，称之为“基数(cardinality)”;基数越大，索引的区分度越好
+show index from x 查看索引对应的基数
+
+采样统计， 通过设置参数innodb_stats_persistent</p>
         
     
     <p class="article-more-link">
-      <time datetime="2018-12-21T03:06:31.000Z" itemprop="datePublished">2018-12-21</time>
+      <time datetime="2018-12-21T03:14:08.000Z" itemprop="datePublished">2018-12-21</time>
       
-          <a href="/2018/12/21/yw-mysql-isolation/">阅读更多&raquo;</a>
+          <a href="/2018/12/21/yw-mysql-select-index/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/20/yw-mysql-unique-index/" title="普通索引和唯一索引的区别" itemprop="url">
+      
+        普通索引和唯一索引的区别
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >查询操作
+查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止
+唯一索引，找到第一个满足条件记录，停止检索
+
+更新操作change buffer:如果数据页没有在内存中，innodb会将更新操作缓存在change buffer中，这样不需要从磁盘中读取数据页；下次</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-20T12:11:46.000Z" itemprop="datePublished">2018-12-20</time>
+      
+          <a href="/2018/12/20/yw-mysql-unique-index/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/11/yw-mysql-index02/" title="Mysql索引02" itemprop="url">
+      
+        Mysql索引02
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >索引常见模型
+哈希表
+适用于只有等值查询的场景
+哈希冲突的处理办法：链表
+
+
+有序数组
+在等值查询和范围查询场景中性能都非常优秀
+只适用于静态存储引擎
+在更新数据时，需要挪动后面所有的记录，成本高
+
+
+搜索树
+
+每一个索引在InnoDB里面对应一棵B+树主键索引的叶子节点内容是主</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-11T03:33:20.000Z" itemprop="datePublished">2018-12-11</time>
+      
+          <a href="/2018/12/11/yw-mysql-index02/">阅读更多&raquo;</a>
       
     </p>
 
@@ -292,60 +363,9 @@ event_loop： 事件循</p>
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/04/15/yw-mysql-index/" title="Mysql索引" itemprop="url">
-      
-        Mysql索引
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >索引类型B-Tree索引：mysql引擎默认支持这种索引
-MyISAM 使用前缀技术使索引更小InnoDB 按照原数据格式进行存储
-B-Tree索引可以快速访问数据，不再需要进行全表扫描获取需要的数据，从索引的根节点开始进行搜索
-Mysql索引原理b+树介绍如上图，是一颗b+树。</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-04-15T14:34:24.000Z" itemprop="datePublished">2018-04-15</time>
-      
-          <a href="/2018/04/15/yw-mysql-index/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/04/14/rest-framwork-serializer-efficient/" title="(转)优化DRF的性能" itemprop="url">
-      
-        (转)优化DRF的性能
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >看似简单直观的 Django REST Framework 及其嵌套序列化可能会大大降低你的 API 端的性能。你的服务器的其他部分的响应能力也会被某一个低效的 REST API 影响问题的根源就是 「N+1 selects problem」；首先查询数据库一次得到表中的数据（例</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-04-14T04:05:12.000Z" itemprop="datePublished">2018-04-14</time>
-      
-          <a href="/2018/04/14/rest-framwork-serializer-efficient/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
   </nav>
 
 </div>
@@ -391,7 +411,7 @@ Mysql索引原理b+树介绍如上图，是一颗b+树。</p>
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
-			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>5</sup></a></li>
+			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>7</sup></a></li>
 		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		

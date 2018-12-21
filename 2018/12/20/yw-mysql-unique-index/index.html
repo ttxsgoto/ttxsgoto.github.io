@@ -4,13 +4,16 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法 | ttxsgoto&#39; Blog</title>
+    <title>普通索引和唯一索引的区别 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="问题描述：在同一个sql语句中，先select同一个表的某些值，然后再update这个表
-如执行如下sql语句：12update logistic_statistic set fluid_id=&#39;cca03b6a372045f2891fef62d9524652&#39; where id in (  sel">
+    <meta name="description" content="查询操作
+查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止
+唯一索引，找到第一个满足条件记录，停止检索
+
+更新操作change buffer:如果数据页没有在内存中，innodb会将更新操作缓存在change buffer中，这样不需要从磁盘中读取数据页；下次查询访问这个数据页时">
     
     
     
@@ -87,10 +90,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/12/03/yw-mysql-question/" title="Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法" itemprop="url">Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法</a>
+      <a href="/2018/12/20/yw-mysql-unique-index/" title="普通索引和唯一索引的区别" itemprop="url">普通索引和唯一索引的区别</a>
   </h1>
   <p class="article-time">
-    <time datetime="2018-12-03T12:22:02.000Z" itemprop="datePublished">2018-12-03</time>
+    <time datetime="2018-12-20T12:11:46.000Z" itemprop="datePublished">2018-12-20</time>
   </p>
 </header>
 	<div class="article-content">
@@ -98,21 +101,44 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#问题描述："><span class="toc-number">1.</span> <span class="toc-text">问题描述：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#解决方法："><span class="toc-number">2.</span> <span class="toc-text">解决方法：</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#查询操作"><span class="toc-number">1.</span> <span class="toc-text">查询操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#更新操作"><span class="toc-number">2.</span> <span class="toc-text">更新操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#插入操作"><span class="toc-number">3.</span> <span class="toc-text">插入操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#change-buffer使用场景"><span class="toc-number">4.</span> <span class="toc-text">change buffer使用场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#索引选择"><span class="toc-number">5.</span> <span class="toc-text">索引选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#change-buffer-amp-amp-redo-log"><span class="toc-number">6.</span> <span class="toc-text">change buffer && redo log</span></a></li></ol>
 		</div>
 		
-		<h4 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h4><p>在同一个sql语句中，先select同一个表的某些值，然后再update这个表</p>
-<p>如执行如下sql语句：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">update logistic_statistic set fluid_id=<span class="string">'cca03b6a372045f2891fef62d9524652'</span> where id <span class="keyword">in</span> (</div><div class="line">  select id <span class="keyword">from</span> logistic_statistic where company= <span class="string">'新能源有限公司'</span>);</div></pre></td></tr></table></figure></p>
-<p>执行报错：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Error : You can<span class="string">'t specify target table '</span>logistic_statistic<span class="string">' for update in FROM clause</span></div></pre></td></tr></table></figure></p>
-<h4 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h4><p>select的结果再通过一个中间表select多一次，就可以避免这个错误</p>
-<p>执行如下sql语句：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">update logistic_statistic set fluid_id=<span class="string">"cca03b6a372045f2891fef62d9524652"</span> where id <span class="keyword">in</span> ( </div><div class="line">  select other_id <span class="keyword">from</span> ( </div><div class="line">    SELECT id <span class="keyword">as</span> other_id <span class="keyword">from</span> logistic_statistic where company= <span class="string">'新能源有限公司'</span>) <span class="keyword">as</span> a ;</div><div class="line">  );</div></pre></td></tr></table></figure></p>
+		<h4 id="查询操作"><a href="#查询操作" class="headerlink" title="查询操作"></a>查询操作</h4><ul>
+<li>查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止</li>
+<li>唯一索引，找到第一个满足条件记录，停止检索</li>
+</ul>
+<h4 id="更新操作"><a href="#更新操作" class="headerlink" title="更新操作"></a>更新操作</h4><p>change buffer:如果数据页没有在内存中，innodb会将更新操作缓存在change buffer中，这样不需要从磁盘中读取数据页；下次查询访问这个数据页时，将数据页读入内存，然后执行change buffer中和这个页有关的操作</p>
+<ul>
+<li>唯一索引更新操作不能使用change buffer，因为判断记录是否存在，必须将数据页读入内存，只有普通索引更新操作可以使用change buffer</li>
+<li>change buffer使用的是buffer pool里的内存，大小可以通过参数innodb_change_buffer_max_size来设置</li>
+</ul>
+<h4 id="插入操作"><a href="#插入操作" class="headerlink" title="插入操作"></a>插入操作</h4><ol>
+<li>记录要更新的目标页在内存中，此时插入操作基本一致，从内存中读取数据对应的位置，执行插入语句</li>
+<li>记录要更新的目标页不在内存中<ul>
+<li>唯一索引，需要将数据页读入到内存，判断有没有冲突，执行语句</li>
+<li>普通索引，将更新记录到change buffer，执行语句</li>
+</ul>
+</li>
+</ol>
+<p>将数据从磁盘读入内存涉及到随机IO访问，成本高；change buffer减少了随机磁盘访问，所以对更新性能的提升更明显</p>
+<h4 id="change-buffer使用场景"><a href="#change-buffer使用场景" class="headerlink" title="change buffer使用场景"></a>change buffer使用场景</h4><p>适用于写多读少的业务场景，写入后不立即读取，常见业务系统如日志、账单类系统</p>
+<p>如果业务更新后马上需要做查询，即更新先记录change buffer，之后查询这个数据页，会立刻触发merge操作，这样随机访问io次数不会减少，反而增加了change buffer的维护代价</p>
+<h4 id="索引选择"><a href="#索引选择" class="headerlink" title="索引选择"></a>索引选择</h4><ul>
+<li>查询性能方面无差异</li>
+<li>更新操作，因为有change buffer机制，所以普通索引更新操作性能更好</li>
+</ul>
+<h4 id="change-buffer-amp-amp-redo-log"><a href="#change-buffer-amp-amp-redo-log" class="headerlink" title="change buffer &amp;&amp; redo log"></a>change buffer &amp;&amp; redo log</h4><ul>
+<li>redo log 主要节省的是随机写磁盘IO消耗(转成顺序写)</li>
+<li>change buffer主要节省的是随机读磁盘io的消耗</li>
+</ul>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Mysql/">Mysql</a>
+  <span></span> <a href="/tags/Index/">Index</a>
   </div>
 
 
@@ -125,7 +151,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2018/12/03/yw-mysql-question/" data-title="Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2018/12/20/yw-mysql-unique-index/" data-title="普通索引和唯一索引的区别 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -135,18 +161,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2018/12/11/yw-mysql-index02/" title="Mysql索引02">
+ <a href="/2018/12/21/yw-mysql-select-index/" title="索引选择">
   <strong>新一篇:</strong><br/>
   <span>
-  Mysql索引02</span>
+  索引选择</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2018/10/24/python-django-celery/"  title="Django+Celery 计划任务">
+<a href="/2018/12/11/yw-mysql-index02/"  title="Mysql索引02">
  <strong>旧一篇:</strong><br/> 
- <span>Django+Celery 计划任务
+ <span>Mysql索引02
 </span>
 </a>
 </div>
@@ -156,7 +182,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法" data-thread-key="yw-mysql-question" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-question"></div>
+	<div class="ds-thread" data-title="普通索引和唯一索引的区别" data-thread-key="yw-mysql-unique-index" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-unique-index"></div>
 	
 </section>
 
