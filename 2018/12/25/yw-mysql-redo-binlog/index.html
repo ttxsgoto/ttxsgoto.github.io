@@ -4,26 +4,19 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Mysql索引02 | ttxsgoto&#39; Blog</title>
+    <title>Redo log 和 Binlog | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="索引常见模型
-哈希表
-适用于只有等值查询的场景
-哈希冲突的处理办法：链表
+    <meta name="description" content="WAL(Write-Ahead-Logging),先写日志，再写磁盘
 
-
-有序数组
-在等值查询和范围查询场景中性能都非常优秀
-只适用于静态存储引擎
-在更新数据时，需要挪动后面所有的记录，成本高
-
-
-搜索树
-
-每一个索引在InnoDB里面对应一棵B+树主键索引的叶子节点内容是主键的值，主键索引也称">
+redo log(重做日志)
+存储引擎层面
+存储容量大小固定，循环写
+checkpoint 当前要擦除的位置，擦除记录前需要将数据更新到数据文件中
+write-pos 当前写入记录的位置
+功能：保证InnoDB即使数据库发生异常">
     
     
     
@@ -100,10 +93,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/12/11/yw-mysql-index02/" title="Mysql索引02" itemprop="url">Mysql索引02</a>
+      <a href="/2018/12/25/yw-mysql-redo-binlog/" title="Redo log 和 Binlog" itemprop="url">Redo log 和 Binlog</a>
   </h1>
   <p class="article-time">
-    <time datetime="2018-12-11T03:33:20.000Z" itemprop="datePublished">2018-12-11</time>
+    <time datetime="2018-12-25T11:43:38.000Z" itemprop="datePublished">2018-12-25</time>
   </p>
 </header>
 	<div class="article-content">
@@ -111,47 +104,48 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#索引常见模型"><span class="toc-number">1.</span> <span class="toc-text">索引常见模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#索引维护"><span class="toc-number">2.</span> <span class="toc-text">索引维护</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#覆盖索引"><span class="toc-number">3.</span> <span class="toc-text">覆盖索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#最左前缀原则"><span class="toc-number">4.</span> <span class="toc-text">最左前缀原则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#索引下推-Mysql5-6之后"><span class="toc-number">5.</span> <span class="toc-text">索引下推(Mysql5.6之后)</span></a></li></ol>
+		
 		</div>
 		
-		<h4 id="索引常见模型"><a href="#索引常见模型" class="headerlink" title="索引常见模型"></a>索引常见模型</h4><ul>
-<li>哈希表<ul>
-<li>适用于只有等值查询的场景</li>
-<li>哈希冲突的处理办法：链表</li>
-</ul>
-</li>
-<li>有序数组<ul>
-<li>在等值查询和范围查询场景中性能都非常优秀</li>
-<li>只适用于静态存储引擎</li>
-<li>在更新数据时，需要挪动后面所有的记录，成本高</li>
-</ul>
-</li>
-<li>搜索树</li>
-</ul>
-<p>每一个索引在InnoDB里面对应一棵B+树<br>主键索引的叶子节点内容是主键的值，主键索引也称为聚簇索引(clustered index)<br>非主键索引的叶子节点内容是主键的值，非主键索引也被称为二级索引(secondary index)</p>
-<p>基于非主键索引的查询需要多扫描一棵索引数，扫描主键索引<br>回到主键索引树搜索的过程，我们称为回表</p>
-<h4 id="索引维护"><a href="#索引维护" class="headerlink" title="索引维护"></a>索引维护</h4><p>在插入数据时，索引的数据也会变化<br>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也越小</p>
-<h4 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h4><p>select id from table where k between 3 and 5;<br>索引K 已经“覆盖了”我们查询需求，我们称之为覆盖索引<br>由于覆盖索引可以减少树的搜索次数，显著提升查询性能，所以使用覆盖索引为一个常用的性能优化手动<br>实例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `tuser` (</div><div class="line">    `id` int(11) NOT NULL,</div><div class="line">    `id_card` varchar(32) DEFAULT NULL,</div><div class="line">    `name` varchar(32) DEFAULT NULL,</div><div class="line">    `age` int(11) DEFAULT NULL,</div><div class="line">    `ismale` tinyint(1) DEFAULT NULL,</div><div class="line">    PRIMARY KEY (`id`),</div><div class="line">    KEY `id_card` (`id_card`),</div><div class="line">    KEY `name_age` (`name`,`age`)</div><div class="line">) ENGINE=InnoDB;</div></pre></td></tr></table></figure></p>
-<p>如果现在有一个高频请求，要根据市民的身份证号查询他的姓名和年龄，这个联合索引就有意义了。它可以在这个高频请求上用到覆盖索引，不再需要回表查整行记录，减少语句的执行时间</p>
-<h4 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h4><ul>
-<li>B+树这种索引结构，可利用索引的“最左前缀”，来定位记录</li>
-<li>最左前缀可以是联合索引的最左N个字段，也可以是字符串索引的最左M个字符</li>
-<li>最左前缀评估标准，索引的复用能力</li>
-</ul>
-<p>建立联合索引时，如果安排索引内的字段顺序？</p>
+		<p>WAL(Write-Ahead-Logging),先写日志，再写磁盘</p>
 <ul>
-<li>如果通过调整顺序，可以少维护一个索引，那么这个顺序往往就是需要优先考虑采用的</li>
-<li>在联合索引时，建立单个索引考虑的原则为空间</li>
+<li>redo log(重做日志)<ul>
+<li>存储引擎层面</li>
+<li>存储容量大小固定，循环写</li>
+<li>checkpoint 当前要擦除的位置，擦除记录前需要将数据更新到数据文件中</li>
+<li>write-pos 当前写入记录的位置</li>
+<li>功能：保证InnoDB即使数据库发生异常重启，之前提交的记录也不会丢失(crash-safe)</li>
+<li>插件式，innodb引擎特有</li>
+<li>物流日志-记录在某个数据页上做了什么修改</li>
 </ul>
-<h4 id="索引下推-Mysql5-6之后"><a href="#索引下推-Mysql5-6之后" class="headerlink" title="索引下推(Mysql5.6之后)"></a>索引下推(Mysql5.6之后)</h4><p>在索引遍历的过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数<br>name like “zhang%” and age&gt;10,会对匹配的数据进行回表查询，如果有索引下推机制，那么会先过滤掉age&lt;10的数据，在执行回表查询，提高检索速度</p>
-<p>alter table T engine=InnoDB 是用来释放 delete 操作引起的页的空洞,也就是碎片空间 操作时候尽量避免当前表的dml 操作.<br>表数据很大情况 建议使用 Percona Toolkit 工具来执行</p>
+</li>
+<li>binlog(归档日志)<ul>
+<li>Server层面</li>
+<li>逻辑日志，记录的是这个语句的原始逻辑，sql语句是什么样子的</li>
+</ul>
+</li>
+</ul>
+<p>执行器和引擎执行update操作流程：</p>
+<ol>
+<li>先取出该查询，如果在内存中则直接返回给执行器，否则先从磁盘读入内存，然后返回</li>
+<li>执行器拿到引擎给的行数据，执行相关操作，再调用引擎接口写入这行新数据</li>
+<li>引擎将这行新数据更新到内存中，同时将这个更新记录到redo log中，此时redo log处于prepare状态，然后告知执行器执行完成，随时可以提交事务</li>
+<li>执行器生成这个操作的binlog，将binlog写入磁盘</li>
+<li>执行器调用引擎的提交事务接口，引擎把刚刚写入的redo log改写提交(commit)状态，更新完成</li>
+</ol>
+<p>流程如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">获取数据 ——&gt; 返回数据 ——&gt; 执行逻辑 ——&gt; 写入新行 ——&gt; 新行更新到内存 ——&gt; 写入redo log处于prepare状态 ——&gt; 写binlog ——&gt; 提交事务redo log处于commit状态完成</div></pre></td></tr></table></figure></p>
+<p>redo log和binlog都可以用于表示事务的提交状态，而两阶段提交就是让这两个状态保持逻辑上的一致</p>
+<p>数据一致性保持理解：</p>
+<p>1 prepare阶段<br>2 写binlog<br>3 commit</p>
+<p>当在2之前崩溃时<br>重启恢复：后发现没有commit，回滚。备份恢复：没有binlog 一致<br>当在3之前崩溃<br>重启恢复：虽没有commit，但满足prepare和binlog完整，所以重启后会自动commit。备份：有binlog. 一致</p>
+<p><strong>参数配置</strong><br>innodb_flush_log_at_trx_commit 参数设置成1时，表示每次事务的redo log都直接持久化到磁盘，保证mysql异常重启后数据不丢失<br>sync_binlog参数设置成1时，表示每次事务的binlog都持久化到磁盘，保证mysql异常重启后binlog不丢失</p>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Index/">Index</a>
+  <span></span> <a href="/tags/binlog/">binlog</a>
   </div>
 
 
@@ -164,7 +158,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2018/12/11/yw-mysql-index02/" data-title="Mysql索引02 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2018/12/25/yw-mysql-redo-binlog/" data-title="Redo log 和 Binlog | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -174,18 +168,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2018/12/20/yw-mysql-unique-index/" title="普通索引和唯一索引的区别">
+ <a href="/2018/12/26/yw-mysql-transaction/" title="事务隔离">
   <strong>新一篇:</strong><br/>
   <span>
-  普通索引和唯一索引的区别</span>
+  事务隔离</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2018/12/03/yw-mysql-question/"  title="Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法">
+<a href="/2018/12/21/yw-mysql-select-index/"  title="索引选择">
  <strong>旧一篇:</strong><br/> 
- <span>Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法
+ <span>索引选择
 </span>
 </a>
 </div>
@@ -195,7 +189,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Mysql索引02" data-thread-key="yw-mysql-index02" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-index02"></div>
+	<div class="ds-thread" data-title="Redo log 和 Binlog" data-thread-key="yw-mysql-redo-binlog" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-redo-binlog"></div>
 	
 </section>
 

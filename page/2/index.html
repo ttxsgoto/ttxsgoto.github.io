@@ -89,6 +89,96 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2018/08/25/rabbitmq/" title="RabbitMQ" itemprop="url">
+      
+        RabbitMQ
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >最近工作需要，需要使用到RabbitMQ，于是理解了一下相关概念和代码测试了一下，记录如下：
+RabbitMQ简介AMQP，即Advanced Message Queuing Protocol，高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。消息中间件主要用</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-08-25T07:22:15.000Z" itemprop="datePublished">2018-08-25</time>
+      
+          <a href="/2018/08/25/rabbitmq/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/08/11/yw-mysql-index02/" title="Mysql索引02" itemprop="url">
+      
+        Mysql索引02
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >索引常见模型
+哈希表
+适用于只有等值查询的场景
+哈希冲突的处理办法：链表
+
+
+有序数组
+在等值查询和范围查询场景中性能都非常优秀
+只适用于静态存储引擎
+在更新数据时，需要挪动后面所有的记录，成本高
+
+
+搜索树
+
+InnoDB索引模型在InnoDB中，表都是根据主键顺序以索引的形式</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-08-11T03:33:20.000Z" itemprop="datePublished">2018-08-11</time>
+      
+          <a href="/2018/08/11/yw-mysql-index02/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/08/10/python-asyncio-basic/" title="asyncio 基本用法" itemprop="url">
+      
+        asyncio 基本用法
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >async/await协程同时开启多个任务，但一次只执行一个，当执行的任务遇到阻塞，就切换到下一个任务继续执行，以期节省阻塞所占用的时间
+要实现异步处理，需要有挂起的操作，当一个任务需要等待 IO 结果的时候，可以挂起当前任务，转而去执行其他任务
+
+event_loop： 事件循</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-08-10T03:58:11.000Z" itemprop="datePublished">2018-08-10</time>
+      
+          <a href="/2018/08/10/python-asyncio-basic/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2018/04/15/yw-mysql-index/" title="Mysql索引01" itemprop="url">
       
         Mysql索引01
@@ -265,82 +355,6 @@ Django QuerySet懒执行只有访问到对应的数据时，才会访问数据�
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/01/30/python-dyn-attr-prop/" title="Python 动态属性和特性" itemprop="url">
-      
-        Python 动态属性和特性
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >__getattr__ 方法__getattr__(self, name) 作用仅当没有指定名称name的属性时才调用__getattr__方法123456789101112131415161718192021222324252627282930from collections </p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-01-30T14:42:28.000Z" itemprop="datePublished">2018-01-30</time>
-      
-          <a href="/2018/01/30/python-dyn-attr-prop/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/01/17/django-url-permisson/" title="Django 基于URL权限管理模块" itemprop="url">
-      
-        Django 基于URL权限管理模块
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >背景Django自带的权限系统为model层面的，也就是说给某个用户或者组对应的model权限，拥有了操作该model的权限，不能更精细化的控制权限，如对象级别的权限
-现在引用了基于url的权限系统，可以控制用户访问一个接口的不同方法 ，可以很方便的控制权限；如：用户对于某个接口</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-01-17T14:38:28.000Z" itemprop="datePublished">2018-01-17</time>
-      
-          <a href="/2018/01/17/django-url-permisson/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/12/27/elasticsearch-mongo-to-es/" title="Elasticsearch Mongo-connector同步mongo数据到ES" itemprop="url">
-      
-        Elasticsearch Mongo-connector同步mongo数据到ES
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >说明
-通过mongo-connector将mongo数据实时同步到es中
-mongo运行在replica-set模式，同时需要elastic2_doc_manager将数据写入ES
-开启replica-set模式后，写入mongo的数据都可以同步到es，即使当前mongo-con</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-12-27T13:16:47.000Z" itemprop="datePublished">2017-12-27</time>
-      
-          <a href="/2017/12/27/elasticsearch-mongo-to-es/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/3/">下一页 &raquo;</a>
@@ -389,7 +403,7 @@ mongo运行在replica-set模式，同时需要elastic2_doc_manager将数据写�
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
-			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>7</sup></a></li>
+			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>10</sup></a></li>
 		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		

@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2018-12-21T03:16:46.000Z</updated>
+  <updated>2018-12-27T09:50:15.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,205 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>全局锁、表级锁和行锁</title>
+    <link href="https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/"/>
+    <id>https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/</id>
+    <published>2018-12-27T14:44:05.000Z</published>
+    <updated>2018-12-27T09:50:15.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="锁分类"><a href="#锁分类" class="headerlink" title="锁分类"></a>锁分类</h4><ul>
+<li>全局锁</li>
+<li>表级锁</li>
+<li>行锁</li>
+</ul>
+<h4 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h4><p>全局锁就是对整个数据库实例加锁<br>命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">flush tables with read lock</div></pre></td></tr></table></figure></p>
+<p>使用该命令后其他线程的执行语句都会被阻塞：数据更新语句(数据的增删改)和数据定义语句(建表和修改表结构等)和更新事务的提交语句</p>
+<p><strong>应用</strong>：全库逻辑备份</p>
+<ul>
+<li>innodb引擎， mysqldump 使用参数-single-transaction，导数据时会启动一个事务，来确保一致性视图</li>
+<li>myisam引擎，不支持事务，需要使用FTWRL命令</li>
+</ul>
+<h4 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h4><h5 id="表锁"><a href="#表锁" class="headerlink" title="表锁"></a>表锁</h5><p>语句:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">lock tables xxx read/write;</div><div class="line">unlock tables;</div></pre></td></tr></table></figure></p>
+<p>表锁是最常用的处理并发的方式，而对于innodb这种行锁的引擎，一般不会使用lock tables命令来控制并发，因为锁住整个表的影响太大</p>
+<h5 id="元数据锁-meta-data-lock-MDL"><a href="#元数据锁-meta-data-lock-MDL" class="headerlink" title="元数据锁(meta data lock, MDL)"></a>元数据锁(meta data lock, MDL)</h5><p>MDL不需要显示使用，在访问一个表时会自动加上，MDL的作用，保证读写的正确性</p>
+<ul>
+<li>在对一个表做增删改查操作，加MDL读锁，当要对表做结构变更操作，加MDL写锁</li>
+<li>读锁之间不互斥，可以有多个线程对一张表增删改查</li>
+<li>读写锁之间，写锁之间互斥，用来保证变更表结构操作的安全性,如果有两个线程要同时给一个表加字段，其中一个要等另一个执行完成后才能开始执行</li>
+</ul>
+<h5 id="安全给小表加字段"><a href="#安全给小表加字段" class="headerlink" title="安全给小表加字段"></a>安全给小表加字段</h5><ol>
+<li>需要解决长事务，事务不提交，就会一直占用MDL锁，mysql中的information_schema库中INNODB_TRX表中记录着当前执行中的事务</li>
+<li>变更热点表，在alter table语句里面设置等待时间，如果在等待时间没有拿到也不会阻塞 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">alter table xxx nowait add column ...</div><div class="line">alter table yyy wait n add column ...</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h4><p>行锁是针对数据表中的行记录的锁</p>
+<p>mysql行锁是在引擎层自己实现的，并不是所有引擎都支持行锁，如myisam引擎不支持行锁，只能使用表锁，任何时刻只能有一个更新在执行，影响业务并发度</p>
+<h5 id="两阶段锁"><a href="#两阶段锁" class="headerlink" title="两阶段锁"></a>两阶段锁</h5><p>在innodb事务中，行锁是在需要的时候才加上，但并不是不需要了立刻释放，而是要等到事务结束时才释放</p>
+<p><strong>如果你的事务中需要锁多个行，要把最可能造成锁冲突、最可能影响并发度的锁尽量往后放</strong></p>
+<h5 id="死锁和死锁检测"><a href="#死锁和死锁检测" class="headerlink" title="死锁和死锁检测"></a>死锁和死锁检测</h5><p>死锁：当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态</p>
+<p>出现死锁，解决策略：</p>
+<ul>
+<li>直接进入等待，直到超时，超时时间可以通过参数<code>innodb_lock_wait_timeout</code>来设置，默认值为50s</li>
+<li>发起死锁检测，发现死锁后，主动回滚死锁链条中的某个事物，让其他事物得以继续执行，通过参数<code>innodb_deadlock_detect</code>设置为on，来开启死锁检测</li>
+</ul>
+<p>如果所有事务都要更新同一行，这时死锁检测将消耗大量cpu资源，因此出现cpu利用率很高，但每秒执行不了多少事务</p>
+<p>解决方案：</p>
+<ul>
+<li>控制并发，在数据库服务端控制并发，需要修改mysql源码，要求高</li>
+<li>业务上，将更新一行改为逻辑上的多行来减少锁冲突</li>
+<li>减少死锁的主要方向，控制访问相同资源的并发事务量</li>
+</ul>
+<p>innodb行级锁是通过锁索引记录实现的，如果更新的列没有建索引会锁住整个表的</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;锁分类&quot;&gt;&lt;a href=&quot;#锁分类&quot; class=&quot;headerlink&quot; title=&quot;锁分类&quot;&gt;&lt;/a&gt;锁分类&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;全局锁&lt;/li&gt;
+&lt;li&gt;表级锁&lt;/li&gt;
+&lt;li&gt;行锁&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;全局锁&quot;&gt;&lt;a href
+    
+    </summary>
+    
+      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
+    
+    
+      <category term="Lock" scheme="https://ttxsgoto.github.io/tags/Lock/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>事务隔离</title>
+    <link href="https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/"/>
+    <id>https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/</id>
+    <published>2018-12-26T13:42:58.000Z</published>
+    <updated>2018-12-27T09:50:08.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h4><p>事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持</p>
+<h4 id="事务的特性"><a href="#事务的特性" class="headerlink" title="事务的特性"></a>事务的特性</h4><ul>
+<li>原子性</li>
+<li>一致性</li>
+<li>隔离性</li>
+<li>持久性</li>
+</ul>
+<h4 id="多事务同时执行引起的问题"><a href="#多事务同时执行引起的问题" class="headerlink" title="多事务同时执行引起的问题"></a>多事务同时执行引起的问题</h4><ul>
+<li>脏读</li>
+<li>不可重复读</li>
+<li>幻读</li>
+</ul>
+<h4 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h4><ul>
+<li>读未提交(read uncommitted) 一个事务还没提交时，它做的变更就能被别的事务看到</li>
+<li>读提交(read committed) 一个事务提交之后，它做的变更才会被其他事务看到</li>
+<li>可重复读(repeatable read) 一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的</li>
+<li>串行化(serializable) “写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突时，后访问的事务必须等前一个事务执行完成后，才能继续执行</li>
+</ul>
+<h4 id="配置事务方法"><a href="#配置事务方法" class="headerlink" title="配置事务方法"></a>配置事务方法</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">启动参数transaction-isolation</div></pre></td></tr></table></figure>
+<h4 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h4><p>每条记录在更新的时候都会同时记录一条回滚操作。通过回滚操作，都可以得到前一个状态的值</p>
+<p>同一条记录在系统中可以存在多个版本，这就是数据库的多版本并发控制（MVCC）。</p>
+<p>回滚日志在不需要的时候删除，当系统里没有比这个回滚日志更早的read-view时候，系统自动删除</p>
+<h4 id="尽量不要使用长事务"><a href="#尽量不要使用长事务" class="headerlink" title="尽量不要使用长事务"></a>尽量不要使用长事务</h4><p>长事务意味着系统里面会存在很老的事务视图，在事务提交之前，回滚日志必须保留，这就会导致大量占用存储空间</p>
+<h4 id="事务的启动方式"><a href="#事务的启动方式" class="headerlink" title="事务的启动方式"></a>事务的启动方式</h4><ul>
+<li><p>显示启动事务</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">begin transaction</div><div class="line">do something</div><div class="line">commit / rollback</div></pre></td></tr></table></figure>
+</li>
+<li><p>set autocommit=0，将这个线程的自动提交关掉，只要你执行一个查询语句，事务就启动了，接下来的查询都在事务中，如果是长连接，将导致意外的长事务，这样直到你主动执行commit或者rollback语句或者断开连接才释放，可以通过set autocommit=1来显式方式来启动事务</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">begin tracsaction; #  不是一个事务的起点，在执行到它之后的第一个操作InnoDB语句，事务才真正启动</div><div class="line">start transaction with consistent snapshot; # 马上启动一个事务</div><div class="line"> </div><div class="line">commit;     # 提交事务</div><div class="line">autocommit=1;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="事务隔离-or-不隔离"><a href="#事务隔离-or-不隔离" class="headerlink" title="事务隔离 or 不隔离"></a>事务隔离 or 不隔离</h4><p>如果是可重复读隔离级别，事务启动时会创建一个视图read-view，之后事务执行期间，即使有其他事务修改了数据，该事务看到的仍然跟启动时看到的一样，也就是在可重复读隔离级别下执行事务，不受外界影响<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">start transaction with consistent snapshot;    # 执行该命令后马上启动一个事务</div></pre></td></tr></table></figure></p>
+<p>Mysql中的两个“视图”：</p>
+<ul>
+<li>一个view，用于查询语句定义的虚拟表，在调用的时候执行查询语句并生成结果</li>
+<li>InnoDB在实现MCVV时用到的一致性读视图，即consistent read view，用于支持RC(Read Committed，读提交)和RR(Repeatable Read，可重复读)隔离级别的实现，作用在事务执行期间用来定义”我能看到什么数据”</li>
+</ul>
+<h4 id="“快照”在MVCC里是怎么工作的"><a href="#“快照”在MVCC里是怎么工作的" class="headerlink" title="“快照”在MVCC里是怎么工作的"></a>“快照”在MVCC里是怎么工作的</h4><p>在可重复读隔离级别下，事务在启动的时候就拍下快照，这个快照是基于整库</p>
+<p>Innodb里面每个事务有一个唯一的事务ID，叫作transaction id，它是在事务开始的时候向Innodb的事务系统申请的，是按申请顺序严格递增的</p>
+<p>每行数据也都都是有多个版本的，每次事务更新数据时，都会生成一个新的数据版本，而且把transaction id赋值给这个数据版本的事务id，记为row trx_id; 同时，旧的数据版本要保留，并且在新的数据版本中能够有信息可以直接拿到它</p>
+<p>数据表中一行记录，其实可能有多个版本(row)，每个版本有自己的rowtrx_id</p>
+<p>InnoDB利用了“所有数据都有多个版本”的特性，实现了“秒级创建快照的能力”</p>
+<p>更新数据都要先读后写，而这个读，只能读当前的值，称之为”当前读”；当前读总是读取已经提交完成的最新版本</p>
+<ul>
+<li>对于可重复读，查询只承认在事务启动前就已经提交完成的数据</li>
+<li>对于读提交，查询只承认在语句启动前就已经提交完成的数据</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;事务&quot;&gt;&lt;a href=&quot;#事务&quot; class=&quot;headerlink&quot; title=&quot;事务&quot;&gt;&lt;/a&gt;事务&lt;/h4&gt;&lt;p&gt;事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持&lt;/p&gt;
+&lt;h4 id=&quot;事务的特性
+    
+    </summary>
+    
+      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
+    
+    
+      <category term="Transaction" scheme="https://ttxsgoto.github.io/tags/Transaction/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Redo log 和 Binlog</title>
+    <link href="https://ttxsgoto.github.io/2018/12/25/yw-mysql-redo-binlog/"/>
+    <id>https://ttxsgoto.github.io/2018/12/25/yw-mysql-redo-binlog/</id>
+    <published>2018-12-25T11:43:38.000Z</published>
+    <updated>2018-12-25T11:48:27.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>WAL(Write-Ahead-Logging),先写日志，再写磁盘</p>
+<ul>
+<li>redo log(重做日志)<ul>
+<li>存储引擎层面</li>
+<li>存储容量大小固定，循环写</li>
+<li>checkpoint 当前要擦除的位置，擦除记录前需要将数据更新到数据文件中</li>
+<li>write-pos 当前写入记录的位置</li>
+<li>功能：保证InnoDB即使数据库发生异常重启，之前提交的记录也不会丢失(crash-safe)</li>
+<li>插件式，innodb引擎特有</li>
+<li>物流日志-记录在某个数据页上做了什么修改</li>
+</ul>
+</li>
+<li>binlog(归档日志)<ul>
+<li>Server层面</li>
+<li>逻辑日志，记录的是这个语句的原始逻辑，sql语句是什么样子的</li>
+</ul>
+</li>
+</ul>
+<p>执行器和引擎执行update操作流程：</p>
+<ol>
+<li>先取出该查询，如果在内存中则直接返回给执行器，否则先从磁盘读入内存，然后返回</li>
+<li>执行器拿到引擎给的行数据，执行相关操作，再调用引擎接口写入这行新数据</li>
+<li>引擎将这行新数据更新到内存中，同时将这个更新记录到redo log中，此时redo log处于prepare状态，然后告知执行器执行完成，随时可以提交事务</li>
+<li>执行器生成这个操作的binlog，将binlog写入磁盘</li>
+<li>执行器调用引擎的提交事务接口，引擎把刚刚写入的redo log改写提交(commit)状态，更新完成</li>
+</ol>
+<p>流程如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">获取数据 ——&gt; 返回数据 ——&gt; 执行逻辑 ——&gt; 写入新行 ——&gt; 新行更新到内存 ——&gt; 写入redo log处于prepare状态 ——&gt; 写binlog ——&gt; 提交事务redo log处于commit状态完成</div></pre></td></tr></table></figure></p>
+<p>redo log和binlog都可以用于表示事务的提交状态，而两阶段提交就是让这两个状态保持逻辑上的一致</p>
+<p>数据一致性保持理解：</p>
+<p>1 prepare阶段<br>2 写binlog<br>3 commit</p>
+<p>当在2之前崩溃时<br>重启恢复：后发现没有commit，回滚。备份恢复：没有binlog 一致<br>当在3之前崩溃<br>重启恢复：虽没有commit，但满足prepare和binlog完整，所以重启后会自动commit。备份：有binlog. 一致</p>
+<p><strong>参数配置</strong><br>innodb_flush_log_at_trx_commit 参数设置成1时，表示每次事务的redo log都直接持久化到磁盘，保证mysql异常重启后数据不丢失<br>sync_binlog参数设置成1时，表示每次事务的binlog都持久化到磁盘，保证mysql异常重启后binlog不丢失</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;WAL(Write-Ahead-Logging),先写日志，再写磁盘&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;redo log(重做日志)&lt;ul&gt;
+&lt;li&gt;存储引擎层面&lt;/li&gt;
+&lt;li&gt;存储容量大小固定，循环写&lt;/li&gt;
+&lt;li&gt;checkpoint 当前要擦除的位置，擦除记录前需要将
+    
+    </summary>
+    
+      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
+    
+    
+      <category term="binlog" scheme="https://ttxsgoto.github.io/tags/binlog/"/>
+    
+  </entry>
   
   <entry>
     <title>索引选择</title>
@@ -102,62 +301,6 @@
       &lt;h4 id=&quot;查询操作&quot;&gt;&lt;a href=&quot;#查询操作&quot; class=&quot;headerlink&quot; title=&quot;查询操作&quot;&gt;&lt;/a&gt;查询操作&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止&lt;/li&gt;
 &lt;li&gt;唯一索引，找到第一个满足
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Mysql索引02</title>
-    <link href="https://ttxsgoto.github.io/2018/12/11/yw-mysql-index02/"/>
-    <id>https://ttxsgoto.github.io/2018/12/11/yw-mysql-index02/</id>
-    <published>2018-12-11T03:33:20.000Z</published>
-    <updated>2018-12-21T03:37:13.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="索引常见模型"><a href="#索引常见模型" class="headerlink" title="索引常见模型"></a>索引常见模型</h4><ul>
-<li>哈希表<ul>
-<li>适用于只有等值查询的场景</li>
-<li>哈希冲突的处理办法：链表</li>
-</ul>
-</li>
-<li>有序数组<ul>
-<li>在等值查询和范围查询场景中性能都非常优秀</li>
-<li>只适用于静态存储引擎</li>
-<li>在更新数据时，需要挪动后面所有的记录，成本高</li>
-</ul>
-</li>
-<li>搜索树</li>
-</ul>
-<p>每一个索引在InnoDB里面对应一棵B+树<br>主键索引的叶子节点内容是主键的值，主键索引也称为聚簇索引(clustered index)<br>非主键索引的叶子节点内容是主键的值，非主键索引也被称为二级索引(secondary index)</p>
-<p>基于非主键索引的查询需要多扫描一棵索引数，扫描主键索引<br>回到主键索引树搜索的过程，我们称为回表</p>
-<h4 id="索引维护"><a href="#索引维护" class="headerlink" title="索引维护"></a>索引维护</h4><p>在插入数据时，索引的数据也会变化<br>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也越小</p>
-<h4 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h4><p>select id from table where k between 3 and 5;<br>索引K 已经“覆盖了”我们查询需求，我们称之为覆盖索引<br>由于覆盖索引可以减少树的搜索次数，显著提升查询性能，所以使用覆盖索引为一个常用的性能优化手动<br>实例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `tuser` (</div><div class="line">    `id` int(11) NOT NULL,</div><div class="line">    `id_card` varchar(32) DEFAULT NULL,</div><div class="line">    `name` varchar(32) DEFAULT NULL,</div><div class="line">    `age` int(11) DEFAULT NULL,</div><div class="line">    `ismale` tinyint(1) DEFAULT NULL,</div><div class="line">    PRIMARY KEY (`id`),</div><div class="line">    KEY `id_card` (`id_card`),</div><div class="line">    KEY `name_age` (`name`,`age`)</div><div class="line">) ENGINE=InnoDB;</div></pre></td></tr></table></figure></p>
-<p>如果现在有一个高频请求，要根据市民的身份证号查询他的姓名和年龄，这个联合索引就有意义了。它可以在这个高频请求上用到覆盖索引，不再需要回表查整行记录，减少语句的执行时间</p>
-<h4 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h4><ul>
-<li>B+树这种索引结构，可利用索引的“最左前缀”，来定位记录</li>
-<li>最左前缀可以是联合索引的最左N个字段，也可以是字符串索引的最左M个字符</li>
-<li>最左前缀评估标准，索引的复用能力</li>
-</ul>
-<p>建立联合索引时，如果安排索引内的字段顺序？</p>
-<ul>
-<li>如果通过调整顺序，可以少维护一个索引，那么这个顺序往往就是需要优先考虑采用的</li>
-<li>在联合索引时，建立单个索引考虑的原则为空间</li>
-</ul>
-<h4 id="索引下推-Mysql5-6之后"><a href="#索引下推-Mysql5-6之后" class="headerlink" title="索引下推(Mysql5.6之后)"></a>索引下推(Mysql5.6之后)</h4><p>在索引遍历的过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数<br>name like “zhang%” and age&gt;10,会对匹配的数据进行回表查询，如果有索引下推机制，那么会先过滤掉age&lt;10的数据，在执行回表查询，提高检索速度</p>
-<p>alter table T engine=InnoDB 是用来释放 delete 操作引起的页的空洞,也就是碎片空间 操作时候尽量避免当前表的dml 操作.<br>表数据很大情况 建议使用 Percona Toolkit 工具来执行</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;索引常见模型&quot;&gt;&lt;a href=&quot;#索引常见模型&quot; class=&quot;headerlink&quot; title=&quot;索引常见模型&quot;&gt;&lt;/a&gt;索引常见模型&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;哈希表&lt;ul&gt;
-&lt;li&gt;适用于只有等值查询的场景&lt;/li&gt;
-&lt;li&gt;哈希冲突的处理办法：链表&lt;/
     
     </summary>
     
@@ -580,6 +723,73 @@
   </entry>
   
   <entry>
+    <title>Mysql索引02</title>
+    <link href="https://ttxsgoto.github.io/2018/08/11/yw-mysql-index02/"/>
+    <id>https://ttxsgoto.github.io/2018/08/11/yw-mysql-index02/</id>
+    <published>2018-08-11T03:33:20.000Z</published>
+    <updated>2018-12-26T07:21:02.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="索引常见模型"><a href="#索引常见模型" class="headerlink" title="索引常见模型"></a>索引常见模型</h4><ul>
+<li>哈希表<ul>
+<li>适用于只有等值查询的场景</li>
+<li>哈希冲突的处理办法：链表</li>
+</ul>
+</li>
+<li>有序数组<ul>
+<li>在等值查询和范围查询场景中性能都非常优秀</li>
+<li>只适用于静态存储引擎</li>
+<li>在更新数据时，需要挪动后面所有的记录，成本高</li>
+</ul>
+</li>
+<li>搜索树</li>
+</ul>
+<h4 id="InnoDB索引模型"><a href="#InnoDB索引模型" class="headerlink" title="InnoDB索引模型"></a>InnoDB索引模型</h4><p>在InnoDB中，表都是根据主键顺序以索引的形式存放的，这种存储方式的表称为索引组织表</p>
+<p>每一个索引在InnoDB里面对应一棵B+树</p>
+<p>主键索引的叶子节点存的整行数据，主键索引也称为聚簇索引(clustered index)</p>
+<p>非主键索引的叶子节点内容是主键的值，非主键索引也被称为二级索引(secondary index)</p>
+<h4 id="主键索引和普通索引的查询区别"><a href="#主键索引和普通索引的查询区别" class="headerlink" title="主键索引和普通索引的查询区别"></a>主键索引和普通索引的查询区别</h4><ul>
+<li>基于非主键索引的查询需要多扫描一棵索引数，扫描主键索引</li>
+<li>回到主键索引树搜索的过程，我们称为回表</li>
+</ul>
+<h4 id="索引维护"><a href="#索引维护" class="headerlink" title="索引维护"></a>索引维护</h4><p>在插入数据时，索引的数据也会变化</p>
+<p>如果插入的数据对应的数据页已经满了，根据B+树的算法，需要申请一个新的数据页，然后挪动部分数据到新的数据页中，该过程称为页分裂</p>
+<p>页分裂影响性能而且也影响数据页的利用率</p>
+<p>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也越小</p>
+<p>从性能和存储空间考虑，自增主键比没有使用自增主键合理</p>
+<h4 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h4><p>select id from table where k between 3 and 5;<br>索引K 已经“覆盖了”我们查询需求，我们称之为覆盖索引<br>由于覆盖索引可以减少树的搜索次数，显著提升查询性能，所以使用覆盖索引为一个常用的性能优化手段</p>
+<p>实例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">CREATE TABLE `tuser` (</div><div class="line">    `id` int(11) NOT NULL,</div><div class="line">    `id_card` varchar(32) DEFAULT NULL,</div><div class="line">    `name` varchar(32) DEFAULT NULL,</div><div class="line">    `age` int(11) DEFAULT NULL,</div><div class="line">    `ismale` tinyint(1) DEFAULT NULL,</div><div class="line">    PRIMARY KEY (`id`),</div><div class="line">    KEY `id_card` (`id_card`),</div><div class="line">    KEY `name_age` (`name`,`age`)</div><div class="line">    ) ENGINE=InnoDB;</div></pre></td></tr></table></figure></p>
+<p>如果现在有一个高频请求，要根据市民的身份证号查询他的姓名和年龄，这个联合索引就有意义了。它可以在这个高频请求上用到覆盖索引，不再需要回表查整行记录，减少语句的执行时间</p>
+<h4 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h4><ul>
+<li>B+树这种索引结构，可利用索引的“最左前缀”，来定位记录</li>
+<li>最左前缀可以是联合索引的最左N个字段，也可以是字符串索引的最左M个字符</li>
+<li>最左前缀评估标准，索引的复用能力</li>
+</ul>
+<p>建立联合索引时，如果安排索引内的字段顺序？</p>
+<ul>
+<li>如果通过调整顺序，可以少维护一个索引，那么这个顺序往往就是需要优先考虑采用的</li>
+<li>在联合索引时，建立单个索引考虑的原则为空间</li>
+</ul>
+<h4 id="索引下推-Mysql5-6之后"><a href="#索引下推-Mysql5-6之后" class="headerlink" title="索引下推(Mysql5.6之后)"></a>索引下推(Mysql5.6之后)</h4><p>在索引遍历的过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数<br>name like “zhang%” and age&gt;10,会对匹配的数据进行回表查询，如果有索引下推机制，那么会先过滤掉age&lt;10的数据，在执行回表查询，提高检索速度</p>
+<p>alter table T engine=InnoDB 是用来释放 delete 操作引起的页的空洞,也就是碎片空间 操作时候尽量避免当前表的dml 操作.<br>表数据很大情况 建议使用 Percona Toolkit 工具来执行</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;索引常见模型&quot;&gt;&lt;a href=&quot;#索引常见模型&quot; class=&quot;headerlink&quot; title=&quot;索引常见模型&quot;&gt;&lt;/a&gt;索引常见模型&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;哈希表&lt;ul&gt;
+&lt;li&gt;适用于只有等值查询的场景&lt;/li&gt;
+&lt;li&gt;哈希冲突的处理办法：链表&lt;/
+    
+    </summary>
+    
+      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
+    
+    
+      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
+    
+  </entry>
+  
+  <entry>
     <title>asyncio 基本用法</title>
     <link href="https://ttxsgoto.github.io/2018/08/10/python-asyncio-basic/"/>
     <id>https://ttxsgoto.github.io/2018/08/10/python-asyncio-basic/</id>
@@ -970,138 +1180,6 @@
     
     
       <category term="Descriptor" scheme="https://ttxsgoto.github.io/tags/Descriptor/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Python 动态属性和特性</title>
-    <link href="https://ttxsgoto.github.io/2018/01/30/python-dyn-attr-prop/"/>
-    <id>https://ttxsgoto.github.io/2018/01/30/python-dyn-attr-prop/</id>
-    <published>2018-01-30T14:42:28.000Z</published>
-    <updated>2018-01-30T13:00:08.000Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="getattr-方法"><a href="#getattr-方法" class="headerlink" title="__getattr__ 方法"></a>__getattr__ 方法</h3><p>__getattr__(self, name) 作用仅当没有指定名称name的属性时才调用__getattr__方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> abc</div><div class="line"><span class="keyword">import</span> keyword</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">FrozenJSON</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, mapping)</span>:</span></div><div class="line">        self.__data = &#123;&#125;</div><div class="line">        <span class="keyword">for</span> key, value <span class="keyword">in</span> mapping.items():</div><div class="line">            <span class="keyword">if</span> keyword.iskeyword(key):</div><div class="line">                key += <span class="string">'_'</span></div><div class="line">            self.__data[key] = value</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span><span class="params">(self, name)</span>:</span></div><div class="line">        <span class="keyword">if</span> hasattr(self.__data, name):</div><div class="line">            <span class="keyword">return</span> getattr(self.__data, name)</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">return</span> FrozenJSON.build(self.__data[name])</div><div class="line"> </div><div class="line"><span class="meta">    @classmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">build</span><span class="params">(cls, obj)</span>:</span>  <span class="comment"># 备选构造器</span></div><div class="line">        <span class="keyword">if</span> isinstance(obj, abc.Mapping):  <span class="comment"># 映射</span></div><div class="line">            <span class="keyword">return</span> cls(obj)</div><div class="line">        <span class="keyword">elif</span> isinstance(obj, abc.MutableSequence):  <span class="comment"># 列表</span></div><div class="line">            <span class="keyword">return</span> [cls.build(item) <span class="keyword">for</span> item <span class="keyword">in</span> obj]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">return</span> obj</div><div class="line"> </div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</div><div class="line">    grad = FrozenJSON(&#123;<span class="string">'name'</span>: <span class="string">'ttxs'</span>, <span class="string">'class'</span>: <span class="number">123</span>&#125;)</div><div class="line">    print(grod.name)</div><div class="line">    print(grad.class_)</div></pre></td></tr></table></figure></p>
-<h3 id="property-解析"><a href="#property-解析" class="headerlink" title="@property 解析"></a>@property 解析</h3><ul>
-<li>property 本身是一个类</li>
-<li>property(fget=None, fset=None, fdel=None, doc=None)<br>所有的参数都是可选，如果没有把函数传给某个参数，那么得到的特性对象就不允许执行相应的操作</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">LineItem</span>:</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, description, weight, price)</span>:</span></div><div class="line">        self.description = description</div><div class="line">        self.weight = weight</div><div class="line">        self.price = price</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">subtotal</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.weight * self.price</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_weight</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.__weight</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">set_weight</span><span class="params">(self, value)</span>:</span></div><div class="line">        <span class="keyword">if</span> value &gt; <span class="number">0</span>:</div><div class="line">            self.__weight = value</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'value must be &gt; 0'</span>)</div><div class="line"> </div><div class="line">    weight = property(get_weight, set_weight, )</div><div class="line"> </div><div class="line">xxx = LineItem(<span class="string">'ttxs'</span>, <span class="number">10</span>, <span class="number">12.5</span>)</div><div class="line">print(xxx.subtotal())</div><div class="line">xxx.weight=<span class="number">-20</span></div><div class="line">print(xxx.subtotal())</div></pre></td></tr></table></figure>
-<h3 id="处理属性的重要属性和函数"><a href="#处理属性的重要属性和函数" class="headerlink" title="处理属性的重要属性和函数"></a>处理属性的重要属性和函数</h3><ul>
-<li><p>__class__ : 对象所属类的引用(obj.__class__  和type(obj)相同)</p>
-</li>
-<li><p>__getattr__：只在对象的类中寻找，而不在实例中寻找</p>
-</li>
-<li>__dict__： 存储对象或类的可写属性,有dict属性的对象，任何时候都能设置新属性</li>
-<li>__slots__： 类可以定义这个属性，限制实例能有哪些属性</li>
-<li>dir([object])：列出对象的大部分属性</li>
-<li>getattr(obj, name[, defult])：从obj对象中获取name字符串对应的属性</li>
-<li>hasattr(obj, name)：如果obj对象中存在指定的属性，或者能以某种方式通过obj对象获取指定的属性，返回true</li>
-<li>setattr(obj, name, value)：把obj对象指定属性的值设置为value，前提是obj对象能接受这个值；这个函数可能会创建一个新的属性或者覆盖现有的属性</li>
-<li>vars([obj])：返回obj对象的__dict__属性，如果实例所属的类定义了__slots__属性，实例没有__dict__属性，那么vars函数不能处理那个实例</li>
-</ul>
-<h3 id="处理属性的特殊方法"><a href="#处理属性的特殊方法" class="headerlink" title="处理属性的特殊方法"></a>处理属性的特殊方法</h3><ul>
-<li>obj.attr 和 getattr(obj, ‘attr’, 42) 都会触发 Class.__getattribute__(obj, ‘attr’)方法</li>
-<li>__delattr__(self, name) del 语句， 都会触发Class.__delattr__(obj, ‘attr’)方法</li>
-<li>__dir__ 把对象传给dir函数时调用，列出属性</li>
-<li>__getattr__(obj, name) 仅当获取指定的属性失败，搜索过obj，Class和超类之后调用</li>
-<li>__getattribute__(self, name)尝试获取指定的属性时总会获取调用这个方法，寻找的属性是特殊属性或者特殊方法时除外</li>
-<li>__setattr__(self, name, value) 尝试设置指定的属性时总会调用这个方法，点号和setattr内置函数会触发这个方法</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h3 id=&quot;getattr-方法&quot;&gt;&lt;a href=&quot;#getattr-方法&quot; class=&quot;headerlink&quot; title=&quot;__getattr__ 方法&quot;&gt;&lt;/a&gt;__getattr__ 方法&lt;/h3&gt;&lt;p&gt;__getattr__(self, name) 作用仅当没有
-    
-    </summary>
-    
-      <category term="python" scheme="https://ttxsgoto.github.io/categories/python/"/>
-    
-    
-      <category term="property" scheme="https://ttxsgoto.github.io/tags/property/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Django 基于URL权限管理模块</title>
-    <link href="https://ttxsgoto.github.io/2018/01/17/django-url-permisson/"/>
-    <id>https://ttxsgoto.github.io/2018/01/17/django-url-permisson/</id>
-    <published>2018-01-17T14:38:28.000Z</published>
-    <updated>2018-01-19T15:50:25.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>Django自带的权限系统为model层面的，也就是说给某个用户或者组对应的model权限，拥有了操作该model的权限，不能更精细化的控制权限，如对象级别的权限</p>
-<p>现在引用了基于url的权限系统，可以控制用户访问一个接口的不同方法 ，可以很方便的控制权限；如：用户对于某个接口可以做到只拥有查看的权限而没有修改的权限，因为对于相同的url请求的方法不同</p>
-<h4 id="功能说明"><a href="#功能说明" class="headerlink" title="功能说明"></a>功能说明</h4><p>1.类似于django自身权限模块，拥有用户和用户组两类权限<br>2.通过swagger 获取项目URL 列表用于分配权限<br>3.通过中间件来拦截判断用户对请求的url是否有对应的权限</p>
-<h4 id="主要代码说明"><a href="#主要代码说明" class="headerlink" title="主要代码说明"></a>主要代码说明</h4><h5 id="models-py"><a href="#models-py" class="headerlink" title="models.py"></a>models.py</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># coding: utf-8</span></div><div class="line"> </div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> unicode_literals</div><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"><span class="keyword">from</span> django.conf <span class="keyword">import</span> settings</div><div class="line"><span class="keyword">from</span> django.db.models.signals <span class="keyword">import</span> post_save</div><div class="line"><span class="keyword">from</span> django.dispatch <span class="keyword">import</span> receiver</div><div class="line"><span class="keyword">from</span> django.contrib.auth.models <span class="keyword">import</span> Permission, User</div><div class="line"><span class="keyword">from</span> .managers <span class="keyword">import</span> UserprofileManager</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Userprofile</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户相关信息"""</span></div><div class="line"> </div><div class="line">    user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=<span class="keyword">True</span>)</div><div class="line">    sex = models.IntegerField(choices=(</div><div class="line">        (<span class="number">0</span>, <span class="string">'女性'</span>),</div><div class="line">        (<span class="number">1</span>, <span class="string">'男性'</span>),</div><div class="line">        (<span class="number">2</span>, <span class="string">'未填写'</span>)</div><div class="line">    ), default=<span class="number">2</span>, help_text=<span class="string">'sex'</span>)</div><div class="line">    groups = models.ManyToManyField(</div><div class="line">        <span class="string">'Group'</span>,</div><div class="line">        verbose_name=<span class="string">'user groups'</span>,</div><div class="line">        blank=<span class="keyword">True</span>,</div><div class="line">        through=<span class="string">'UserGroup'</span>,</div><div class="line">        through_fields=(<span class="string">'user'</span>, <span class="string">'group'</span>)</div><div class="line">    )</div><div class="line">    user_permissions = models.ManyToManyField(</div><div class="line">        <span class="string">'URLSource'</span>,</div><div class="line">        verbose_name=<span class="string">'user permissions'</span>,</div><div class="line">        blank=<span class="keyword">True</span>,</div><div class="line">        through=<span class="string">'UserURL'</span>,</div><div class="line">        through_fields=(<span class="string">'user'</span>, <span class="string">'url'</span>)</div><div class="line">    )</div><div class="line">    desc = models.CharField(<span class="string">u'描述'</span>, null=<span class="keyword">True</span>, blank=<span class="keyword">True</span>, max_length=<span class="number">100</span>, default=<span class="string">''</span>)</div><div class="line">    create_time = models.DateTimeField(auto_now_add=<span class="keyword">True</span>)</div><div class="line"> </div><div class="line">    objects = UserprofileManager()</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'user_profile'</span></div><div class="line">        verbose_name = <span class="string">u'用户信息'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        ordering = [<span class="string">'-create_time'</span>]</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;'</span>.format(self.user.username)</div><div class="line"> </div><div class="line"><span class="meta">    @receiver(post_save, sender=User)</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">create_user_profile</span><span class="params">(sender, instance=None, created=False, **kwargs)</span>:</span></div><div class="line">        <span class="keyword">if</span> created:</div><div class="line">            Userprofile.objects.get_or_create(user=instance, defaults=&#123;<span class="string">'desc'</span>: instance.username&#125;)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_permissions</span><span class="params">(self, permissions)</span>:</span></div><div class="line">        <span class="string">"""用户添加权限"""</span></div><div class="line">        history_permission = self.userurl_set.all()  <span class="comment"># 现在已有的权限</span></div><div class="line">        <span class="keyword">if</span> history_permission:</div><div class="line">            <span class="comment"># 如果有就不添加,没有再添加,多余的删除</span></div><div class="line">            <span class="keyword">for</span> _permiss <span class="keyword">in</span> history_permission:</div><div class="line">                <span class="keyword">if</span> _permiss.url <span class="keyword">in</span> permissions:</div><div class="line">                    permissions.remove(_permiss.url)</div><div class="line">                <span class="keyword">else</span>:</div><div class="line">                    _permiss.delete()</div><div class="line">            permisson_list = [UserURL(user=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            permisson_list = [UserURL(user=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        self.userurl_set.bulk_create(permisson_list)</div><div class="line">        <span class="keyword">return</span> self</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_groups</span><span class="params">(self, group)</span>:</span></div><div class="line">        <span class="string">"""</span></div><div class="line">        用户添加到组(目前只支持添加到单个组)</div><div class="line">        :param group: 权限组实例</div><div class="line">        :return:</div><div class="line">        """</div><div class="line">        user_group = self.usergroup_set.all()</div><div class="line">        <span class="keyword">if</span> user_group:</div><div class="line">            user_group.delete()</div><div class="line">        self.usergroup_set.create(group=group)</div><div class="line">        <span class="keyword">return</span> self</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_group_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""获取用户所在组的权限"""</span></div><div class="line">        <span class="keyword">return</span> self.usergroup_set.all()</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_url_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""获取用户单独关联的权限"""</span></div><div class="line">        <span class="keyword">return</span> self.userurl_set.all()</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_all_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""该用户的所有权限,包括所在组权限和自己单独关联权限"""</span></div><div class="line">        permissions = set()</div><div class="line">        <span class="comment"># group 权限</span></div><div class="line">        group_permission = self.get_group_permissions()</div><div class="line">        <span class="keyword">for</span> permission <span class="keyword">in</span> group_permission:</div><div class="line">            URL = GroupURL.objects.filter(group=permission.group)</div><div class="line">            <span class="keyword">for</span> _permission <span class="keyword">in</span> URL:</div><div class="line">                permissions.add(_permission.url)</div><div class="line">        <span class="comment"># user 权限</span></div><div class="line">        url_permission = self.get_url_permissions()</div><div class="line">        <span class="keyword">for</span> url <span class="keyword">in</span> url_permission:</div><div class="line">            permissions.add(url.url)</div><div class="line">        <span class="keyword">return</span> permissions</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">URLSource</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""URL资源信息"""</span></div><div class="line"> </div><div class="line">    url = models.CharField(<span class="string">u'url'</span>, max_length=<span class="number">128</span>)</div><div class="line">    action = models.CharField(<span class="string">u'请求方法'</span>, max_length=<span class="number">16</span>)</div><div class="line">    description = models.CharField(<span class="string">u'描述信息'</span>, max_length=<span class="number">256</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line">    parameters = models.CharField(<span class="string">u'参数, 逗号分隔'</span>, max_length=<span class="number">128</span>, default=<span class="string">''</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        verbose_name = <span class="string">u'URL信息'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        db_table = <span class="string">'url_source'</span></div><div class="line">        unique_together = ((<span class="string">'url'</span>, <span class="string">'action'</span>),)</div><div class="line">        ordering = [<span class="string">'id'</span>]</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;-&#123;&#125;'</span>.format(self.id, self.description, self.action)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Group</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户组信息"""</span></div><div class="line"> </div><div class="line">    name = models.CharField(max_length=<span class="number">64</span>, verbose_name=<span class="string">'组名'</span>, unique=<span class="keyword">True</span>, help_text=<span class="string">'组名'</span>)</div><div class="line">    code = models.CharField(max_length=<span class="number">64</span>, verbose_name=<span class="string">'用户组中文名'</span>, default=<span class="string">''</span>, help_text=<span class="string">'组code'</span>)</div><div class="line">    permissions = models.ManyToManyField(</div><div class="line">        URLSource,</div><div class="line">        verbose_name=<span class="string">'permissions'</span>,</div><div class="line">        blank=<span class="keyword">True</span>,</div><div class="line">        through=<span class="string">'GroupURL'</span>,</div><div class="line">        through_fields=(<span class="string">'group'</span>, <span class="string">'url'</span>)</div><div class="line">    )</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'group'</span></div><div class="line">        verbose_name = <span class="string">u'用户权限组'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.name</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_permissions</span><span class="params">(self, permissions)</span>:</span></div><div class="line">        <span class="string">"""</span></div><div class="line">        给组添加权限</div><div class="line">        :param permissons: 权限列表,filter查询列表</div><div class="line">        :return:</div><div class="line">        """</div><div class="line">        history_permission = self.groupurl_set.all()  <span class="comment"># 现在已有的权限</span></div><div class="line">        <span class="keyword">if</span> history_permission:</div><div class="line">            <span class="comment"># 如果有就不添加,没有再添加,多余的删除</span></div><div class="line">            <span class="keyword">for</span> _permiss <span class="keyword">in</span> history_permission:</div><div class="line">                <span class="keyword">if</span> _permiss.url <span class="keyword">in</span> permissions:</div><div class="line">                    permissions.remove(_permiss.url)</div><div class="line">                <span class="keyword">else</span>:</div><div class="line">                    _permiss.delete()</div><div class="line">            permisson_list = [GroupURL(group=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            permisson_list = [GroupURL(group=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        self.groupurl_set.bulk_create(permisson_list)</div><div class="line">        <span class="keyword">return</span> self</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_group_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""获取该组对应的权限列表"""</span></div><div class="line">        <span class="keyword">return</span> self.groupurl_set.all()</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserGroup</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户和组关联"""</span></div><div class="line"> </div><div class="line">    user = models.ForeignKey(Userprofile, verbose_name=<span class="string">u'用户'</span>)</div><div class="line">    group = models.ForeignKey(Group, verbose_name=<span class="string">u'组'</span>)</div><div class="line">    desc = models.CharField(<span class="string">u'其他信息'</span>, max_length=<span class="number">100</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'user_groups'</span></div><div class="line">        verbose_name = <span class="string">u'用户和组关系'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        unique_together = ((<span class="string">'user'</span>, <span class="string">'group'</span>),)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;'</span>.format(self.user, self.group)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserURL</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户和URL关联"""</span></div><div class="line"> </div><div class="line">    user = models.ForeignKey(Userprofile, verbose_name=<span class="string">u'用户'</span>)</div><div class="line">    url = models.ForeignKey(URLSource, verbose_name=<span class="string">u'URL'</span>)</div><div class="line">    desc = models.CharField(<span class="string">u'其他信息'</span>, max_length=<span class="number">100</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'user_urls'</span></div><div class="line">        verbose_name = <span class="string">u'用户权限关系'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        unique_together = ((<span class="string">'user'</span>, <span class="string">'url'</span>),)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;'</span>.format(self.user, self.url)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">GroupURL</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""组和URL关系"""</span></div><div class="line"> </div><div class="line">    group = models.ForeignKey(Group, verbose_name=<span class="string">u'组'</span>)</div><div class="line">    url = models.ForeignKey(URLSource, verbose_name=<span class="string">u'URL'</span>)</div><div class="line">    desc = models.CharField(<span class="string">u'其他信息'</span>, max_length=<span class="number">100</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'group_urls'</span></div><div class="line">        verbose_name = <span class="string">u'用户权限组关系'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        unique_together = ((<span class="string">'group'</span>, <span class="string">'url'</span>),)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;'</span>.format(self.group, self.url)</div></pre></td></tr></table></figure>
-<h5 id="middleware-py"><a href="#middleware-py" class="headerlink" title="middleware.py"></a>middleware.py</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># coding: utf-8</span></div><div class="line"> </div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> unicode_literals</div><div class="line"><span class="keyword">import</span> logging</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</div><div class="line"><span class="keyword">from</span> django.http <span class="keyword">import</span> HttpResponseForbidden</div><div class="line"><span class="keyword">from</span> django.utils.deprecation <span class="keyword">import</span> MiddlewareMixin</div><div class="line"><span class="keyword">from</span> .models <span class="keyword">import</span> Userprofile</div><div class="line"><span class="keyword">from</span> django.contrib.auth <span class="keyword">import</span> get_user_model</div><div class="line"><span class="keyword">from</span> .settings <span class="keyword">import</span> url_permisson_settings</div><div class="line"> </div><div class="line">logs = logging.getLogger(<span class="string">'django'</span>)</div><div class="line"> </div><div class="line">User = get_user_model()</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">URLPermissionMiddleWare</span><span class="params">(MiddlewareMixin)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_request</span><span class="params">(self, request)</span>:</span></div><div class="line">        response = &#123;</div><div class="line">            <span class="string">"status_code"</span>: <span class="number">403</span>,</div><div class="line">            <span class="string">"message"</span>: <span class="string">u"无权限操作,请联系管理员."</span></div><div class="line">        &#125;</div><div class="line">        path = request.path.split(<span class="string">'/'</span>)</div><div class="line">        <span class="keyword">if</span> path[<span class="number">1</span>] <span class="keyword">in</span> url_permisson_settings.ALL_ALLOW_URL:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">not</span> isinstance(request.user, User):</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line">        <span class="keyword">if</span> request.user.is_superuser:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line">        <span class="keyword">try</span>:</div><div class="line">            profile = Userprofile.objects.get(user=request.user)</div><div class="line">        <span class="keyword">except</span> Userprofile.DoesNotExist:</div><div class="line">            <span class="keyword">return</span> HttpResponseForbidden(json.dumps(response), content_type=<span class="string">'application/json'</span>)</div><div class="line">        method = request.method.lower()</div><div class="line">        path = request.path.strip()</div><div class="line">        <span class="keyword">if</span> method == <span class="string">'get'</span>:</div><div class="line">            parameter = []</div><div class="line">            <span class="keyword">for</span> _parameter <span class="keyword">in</span> request.GET.items():</div><div class="line">                parameter.append(_parameter[<span class="number">0</span>])</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">try</span>:</div><div class="line">                parameter_dict = json.loads(request.body)</div><div class="line">            <span class="keyword">except</span> Exception:</div><div class="line">                parameter_dict = &#123;&#125;</div><div class="line">            parameter = parameter_dict.keys()</div><div class="line">        all_permission = profile.get_all_permissions()</div><div class="line">        result = <span class="keyword">None</span></div><div class="line">        <span class="keyword">for</span> _url <span class="keyword">in</span> all_permission:</div><div class="line">            url = _url.url</div><div class="line">            action = _url.action</div><div class="line">            parameters = _url.parameters.split(<span class="string">','</span>)</div><div class="line">            <span class="keyword">if</span> method == action <span class="keyword">and</span> path == url <span class="keyword">and</span> (len(Counter(parameter) - Counter(parameters)) == <span class="number">0</span>):</div><div class="line">                result = <span class="keyword">True</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">not</span> result:</div><div class="line">            <span class="keyword">return</span> HttpResponseForbidden(json.dumps(response), content_type=<span class="string">'application/json'</span>)</div><div class="line">        <span class="keyword">return</span> <span class="keyword">None</span></div></pre></td></tr></table></figure>
-<h4 id="接口说明"><a href="#接口说明" class="headerlink" title="接口说明"></a>接口说明</h4><p><img src="https://ttxsgoto.github.io/img/django/permission.png" alt=""></p>
-<h4 id="Git地址"><a href="#Git地址" class="headerlink" title="Git地址"></a>Git地址</h4><p><a href="https://github.com/ttxsgoto/url_permission" target="_blank" rel="external">https://github.com/ttxsgoto/url_permission</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;Django自带的权限系统为model层面的，也就是说给某个用户或者组对应的model权限，拥有了操作该model的权限，不能更精细化的控制
-    
-    </summary>
-    
-      <category term="Django" scheme="https://ttxsgoto.github.io/categories/Django/"/>
-    
-    
-      <category term="permisson" scheme="https://ttxsgoto.github.io/tags/permisson/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Elasticsearch Mongo-connector同步mongo数据到ES</title>
-    <link href="https://ttxsgoto.github.io/2017/12/27/elasticsearch-mongo-to-es/"/>
-    <id>https://ttxsgoto.github.io/2017/12/27/elasticsearch-mongo-to-es/</id>
-    <published>2017-12-27T13:16:47.000Z</published>
-    <updated>2017-12-27T13:27:08.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><ol>
-<li>通过mongo-connector将mongo数据实时同步到es中</li>
-<li>mongo运行在replica-set模式，同时需要elastic2_doc_manager将数据写入ES</li>
-<li>开启replica-set模式后，写入mongo的数据都可以同步到es，即使当前mongo-connector没有启动，启动后也会将数据写入es中</li>
-</ol>
-<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">pip install mongo-connector</div><div class="line">pip install <span class="string">'elastic2-doc-manager[elastic5]'</span>    <span class="comment"># ES6.1版本也可使用</span></div></pre></td></tr></table></figure>
-<h4 id="mongod-以replica-set模式运行"><a href="#mongod-以replica-set模式运行" class="headerlink" title="mongod 以replica-set模式运行"></a>mongod 以replica-set模式运行</h4><ul>
-<li><p>服务端:mongod version为3.6.0</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./bin/mongod --replSet <span class="string">"rs0"</span> --dbpath /data/tools/mongodb<span class="number">-3.6</span><span class="number">.0</span>/data --port <span class="number">27018</span> --bind_ip <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>客户端设置</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 连接mongo</span></div><div class="line">./bin/mongo --host <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span> --port <span class="number">27018</span></div><div class="line"><span class="comment"># 配置复制集</span></div><div class="line">rs.initiate()   <span class="comment"># 初始化副本集</span></div><div class="line">rs.conf()       <span class="comment"># 验证副本集的配置</span></div><div class="line">rs.status()     <span class="comment"># 验证副本集的状态</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="mongo-connector启动"><a href="#mongo-connector启动" class="headerlink" title="mongo-connector启动"></a>mongo-connector启动</h4><p>mongo-connector -m 127.0.0.1:27018 -t 127.0.0.1:9200 -d elastic2_doc_manager</p>
-<h4 id="数据测试"><a href="#数据测试" class="headerlink" title="数据测试"></a>数据测试</h4><ul>
-<li><p>新增数据</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">use ttxsgoto</div><div class="line">db.test.insert(&#123;name:<span class="string">"ttxsgoto01"</span>, sex:<span class="string">"m"</span>, project:<span class="string">"python"</span>&#125;)</div><div class="line">db.test.insert(&#123;name:<span class="string">"ttxsgoto02"</span>, sex:<span class="string">"m"</span>, project:<span class="string">"java"</span>&#125;)</div><div class="line"> </div><div class="line"><span class="comment"># mongo查看数据</span></div><div class="line">db.test.find()</div><div class="line"> </div><div class="line"><span class="comment"># ES查看数据</span></div><div class="line">&#123;</div><div class="line">  <span class="string">"hits"</span>: &#123;</div><div class="line">    <span class="string">"total"</span>: <span class="number">2</span>,</div><div class="line">    <span class="string">"max_score"</span>: <span class="number">1</span>,</div><div class="line">    <span class="string">"hits"</span>: [</div><div class="line">      &#123;</div><div class="line">        <span class="string">"_index"</span>: <span class="string">"ttxsgoto"</span>,</div><div class="line">        <span class="string">"_type"</span>: <span class="string">"test"</span>,</div><div class="line">        <span class="string">"_id"</span>: <span class="string">"5a42188f1db5d952cbcea0ef"</span>,</div><div class="line">        <span class="string">"_score"</span>: <span class="number">1</span>,</div><div class="line">        <span class="string">"_source"</span>: &#123;</div><div class="line">          <span class="string">"project"</span>: <span class="string">"java"</span>,</div><div class="line">          <span class="string">"name"</span>: <span class="string">"ttxsgoto02"</span>,</div><div class="line">          <span class="string">"sex"</span>: <span class="string">"m"</span></div><div class="line">        &#125;</div><div class="line">      &#125;,</div><div class="line">      &#123;</div><div class="line">        <span class="string">"_index"</span>: <span class="string">"ttxsgoto"</span>,</div><div class="line">        <span class="string">"_type"</span>: <span class="string">"test"</span>,</div><div class="line">        <span class="string">"_id"</span>: <span class="string">"5a4218501db5d952cbcea0ee"</span>,</div><div class="line">        <span class="string">"_score"</span>: <span class="number">1</span>,</div><div class="line">        <span class="string">"_source"</span>: &#123;</div><div class="line">          <span class="string">"project"</span>: <span class="string">"python"</span>,</div><div class="line">          <span class="string">"name"</span>: <span class="string">"ttxsgoto01"</span>,</div><div class="line">          <span class="string">"sex"</span>: <span class="string">"m"</span></div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>修改数据</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">db.test.update(&#123;<span class="string">'name'</span>:<span class="string">'ttxsgoto01'</span>&#125;, &#123;$set:&#123;<span class="string">'name'</span>:<span class="string">'ttxs'</span>&#125;&#125;)</div><div class="line"> </div><div class="line"><span class="comment"># mongo查看数据</span></div><div class="line">db.test.find()</div><div class="line"> </div><div class="line"><span class="comment"># ES查看数据</span></div><div class="line">&#123;</div><div class="line">  <span class="string">"hits"</span>: &#123;</div><div class="line">    <span class="string">"total"</span>: <span class="number">2</span>,</div><div class="line">    <span class="string">"max_score"</span>: <span class="number">1</span>,</div><div class="line">    <span class="string">"hits"</span>: [</div><div class="line">      &#123;</div><div class="line">        <span class="string">"_index"</span>: <span class="string">"ttxsgoto"</span>,</div><div class="line">        <span class="string">"_type"</span>: <span class="string">"test"</span>,</div><div class="line">        <span class="string">"_id"</span>: <span class="string">"5a42188f1db5d952cbcea0ef"</span>,</div><div class="line">        <span class="string">"_score"</span>: <span class="number">1</span>,</div><div class="line">        <span class="string">"_source"</span>: &#123;</div><div class="line">          <span class="string">"project"</span>: <span class="string">"java"</span>,</div><div class="line">          <span class="string">"name"</span>: <span class="string">"ttxsgoto02"</span>,</div><div class="line">          <span class="string">"sex"</span>: <span class="string">"m"</span></div><div class="line">        &#125;</div><div class="line">      &#125;,</div><div class="line">      &#123;</div><div class="line">        <span class="string">"_index"</span>: <span class="string">"ttxsgoto"</span>,</div><div class="line">        <span class="string">"_type"</span>: <span class="string">"test"</span>,</div><div class="line">        <span class="string">"_id"</span>: <span class="string">"5a4218501db5d952cbcea0ee"</span>,</div><div class="line">        <span class="string">"_score"</span>: <span class="number">1</span>,</div><div class="line">        <span class="string">"_source"</span>: &#123;</div><div class="line">          <span class="string">"project"</span>: <span class="string">"python"</span>,</div><div class="line">          <span class="string">"name"</span>: <span class="string">"ttxs"</span>,</div><div class="line">          <span class="string">"sex"</span>: <span class="string">"m"</span></div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除数据</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">db.test.remove(&#123;<span class="string">'name'</span>:<span class="string">'ttxsgoto02'</span>&#125;)</div><div class="line"> </div><div class="line"><span class="comment"># ES查看数据</span></div><div class="line">&#123;</div><div class="line">  <span class="string">"hits"</span>: &#123;</div><div class="line">    <span class="string">"total"</span>: <span class="number">1</span>,</div><div class="line">    <span class="string">"max_score"</span>: <span class="number">1</span>,</div><div class="line">    <span class="string">"hits"</span>: [</div><div class="line">      &#123;</div><div class="line">        <span class="string">"_index"</span>: <span class="string">"ttxsgoto"</span>,</div><div class="line">        <span class="string">"_type"</span>: <span class="string">"test"</span>,</div><div class="line">        <span class="string">"_id"</span>: <span class="string">"5a4218501db5d952cbcea0ee"</span>,</div><div class="line">        <span class="string">"_score"</span>: <span class="number">1</span>,</div><div class="line">        <span class="string">"_source"</span>: &#123;</div><div class="line">          <span class="string">"project"</span>: <span class="string">"python"</span>,</div><div class="line">          <span class="string">"name"</span>: <span class="string">"ttxs"</span>,</div><div class="line">          <span class="string">"sex"</span>: <span class="string">"m"</span></div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除db</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">db.dropDatabase() <span class="comment"># 删除数据库后，ES中对应的索引也被删除</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h4><p><a href="https://docs.mongodb.com/manual/tutorial/deploy-replica-set/" target="_blank" rel="external">https://docs.mongodb.com/manual/tutorial/deploy-replica-set/</a><br><a href="https://github.com/mongodb-labs/elastic2-doc-manager" target="_blank" rel="external">https://github.com/mongodb-labs/elastic2-doc-manager</a><br><a href="http://blog.csdn.net/laoyang360/article/details/51842822" target="_blank" rel="external">http://blog.csdn.net/laoyang360/article/details/51842822</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h4&gt;&lt;ol&gt;
-&lt;li&gt;通过mongo-connector将mongo数据实时同步到es中&lt;/li&gt;
-&lt;li&gt;mongo运行在replica-set模式
-    
-    </summary>
-    
-      <category term="Elasticsearch" scheme="https://ttxsgoto.github.io/categories/Elasticsearch/"/>
-    
-    
-      <category term="Mongo-connector" scheme="https://ttxsgoto.github.io/tags/Mongo-connector/"/>
     
   </entry>
   

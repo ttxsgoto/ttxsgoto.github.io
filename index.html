@@ -89,6 +89,107 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2018/12/27/yw-mysql-lock/" title="全局锁、表级锁和行锁" itemprop="url">
+      
+        全局锁、表级锁和行锁
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >锁分类
+全局锁
+表级锁
+行锁
+
+全局锁全局锁就是对整个数据库实例加锁命令1flush tables with read lock
+使用该命令后其他线程的执行语句都会被阻塞：数据更新语句(数据的增删改)和数据定义语句(建表和修改表结构等)和更新事务的提交语句
+应用：全库逻辑备份
+
+</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-27T14:44:05.000Z" itemprop="datePublished">2018-12-27</time>
+      
+          <a href="/2018/12/27/yw-mysql-lock/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/26/yw-mysql-transaction/" title="事务隔离" itemprop="url">
+      
+        事务隔离
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >事务事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持
+事务的特性
+原子性
+一致性
+隔离性
+持久性
+
+多事务同时执行引起的问题
+脏读
+不可重复读
+幻读
+
+事务隔离级别
+读未提交(read uncommitted) 一个事务还没</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-26T13:42:58.000Z" itemprop="datePublished">2018-12-26</time>
+      
+          <a href="/2018/12/26/yw-mysql-transaction/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/25/yw-mysql-redo-binlog/" title="Redo log 和 Binlog" itemprop="url">
+      
+        Redo log 和 Binlog
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >WAL(Write-Ahead-Logging),先写日志，再写磁盘
+
+redo log(重做日志)
+存储引擎层面
+存储容量大小固定，循环写
+checkpoint 当前要擦除的位置，擦除记录前需要将数据更新到数据文件中
+write-pos 当前写入记录的位置
+功能：保证InnoD</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-25T11:43:38.000Z" itemprop="datePublished">2018-12-25</time>
+      
+          <a href="/2018/12/25/yw-mysql-redo-binlog/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2018/12/21/yw-mysql-select-index/" title="索引选择" itemprop="url">
       
         索引选择
@@ -139,44 +240,6 @@ show index from x 查看索引对应的基数
       <time datetime="2018-12-20T12:11:46.000Z" itemprop="datePublished">2018-12-20</time>
       
           <a href="/2018/12/20/yw-mysql-unique-index/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/12/11/yw-mysql-index02/" title="Mysql索引02" itemprop="url">
-      
-        Mysql索引02
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >索引常见模型
-哈希表
-适用于只有等值查询的场景
-哈希冲突的处理办法：链表
-
-
-有序数组
-在等值查询和范围查询场景中性能都非常优秀
-只适用于静态存储引擎
-在更新数据时，需要挪动后面所有的记录，成本高
-
-
-搜索树
-
-每一个索引在InnoDB里面对应一棵B+树主键索引的叶子节点内容是主</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-12-11T03:33:20.000Z" itemprop="datePublished">2018-12-11</time>
-      
-          <a href="/2018/12/11/yw-mysql-index02/">阅读更多&raquo;</a>
       
     </p>
 
@@ -311,58 +374,6 @@ show index from x 查看索引对应的基数
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/08/25/rabbitmq/" title="RabbitMQ" itemprop="url">
-      
-        RabbitMQ
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >最近工作需要，需要使用到RabbitMQ，于是理解了一下相关概念和代码测试了一下，记录如下：
-RabbitMQ简介AMQP，即Advanced Message Queuing Protocol，高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。消息中间件主要用</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-08-25T07:22:15.000Z" itemprop="datePublished">2018-08-25</time>
-      
-          <a href="/2018/08/25/rabbitmq/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/08/10/python-asyncio-basic/" title="asyncio 基本用法" itemprop="url">
-      
-        asyncio 基本用法
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >async/await协程同时开启多个任务，但一次只执行一个，当执行的任务遇到阻塞，就切换到下一个任务继续执行，以期节省阻塞所占用的时间
-要实现异步处理，需要有挂起的操作，当一个任务需要等待 IO 结果的时候，可以挂起当前任务，转而去执行其他任务
-
-event_loop： 事件循</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-08-10T03:58:11.000Z" itemprop="datePublished">2018-08-10</time>
-      
-          <a href="/2018/08/10/python-asyncio-basic/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
@@ -411,7 +422,7 @@ event_loop： 事件循</p>
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
-			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>7</sup></a></li>
+			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>10</sup></a></li>
 		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		
