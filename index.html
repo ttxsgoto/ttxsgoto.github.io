@@ -89,6 +89,86 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2018/12/28/yw-mysql-count/" title="Count计数变慢" itemprop="url">
+      
+        Count计数变慢
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >count(*) 实现方式不同的引擎，实现方式不同
+
+Myisam把一个表的总行存在磁盘上，执行时直接返回这个数
+Innodb，需要把数据一行行的从引擎中读出来，然后累积计数，遍历全表
+
+不同的count用法count()为聚合函数，对于返回的结果集，一行行判断，如果count函</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T14:48:50.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-count/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/28/yw-mysql-order-by/" title="Order by工作原理" itemprop="url">
+      
+        Order by工作原理
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >全字段排序mysql会给每个线程分配一块内存用于排序，称为sort_buffer
+sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T14:46:51.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-order-by/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/28/yw-mysql-addindex-to-string/" title="字符串加索引" itemprop="url">
+      
+        字符串加索引
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >前缀索引前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数
+在建立索引时需要关注的是区分度，区分度越高越好
+查看对应索引的区分度方法123456select count(distinct a) as L from user;select count(*) as tota</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T12:41:50.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-addindex-to-string/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2018/12/27/yw-mysql-lock/" title="全局锁、表级锁和行锁" itemprop="url">
       
         全局锁、表级锁和行锁
@@ -297,83 +377,6 @@ show index from x 查看索引对应的基数
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/09/28/redis-advance/" title="运维 Redis进阶" itemprop="url">
-      
-        运维 Redis进阶
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发
-使用redis目的
-高性能：将数据缓存在redis中，访问数据从缓存中取，不直接访问数据库，提高页面响应效率
-高并发：在大的并发情况下，直接操作缓存能够承受的请求远大于直接访问数据库，这时我</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-09-28T13:14:53.000Z" itemprop="datePublished">2018-09-28</time>
-      
-          <a href="/2018/09/28/redis-advance/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/09/17/django-migrations-error/" title="Django mgirate 错误" itemprop="url">
-      
-        Django mgirate 错误
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >问题描述最近在工作中，django model添加表时，如果有外键，在migrate时常常出现如下报错：1234567891011File &quot;/root/.virtualenvs/lib/python3.5/site-packages/pymysql/connections.py</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-09-17T11:37:18.000Z" itemprop="datePublished">2018-09-17</time>
-      
-          <a href="/2018/09/17/django-migrations-error/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/09/16/mysql-queryset/" title="Mysql必知必会笔记" itemprop="url">
-      
-        Mysql必知必会笔记
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >最近看了一下mysql基础知识， 主要集中在相关查询操作上，记录如下：
-其中使用的数据库结构和数据为http://forta.com/books/0672327120/ 中的SQL脚本
-计算次序12345SELECT * FROM products WHERE vend_id=1</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-09-16T11:02:58.000Z" itemprop="datePublished">2018-09-16</time>
-      
-          <a href="/2018/09/16/mysql-queryset/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
@@ -422,7 +425,7 @@ show index from x 查看索引对应的基数
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
-			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>10</sup></a></li>
+			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
 		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		

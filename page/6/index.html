@@ -89,6 +89,80 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2017/05/24/copy-deepcopy/" title="Python 深拷贝/浅拷贝和赋值" itemprop="url">
+      
+        Python 深拷贝/浅拷贝和赋值
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >概念说明
+赋值：对象的赋值是进行对象引用（内存地址）传递，引用的地址没有变化，相当于设置了另外一个别名；注意：当修改不可变类型的值时，对应内部的引用发生变化；其中可变类型(列表，字典)，不可变类型(数字，字符串，元祖)
+浅拷贝：只拷贝父对象，不会拷贝对象的内部的子对象,只是原对象</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-05-24T13:38:11.000Z" itemprop="datePublished">2017-05-24</time>
+      
+          <a href="/2017/05/24/copy-deepcopy/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/05/15/yw-fg/" title="运维 Linux(fg_jobs)" itemprop="url">
+      
+        运维 Linux(fg_jobs)
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >背景在启动程序后，往往需要查看启动日志是否正常，有无报错，而有时日志量很大（刷屏），不易看清楚日志，这时就需要停下来，之前一直使用CRTL+C 直接退出，而后想看接下来的日志的话，日志已经刷好远了。。。。，今天发现一个将程序存放到后台的功能，需要时再调回前台查看就可以了，刚开始学</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-05-15T14:31:08.000Z" itemprop="datePublished">2017-05-15</time>
+      
+          <a href="/2017/05/15/yw-fg/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/05/14/rest-framwork-serializers/" title="DRF ModelSerializer常用方法" itemprop="url">
+      
+        DRF ModelSerializer常用方法
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >ModelSerializer属性方法12345678910111213class AccountSerializer(serializers.ModelSerializer):    other_name = serializers.CharField(source=&#39;name</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-05-14T12:13:22.000Z" itemprop="datePublished">2017-05-14</time>
+      
+          <a href="/2017/05/14/rest-framwork-serializers/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2017/05/14/rest-framwork-note/" title="DRF Rest_framwork笔记" itemprop="url">
       
         DRF Rest_framwork笔记
@@ -272,92 +346,6 @@ var _hmt = _hmt || [];
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/08/yw-mysql-store/" title="运维 Mysql分析性能（存储过程）" itemprop="url">
-      
-        运维 Mysql分析性能（存储过程）
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >描述之前有一次故障问题，查看数据库慢查询日志，从日志和存储过程本身直接分析，不能得知问题点，之后通过profiling来分析，记录如下
-分析
-查看慢查询日志，发现，出现大量执行等待，使用profiling来分析语句问题点
-先打开profiling： SET profiling=1</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-08T14:24:31.000Z" itemprop="datePublished">2017-04-08</time>
-      
-          <a href="/2017/04/08/yw-mysql-store/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/07/yw-chroot/" title="运维 Chroot限制普通用户登录特定目录" itemprop="url">
-      
-        运维 Chroot限制普通用户登录特定目录
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >需求普通用户登陆到服务器上只能执行ssh，ls，cat等有限的基础命令，另外要求把用户锁定在特定目录中，不能看到其他任何目录下文件
-实现
-创建查看日志的用户
- 12useradd -m ttxsgoto -s /bin/bashpasswd ttxsgoto
-
-初始化chroot</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-07T14:18:33.000Z" itemprop="datePublished">2017-04-07</time>
-      
-          <a href="/2017/04/07/yw-chroot/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/04/05/yw-pwd/" title="运维 Linux中密码策略" itemprop="url">
-      
-        运维 Linux中密码策略
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >需求
-密码必须符合复杂度要求，字母、数字、特殊字符组成。长度大于8位。
-密码定期更改，最长不超过90天。
-用户不能重复使用5次内已使用的口令。
-尝试登陆失败错误次数，必须设置不能超过5次，超过5次后，暂时锁定20分钟或以上。
-
-实现安装 PAM 的 cracklib 模块，cra</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-04-05T14:02:10.000Z" itemprop="datePublished">2017-04-05</time>
-      
-          <a href="/2017/04/05/yw-pwd/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/page/5/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/7/">下一页 &raquo;</a>
@@ -406,7 +394,7 @@ var _hmt = _hmt || [];
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
-			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>10</sup></a></li>
+			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
 		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		

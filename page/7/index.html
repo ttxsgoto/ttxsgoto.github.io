@@ -89,6 +89,92 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2017/04/08/yw-mysql-store/" title="运维 Mysql分析性能（存储过程）" itemprop="url">
+      
+        运维 Mysql分析性能（存储过程）
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >描述之前有一次故障问题，查看数据库慢查询日志，从日志和存储过程本身直接分析，不能得知问题点，之后通过profiling来分析，记录如下
+分析
+查看慢查询日志，发现，出现大量执行等待，使用profiling来分析语句问题点
+先打开profiling： SET profiling=1</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-04-08T14:24:31.000Z" itemprop="datePublished">2017-04-08</time>
+      
+          <a href="/2017/04/08/yw-mysql-store/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/04/07/yw-chroot/" title="运维 Chroot限制普通用户登录特定目录" itemprop="url">
+      
+        运维 Chroot限制普通用户登录特定目录
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >需求普通用户登陆到服务器上只能执行ssh，ls，cat等有限的基础命令，另外要求把用户锁定在特定目录中，不能看到其他任何目录下文件
+实现
+创建查看日志的用户
+ 12useradd -m ttxsgoto -s /bin/bashpasswd ttxsgoto
+
+初始化chroot</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-04-07T14:18:33.000Z" itemprop="datePublished">2017-04-07</time>
+      
+          <a href="/2017/04/07/yw-chroot/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/04/05/yw-pwd/" title="运维 Linux中密码策略" itemprop="url">
+      
+        运维 Linux中密码策略
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >需求
+密码必须符合复杂度要求，字母、数字、特殊字符组成。长度大于8位。
+密码定期更改，最长不超过90天。
+用户不能重复使用5次内已使用的口令。
+尝试登陆失败错误次数，必须设置不能超过5次，超过5次后，暂时锁定20分钟或以上。
+
+实现安装 PAM 的 cracklib 模块，cra</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-04-05T14:02:10.000Z" itemprop="datePublished">2017-04-05</time>
+      
+          <a href="/2017/04/05/yw-pwd/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2017/04/05/django-models-basic/" title="Django Models" itemprop="url">
       
         Django Models
@@ -264,90 +350,6 @@ SimpleTestCase:扩展了unittest.TestCase的一些基本功能
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/03/19/fabric/" title="Python Fabric模块" itemprop="url">
-      
-        Python Fabric模块
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >说明基于paramiko的封装，远程执行命令，方便简单，实用性强。
-参数1234567-l  显示可用的task-f  指定入口文件，默认为fabfile.py-H  指定目标主机，主机之间用，号分隔-P  已并行执行，默认为串行-R  指定role角色-t  连接超时时间(s)</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-03-19T12:47:15.000Z" itemprop="datePublished">2017-03-19</time>
-      
-          <a href="/2017/03/19/fabric/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/03/18/ansible/" title="运维 Ansible" itemprop="url">
-      
-        运维 Ansible
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >Ansible架构图
-Ansible特性- 基于python实现，由Paramike，PyYAML和Jinjia2三个关键模块
-- 部署简单，agentless
-- 使用ssh协议
-- 主从集中化模式
-- 支持自定义模块
-- 支持playbook
-- 幂等性：一种操作可重复多次结</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-03-18T13:19:30.000Z" itemprop="datePublished">2017-03-18</time>
-      
-          <a href="/2017/03/18/ansible/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2017/03/12/celery/" title="Python Celery异步" itemprop="url">
-      
-        Python Celery异步
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >说明Celery是一个异步任务队列/基于分布式消息传递的作业队列。它侧重于实时操作，同时对调度的支持也很好
-适用场景
-可以在 Request-Response 循环之外执行的操作：发送邮件、推送消息
-耗时的操作：调用第三方 API（前端通过 AJAX 展示进度和结果）
-周期性任务</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2017-03-12T05:18:43.000Z" itemprop="datePublished">2017-03-12</time>
-      
-          <a href="/2017/03/12/celery/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/page/6/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/8/">下一页 &raquo;</a>
@@ -396,7 +398,7 @@ Ansible特性- 基于python实现，由Paramike，PyYAML和Jinjia2三个关键�
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
-			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>10</sup></a></li>
+			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
 		
 			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
 		

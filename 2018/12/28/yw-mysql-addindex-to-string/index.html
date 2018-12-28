@@ -4,21 +4,14 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>全局锁、表级锁和行锁 | ttxsgoto&#39; Blog</title>
+    <title>字符串加索引 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="锁分类
-全局锁
-表级锁
-行锁
-
-全局锁全局锁就是对整个数据库实例加锁命令1flush tables with read lock
-使用该命令后其他线程的执行语句都会被阻塞：数据更新语句(数据的增删改)和数据定义语句(建表和修改表结构等)和更新事务的提交语句
-应用：全库逻辑备份
-
-innodb引擎， ">
+    <meta name="description" content="前缀索引前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数
+在建立索引时需要关注的是区分度，区分度越高越好
+查看对应索引的区分度方法123456select count(distinct a) as L from user;select count(*) as total from use">
     
     
     
@@ -95,10 +88,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/12/27/yw-mysql-lock/" title="全局锁、表级锁和行锁" itemprop="url">全局锁、表级锁和行锁</a>
+      <a href="/2018/12/28/yw-mysql-addindex-to-string/" title="字符串加索引" itemprop="url">字符串加索引</a>
   </h1>
   <p class="article-time">
-    <time datetime="2018-12-27T14:44:05.000Z" itemprop="datePublished">2018-12-27</time>
+    <time datetime="2018-12-28T12:41:50.000Z" itemprop="datePublished">2018-12-28</time>
   </p>
 </header>
 	<div class="article-content">
@@ -106,59 +99,28 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#锁分类"><span class="toc-number">1.</span> <span class="toc-text">锁分类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#全局锁"><span class="toc-number">2.</span> <span class="toc-text">全局锁</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#表级锁"><span class="toc-number">3.</span> <span class="toc-text">表级锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#表锁"><span class="toc-number">3.1.</span> <span class="toc-text">表锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#元数据锁-meta-data-lock-MDL"><span class="toc-number">3.2.</span> <span class="toc-text">元数据锁(meta data lock, MDL)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#安全给小表加字段"><span class="toc-number">3.3.</span> <span class="toc-text">安全给小表加字段</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#行锁"><span class="toc-number">4.</span> <span class="toc-text">行锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#两阶段锁"><span class="toc-number">4.1.</span> <span class="toc-text">两阶段锁</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#死锁和死锁检测"><span class="toc-number">4.2.</span> <span class="toc-text">死锁和死锁检测</span></a></li></ol></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#前缀索引"><span class="toc-number">1.</span> <span class="toc-text">前缀索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#倒序存储"><span class="toc-number">2.</span> <span class="toc-text">倒序存储</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用hash字段"><span class="toc-number">3.</span> <span class="toc-text">使用hash字段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol>
 		</div>
 		
-		<h4 id="锁分类"><a href="#锁分类" class="headerlink" title="锁分类"></a>锁分类</h4><ul>
-<li>全局锁</li>
-<li>表级锁</li>
-<li>行锁</li>
+		<h4 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h4><p>前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数</p>
+<p>在建立索引时需要关注的是区分度，区分度越高越好</p>
+<p>查看对应索引的区分度方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">select count(distinct a) <span class="keyword">as</span> L <span class="keyword">from</span> user;</div><div class="line">select count(*) <span class="keyword">as</span> total <span class="keyword">from</span> user;</div><div class="line"> </div><div class="line">select count(distinct left(a, <span class="number">4</span>) <span class="keyword">as</span> L4,</div><div class="line">       count(distinct left(a, <span class="number">5</span>) <span class="keyword">as</span> L5,</div><div class="line"><span class="keyword">from</span> user</div></pre></td></tr></table></figure></p>
+<p><strong>注意</strong>：使用前缀索引就用不上覆盖索引查询对查询性能的优化，这是在选择是否使用前缀索引时需要考虑的因素</p>
+<h4 id="倒序存储"><a href="#倒序存储" class="headerlink" title="倒序存储"></a>倒序存储</h4><p>对前面n位数都是重复的字段，可以使用倒序存储，将存储的内容倒序存储<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">select field <span class="keyword">from</span> t where word=reverse(<span class="string">'input_string'</span>);</div></pre></td></tr></table></figure></p>
+<h4 id="使用hash字段"><a href="#使用hash字段" class="headerlink" title="使用hash字段"></a>使用hash字段</h4><p>在表中再创建一个整数字段，来保存字段的校验码，同时在这个字段创建索引<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">alter table t add word_crc int unsigned, <span class="keyword">and</span> index(word_crc);</div></pre></td></tr></table></figure></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li>直接创建完整索引，这样可能会占用大量的空间</li>
+<li>创建前缀索引，节省空间，但会增加查询扫描次数，并且不能使用覆盖索引</li>
+<li>倒序存储，在创建前缀索引，用于绕过字符串本身前缀区分度不高的问题</li>
+<li>创建hash字段索引，查询性能稳定，有额外的存储和计算消耗，同时不支持范围扫描</li>
 </ul>
-<h4 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h4><p>全局锁就是对整个数据库实例加锁<br>命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">flush tables with read lock</div></pre></td></tr></table></figure></p>
-<p>使用该命令后其他线程的执行语句都会被阻塞：数据更新语句(数据的增删改)和数据定义语句(建表和修改表结构等)和更新事务的提交语句</p>
-<p><strong>应用</strong>：全库逻辑备份</p>
-<ul>
-<li>innodb引擎， mysqldump 使用参数-single-transaction，导数据时会启动一个事务，来确保一致性视图</li>
-<li>myisam引擎，不支持事务，需要使用FTWRL命令</li>
-</ul>
-<h4 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h4><h5 id="表锁"><a href="#表锁" class="headerlink" title="表锁"></a>表锁</h5><p>语句:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">lock tables xxx read/write;</div><div class="line">unlock tables;</div></pre></td></tr></table></figure></p>
-<p>表锁是最常用的处理并发的方式，而对于innodb这种行锁的引擎，一般不会使用lock tables命令来控制并发，因为锁住整个表的影响太大</p>
-<h5 id="元数据锁-meta-data-lock-MDL"><a href="#元数据锁-meta-data-lock-MDL" class="headerlink" title="元数据锁(meta data lock, MDL)"></a>元数据锁(meta data lock, MDL)</h5><p>MDL不需要显示使用，在访问一个表时会自动加上，MDL的作用，保证读写的正确性</p>
-<ul>
-<li>在对一个表做增删改查操作，加MDL读锁，当要对表做结构变更操作，加MDL写锁</li>
-<li>读锁之间不互斥，可以有多个线程对一张表增删改查</li>
-<li>读写锁之间，写锁之间互斥，用来保证变更表结构操作的安全性,如果有两个线程要同时给一个表加字段，其中一个要等另一个执行完成后才能开始执行</li>
-</ul>
-<h5 id="安全给小表加字段"><a href="#安全给小表加字段" class="headerlink" title="安全给小表加字段"></a>安全给小表加字段</h5><ol>
-<li>需要解决长事务，事务不提交，就会一直占用MDL锁，mysql中的information_schema库中INNODB_TRX表中记录着当前执行中的事务</li>
-<li>变更热点表，在alter table语句里面设置等待时间，如果在等待时间没有拿到也不会阻塞 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">alter table xxx nowait add column ...</div><div class="line">alter table yyy wait n add column ...</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<h4 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h4><p>行锁是针对数据表中的行记录的锁</p>
-<p>mysql行锁是在引擎层自己实现的，并不是所有引擎都支持行锁，如myisam引擎不支持行锁，只能使用表锁，任何时刻只能有一个更新在执行，影响业务并发度</p>
-<h5 id="两阶段锁"><a href="#两阶段锁" class="headerlink" title="两阶段锁"></a>两阶段锁</h5><p>在innodb事务中，行锁是在需要的时候才加上，但并不是不需要了立刻释放，而是要等到事务结束时才释放</p>
-<p><strong>如果你的事务中需要锁多个行，要把最可能造成锁冲突、最可能影响并发度的锁尽量往后放</strong></p>
-<h5 id="死锁和死锁检测"><a href="#死锁和死锁检测" class="headerlink" title="死锁和死锁检测"></a>死锁和死锁检测</h5><p>死锁：当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态</p>
-<p>出现死锁，解决策略：</p>
-<ul>
-<li>直接进入等待，直到超时，超时时间可以通过参数<code>innodb_lock_wait_timeout</code>来设置，默认值为50s</li>
-<li>发起死锁检测，发现死锁后，主动回滚死锁链条中的某个事物，让其他事物得以继续执行，通过参数<code>innodb_deadlock_detect</code>设置为on，来开启死锁检测</li>
-</ul>
-<p>如果所有事务都要更新同一行，这时死锁检测将消耗大量cpu资源，因此出现cpu利用率很高，但每秒执行不了多少事务</p>
-<p>解决方案：</p>
-<ul>
-<li>控制并发，在数据库服务端控制并发，需要修改mysql源码，要求高</li>
-<li>业务上，将更新一行改为逻辑上的多行来减少锁冲突</li>
-<li>减少死锁的主要方向，控制访问相同资源的并发事务量</li>
-</ul>
-<p>innodb行级锁是通过锁索引记录实现的，如果更新的列没有建索引会锁住整个表的</p>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Lock/">Lock</a>
+  <span></span> <a href="/tags/Index/">Index</a>
   </div>
 
 
@@ -171,7 +133,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/" data-title="全局锁、表级锁和行锁 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2018/12/28/yw-mysql-addindex-to-string/" data-title="字符串加索引 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -181,18 +143,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2018/12/28/yw-mysql-addindex-to-string/" title="字符串加索引">
+ <a href="/2018/12/28/yw-mysql-order-by/" title="Order by工作原理">
   <strong>新一篇:</strong><br/>
   <span>
-  字符串加索引</span>
+  Order by工作原理</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2018/12/26/yw-mysql-transaction/"  title="事务隔离">
+<a href="/2018/12/27/yw-mysql-lock/"  title="全局锁、表级锁和行锁">
  <strong>旧一篇:</strong><br/> 
- <span>事务隔离
+ <span>全局锁、表级锁和行锁
 </span>
 </a>
 </div>
@@ -202,7 +164,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="全局锁、表级锁和行锁" data-thread-key="yw-mysql-lock" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-lock"></div>
+	<div class="ds-thread" data-title="字符串加索引" data-thread-key="yw-mysql-addindex-to-string" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-addindex-to-string"></div>
 	
 </section>
 

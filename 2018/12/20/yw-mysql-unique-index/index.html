@@ -111,7 +111,7 @@ var _hmt = _hmt || [];
 <h4 id="更新操作"><a href="#更新操作" class="headerlink" title="更新操作"></a>更新操作</h4><p>change buffer:如果数据页没有在内存中，innodb会将更新操作缓存在change buffer中，这样不需要从磁盘中读取数据页；下次查询访问这个数据页时，将数据页读入内存，然后执行change buffer中和这个页有关的操作</p>
 <ul>
 <li>唯一索引更新操作不能使用change buffer，因为判断记录是否存在，必须将数据页读入内存，只有普通索引更新操作可以使用change buffer</li>
-<li>change buffer使用的是buffer pool里的内存，大小可以通过参数innodb_change_buffer_max_size来设置</li>
+<li>change buffer使用的是buffer pool里的内存，大小可以通过参数<strong>innodb_change_buffer_max_size</strong>来设置</li>
 </ul>
 <h4 id="插入操作"><a href="#插入操作" class="headerlink" title="插入操作"></a>插入操作</h4><ol>
 <li>记录要更新的目标页在内存中，此时插入操作基本一致，从内存中读取数据对应的位置，执行插入语句</li>
