@@ -4,17 +4,13 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Count计数变慢 | ttxsgoto&#39; Blog</title>
+    <title>Jenkins+Gitlab+Harbor构建持续集成 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="count(*) 实现方式不同的引擎，实现方式不同
-
-Myisam把一个表的总行存在磁盘上，执行时直接返回这个数
-Innodb，需要把数据一行行的从引擎中读出来，然后累积计数，遍历全表
-
-不同的count用法count()为聚合函数，对于返回的结果集，一行行判断，如果count函数的参数不为null">
+    <meta name="description" content="背景最近研究了一下公司现有的发布流程，开发在开发完成代码后， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到测试环境，然后进行测试，提高研发工作效率和减少运维人员重复工作
+组件说明Jenkinsjenkins是基于Java开发的一种持续集成工具，用于监控持续重复的工作，旨在提供一个">
     
     
     
@@ -91,10 +87,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/12/28/yw-mysql-count/" title="Count计数变慢" itemprop="url">Count计数变慢</a>
+      <a href="/2019/01/04/yw-jenkins-ci/" title="Jenkins+Gitlab+Harbor构建持续集成" itemprop="url">Jenkins+Gitlab+Harbor构建持续集成</a>
   </h1>
   <p class="article-time">
-    <time datetime="2018-12-28T14:48:50.000Z" itemprop="datePublished">2018-12-28</time>
+    <time datetime="2019-01-04T06:41:44.000Z" itemprop="datePublished">2019-01-04</time>
   </p>
 </header>
 	<div class="article-content">
@@ -102,47 +98,62 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#count-实现方式"><span class="toc-number">1.</span> <span class="toc-text">count(*) 实现方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#不同的count用法"><span class="toc-number">2.</span> <span class="toc-text">不同的count用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#效率排序"><span class="toc-number">3.</span> <span class="toc-text">效率排序</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#组件说明"><span class="toc-number">2.</span> <span class="toc-text">组件说明</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Jenkins"><span class="toc-number">2.1.</span> <span class="toc-text">Jenkins</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Gitlab"><span class="toc-number">2.2.</span> <span class="toc-text">Gitlab</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Harbor"><span class="toc-number">2.3.</span> <span class="toc-text">Harbor</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实现说明"><span class="toc-number">3.</span> <span class="toc-text">实现说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#注意"><span class="toc-number">4.</span> <span class="toc-text">注意</span></a></li></ol>
 		</div>
 		
-		<h4 id="count-实现方式"><a href="#count-实现方式" class="headerlink" title="count(*) 实现方式"></a>count(*) 实现方式</h4><p>不同的引擎，实现方式不同</p>
+		<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近研究了一下公司现有的发布流程，<br>开发在开发完成代码后， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到测试环境，然后进行测试，提高研发工作效率和减少运维人员重复工作</p>
+<h4 id="组件说明"><a href="#组件说明" class="headerlink" title="组件说明"></a>组件说明</h4><h5 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h5><p>jenkins是基于Java开发的一种持续集成工具，用于监控持续重复的工作，旨在提供一个开放易用的软件平台，使软件的持续集成变成可能<br>特点：</p>
 <ul>
-<li>Myisam把一个表的总行存在磁盘上，执行时直接返回这个数</li>
-<li>Innodb，需要把数据一行行的从引擎中读出来，然后累积计数，遍历全表</li>
+<li>分布式构建</li>
+<li>大量三方插件</li>
+<li>变更支持</li>
+<li>消息通知</li>
 </ul>
-<h4 id="不同的count用法"><a href="#不同的count用法" class="headerlink" title="不同的count用法"></a>不同的count用法</h4><p>count()为聚合函数，对于返回的结果集，一行行判断，如果count函数的参数不为null，累计值加1，最终返回累计值</p>
+<h5 id="Gitlab"><a href="#Gitlab" class="headerlink" title="Gitlab"></a>Gitlab</h5><p>Gitlab 是一个用于仓库管理系统的开源项目，使用Git作为代码管理工具，并在此基础上搭建起来的web服务<br>特点：</p>
 <ul>
-<li>count(*)</li>
-<li>count(id)</li>
-<li>count(字段)</li>
-<li>count(1)</li>
+<li>代码仓库管理</li>
+<li>多人协作</li>
 </ul>
-<p>这里count(*),count(id),count(1)返回满足条件的结果集的总行数，而count(字段)返回满足条件不为null的总数<br>性能比较原则：</p>
+<h5 id="Harbor"><a href="#Harbor" class="headerlink" title="Harbor"></a>Harbor</h5><p>Harbor 是一个用于存储和分发 Docker 镜像的企业级 Registry 服务器<br>特点：</p>
+<ul>
+<li>基于角色的访问控制</li>
+<li>镜像复制</li>
+<li>鉴权认证管理</li>
+<li>用户管理，访问控制和活动审计</li>
+<li>RESTful API</li>
+</ul>
+<h4 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h4><p>步骤：</p>
 <ol>
-<li>server层要做什么就给什么</li>
-<li>innodb只给必要的值</li>
+<li>通过Jenkins 生成的secret token来关联gitlab Webhooks设置url 和token，当代码有更新时，自动触发构建</li>
+<li>将代码拉取到Jenkins运行节点中，通过基础镜像加dockerfile文件构建应用镜像，然后上传到Harbor服务器中</li>
+<li>在测试服务器中拉取对应的镜像，然后运行起来</li>
+<li>构建完成没有错误，发邮件通知相关人员</li>
 </ol>
-<h4 id="效率排序"><a href="#效率排序" class="headerlink" title="效率排序"></a>效率排序</h4><p>count(字段)&lt; count(id)&lt;count(1)=count(*)</p>
+<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><ol>
+<li>Jenkins系统设置中需要配置gitlab服务器地址和对应的gitlab api token用于Jenkins和gitlab交互通信</li>
+<li>Jenkins任务构建可以指定在固定节点上构建， 构建节点和应用服务器之间必须有登录权限</li>
+<li>Harbor镜像管理，需要有鉴权和认证设置</li>
+</ol>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/count/">count</a>
+  <span></span> <a href="/tags/Jenkins/">Jenkins</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/Mysql/">Mysql</a>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2018/12/28/yw-mysql-count/" data-title="Count计数变慢 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/" data-title="Jenkins+Gitlab+Harbor构建持续集成 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -151,19 +162,11 @@ var _hmt = _hmt || [];
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2019/01/04/yw-jenkins-ci/" title="Jenkins+Gitlab+Harbor构建持续集成">
-  <strong>新一篇:</strong><br/>
-  <span>
-  Jenkins+Gitlab+Harbor构建持续集成</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2018/12/28/yw-mysql-order-by/"  title="Order by工作原理">
+<a href="/2018/12/28/yw-mysql-count/"  title="Count计数变慢">
  <strong>旧一篇:</strong><br/> 
- <span>Order by工作原理
+ <span>Count计数变慢
 </span>
 </a>
 </div>
@@ -173,7 +176,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Count计数变慢" data-thread-key="yw-mysql-count" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mysql-count"></div>
+	<div class="ds-thread" data-title="Jenkins+Gitlab+Harbor构建持续集成" data-thread-key="yw-jenkins-ci" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-jenkins-ci"></div>
 	
 </section>
 
