@@ -9,10 +9,10 @@
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="背景之前文章中说过发布流程(Jenkins+Gitlab+Harbor构建持续集成),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能一刀切使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发
+    <meta name="description" content="背景之前文章中说过发布流程(Jenkins+Gitlab+Harbor构建持续集成),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能“一刀切”使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发
 特点
 配置修改实时生效
-灰度发">
+灰">
     
     
     
@@ -103,7 +103,7 @@ var _hmt = _hmt || [];
 		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#特点"><span class="toc-number">2.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4个维度管理k-v配置"><span class="toc-number">3.</span> <span class="toc-text">4个维度管理k-v配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#客户端实现"><span class="toc-number">4.</span> <span class="toc-text">客户端实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考链接"><span class="toc-number">5.</span> <span class="toc-text">参考链接</span></a></li></ol>
 		</div>
 		
-		<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>之前文章中说过发布流程(<a href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/">Jenkins+Gitlab+Harbor构建持续集成</a>),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能一刀切使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发</p>
+		<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>之前文章中说过发布流程(<a href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/">Jenkins+Gitlab+Harbor构建持续集成</a>),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能“一刀切”使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发</p>
 <h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
 <li>配置修改实时生效</li>
 <li>灰度发布</li>
