@@ -4,13 +4,15 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Jenkins+Gitlab+Harbor构建持续集成 | ttxsgoto&#39; Blog</title>
+    <title>Apollo配置中心 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="背景最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作
-组件说明Jenkinsjenkins是基于Java开发的一种持续集">
+    <meta name="description" content="背景之前文章中说过发布流程(Jenkins+Gitlab+Harbor构建持续集成),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能一刀切使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发
+特点
+配置修改实时生效
+灰度发">
     
     
     
@@ -87,10 +89,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2019/01/04/yw-jenkins-ci/" title="Jenkins+Gitlab+Harbor构建持续集成" itemprop="url">Jenkins+Gitlab+Harbor构建持续集成</a>
+      <a href="/2019/01/07/yw-apollo/" title="Apollo配置中心" itemprop="url">Apollo配置中心</a>
   </h1>
   <p class="article-time">
-    <time datetime="2019-01-04T12:41:44.000Z" itemprop="datePublished">2019-01-04</time>
+    <time datetime="2019-01-07T12:59:45.000Z" itemprop="datePublished">2019-01-07</time>
   </p>
 </header>
 	<div class="article-content">
@@ -98,49 +100,39 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#组件说明"><span class="toc-number">2.</span> <span class="toc-text">组件说明</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Jenkins"><span class="toc-number">2.1.</span> <span class="toc-text">Jenkins</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Gitlab"><span class="toc-number">2.2.</span> <span class="toc-text">Gitlab</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Harbor"><span class="toc-number">2.3.</span> <span class="toc-text">Harbor</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实现说明"><span class="toc-number">3.</span> <span class="toc-text">实现说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#注意"><span class="toc-number">4.</span> <span class="toc-text">注意</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#特点"><span class="toc-number">2.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4个维度管理k-v配置"><span class="toc-number">3.</span> <span class="toc-text">4个维度管理k-v配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#客户端实现"><span class="toc-number">4.</span> <span class="toc-text">客户端实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考链接"><span class="toc-number">5.</span> <span class="toc-text">参考链接</span></a></li></ol>
 		</div>
 		
-		<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作</p>
-<h4 id="组件说明"><a href="#组件说明" class="headerlink" title="组件说明"></a>组件说明</h4><h5 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h5><p>jenkins是基于Java开发的一种持续集成工具，用于监控持续重复的工作，旨在提供一个开放易用的软件平台，使软件的持续集成变成可能<br>特点：</p>
-<ul>
-<li>分布式构建</li>
-<li>大量三方插件</li>
-<li>变更支持</li>
-<li>消息通知</li>
+		<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>之前文章中说过发布流程(<a href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/">Jenkins+Gitlab+Harbor构建持续集成</a>),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能一刀切使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发</p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li>配置修改实时生效</li>
+<li>灰度发布</li>
+<li>分环节</li>
+<li>分集群管理配置</li>
+<li>权限</li>
+<li>审核机制等</li>
 </ul>
-<h5 id="Gitlab"><a href="#Gitlab" class="headerlink" title="Gitlab"></a>Gitlab</h5><p>Gitlab 是一个用于仓库管理系统的开源项目，使用Git作为代码管理工具，并在此基础上搭建起来的web服务<br>特点：</p>
-<ul>
-<li>代码仓库管理</li>
-<li>多人协作</li>
-<li>完善的用户、权限管理</li>
+<p>apollo能够集中化管理应用不同环境，不同集群，修改配置后能够实时推送到应用，并具备规范的权限和流程治理特性</p>
+<h4 id="4个维度管理k-v配置"><a href="#4个维度管理k-v配置" class="headerlink" title="4个维度管理k-v配置"></a>4个维度管理k-v配置</h4><ul>
+<li>application(应用)</li>
+<li>environment(环境)</li>
+<li>cluster(集群)</li>
+<li>namespace(命名空间)</li>
 </ul>
-<h5 id="Harbor"><a href="#Harbor" class="headerlink" title="Harbor"></a>Harbor</h5><p>Harbor 是一个用于存储和分发 Docker 镜像的企业级 Registry 服务器<br>特点：</p>
-<ul>
-<li>基于角色的访问控制</li>
-<li>镜像复制</li>
-<li>鉴权认证管理</li>
-<li>用户管理，访问控制和活动审计</li>
-<li>RESTful API</li>
+<p>配置文件实时生效(热发布),用户在apollo修改完配置并发布后，客户端能实时(1s)接收到最新配置，并通知应用程序</p>
+<h4 id="客户端实现"><a href="#客户端实现" class="headerlink" title="客户端实现"></a>客户端实现</h4><p>客户端(python)实现参照<br><a href="https://github.com/filamoon/pyapollo" target="_blank" rel="external">https://github.com/filamoon/pyapollo</a></p>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><ul>
+<li><a href="https://github.com/ctripcorp/apollo" target="_blank" rel="external">https://github.com/ctripcorp/apollo</a></li>
+<li><a href="https://github.com/ctripcorp/apollo/wiki/Apollo%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E4%BB%8B%E7%BB%8D" target="_blank" rel="external">https://github.com/ctripcorp/apollo/wiki/Apollo%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E4%BB%8B%E7%BB%8D</a></li>
+<li><a href="https://github.com/ctripcorp/apollo/wiki/%E5%85%B6%E5%AE%83%E8%AF%AD%E8%A8%80%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97" target="_blank" rel="external">https://github.com/ctripcorp/apollo/wiki/%E5%85%B6%E5%AE%83%E8%AF%AD%E8%A8%80%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97</a></li>
 </ul>
-<h4 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h4><ol>
-<li>通过Jenkins 生成的secret token来关联gitlab Webhooks设置url 和token，当代码有更新时，自动触发构建</li>
-<li>将代码拉取到Jenkins运行节点中，通过基础镜像加dockerfile文件构建应用镜像，然后上传到Harbor服务器中</li>
-<li>在测试服务器中拉取对应的镜像，然后运行起来</li>
-<li>构建完成没有错误，发邮件通知相关人员</li>
-</ol>
-<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><ol>
-<li>Jenkins系统设置中需要配置gitlab服务器地址和对应的gitlab api token用于Jenkins和gitlab交互通信</li>
-<li>Jenkins任务构建可以指定在固定节点上构建， 构建节点和应用服务器之间必须有登录权限</li>
-<li>Harbor镜像管理，需要有鉴权和认证设置</li>
-</ol>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Jenkins/">Jenkins</a>
+  <span></span> <a href="/tags/Apollo/">Apollo</a>
   </div>
 
 
@@ -153,7 +145,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/" data-title="Jenkins+Gitlab+Harbor构建持续集成 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2019/01/07/yw-apollo/" data-title="Apollo配置中心 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -162,19 +154,11 @@ var _hmt = _hmt || [];
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2019/01/07/yw-apollo/" title="Apollo配置中心">
-  <strong>新一篇:</strong><br/>
-  <span>
-  Apollo配置中心</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2018/12/28/yw-mysql-count/"  title="Count计数变慢">
+<a href="/2019/01/04/yw-jenkins-ci/"  title="Jenkins+Gitlab+Harbor构建持续集成">
  <strong>旧一篇:</strong><br/> 
- <span>Count计数变慢
+ <span>Jenkins+Gitlab+Harbor构建持续集成
 </span>
 </a>
 </div>
@@ -184,7 +168,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Jenkins+Gitlab+Harbor构建持续集成" data-thread-key="yw-jenkins-ci" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-jenkins-ci"></div>
+	<div class="ds-thread" data-title="Apollo配置中心" data-thread-key="yw-apollo" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-apollo"></div>
 	
 </section>
 

@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2019-01-07T03:37:29.000Z</updated>
+  <updated>2019-01-07T08:04:25.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -16,13 +16,58 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Apollo配置中心</title>
+    <link href="https://ttxsgoto.github.io/2019/01/07/yw-apollo/"/>
+    <id>https://ttxsgoto.github.io/2019/01/07/yw-apollo/</id>
+    <published>2019-01-07T12:59:45.000Z</published>
+    <updated>2019-01-07T08:04:25.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>之前文章中说过发布流程(<a href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/">Jenkins+Gitlab+Harbor构建持续集成</a>),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能一刀切使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发</p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li>配置修改实时生效</li>
+<li>灰度发布</li>
+<li>分环节</li>
+<li>分集群管理配置</li>
+<li>权限</li>
+<li>审核机制等</li>
+</ul>
+<p>apollo能够集中化管理应用不同环境，不同集群，修改配置后能够实时推送到应用，并具备规范的权限和流程治理特性</p>
+<h4 id="4个维度管理k-v配置"><a href="#4个维度管理k-v配置" class="headerlink" title="4个维度管理k-v配置"></a>4个维度管理k-v配置</h4><ul>
+<li>application(应用)</li>
+<li>environment(环境)</li>
+<li>cluster(集群)</li>
+<li>namespace(命名空间)</li>
+</ul>
+<p>配置文件实时生效(热发布),用户在apollo修改完配置并发布后，客户端能实时(1s)接收到最新配置，并通知应用程序</p>
+<h4 id="客户端实现"><a href="#客户端实现" class="headerlink" title="客户端实现"></a>客户端实现</h4><p>客户端(python)实现参照<br><a href="https://github.com/filamoon/pyapollo" target="_blank" rel="external">https://github.com/filamoon/pyapollo</a></p>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><ul>
+<li><a href="https://github.com/ctripcorp/apollo" target="_blank" rel="external">https://github.com/ctripcorp/apollo</a></li>
+<li><a href="https://github.com/ctripcorp/apollo/wiki/Apollo%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E4%BB%8B%E7%BB%8D" target="_blank" rel="external">https://github.com/ctripcorp/apollo/wiki/Apollo%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E4%BB%8B%E7%BB%8D</a></li>
+<li><a href="https://github.com/ctripcorp/apollo/wiki/%E5%85%B6%E5%AE%83%E8%AF%AD%E8%A8%80%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97" target="_blank" rel="external">https://github.com/ctripcorp/apollo/wiki/%E5%85%B6%E5%AE%83%E8%AF%AD%E8%A8%80%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;之前文章中说过发布流程(&lt;a href=&quot;https://ttxsgoto.github.io/2019/01/04/yw-jenkins-
+    
+    </summary>
+    
+      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Apollo" scheme="https://ttxsgoto.github.io/tags/Apollo/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Jenkins+Gitlab+Harbor构建持续集成</title>
     <link href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/"/>
     <id>https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/</id>
-    <published>2019-01-04T06:41:44.000Z</published>
-    <updated>2019-01-07T03:37:29.000Z</updated>
+    <published>2019-01-04T12:41:44.000Z</published>
+    <updated>2019-01-07T08:04:21.000Z</updated>
     
-    <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近研究了一下公司现有的发布流程，<br>开发在开发完成代码后， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到测试环境，然后进行测试，提高研发工作效率和减少运维人员重复工作</p>
+    <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作</p>
 <h4 id="组件说明"><a href="#组件说明" class="headerlink" title="组件说明"></a>组件说明</h4><h5 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h5><p>jenkins是基于Java开发的一种持续集成工具，用于监控持续重复的工作，旨在提供一个开放易用的软件平台，使软件的持续集成变成可能<br>特点：</p>
 <ul>
 <li>分布式构建</li>
@@ -34,6 +79,7 @@
 <ul>
 <li>代码仓库管理</li>
 <li>多人协作</li>
+<li>完善的用户、权限管理</li>
 </ul>
 <h5 id="Harbor"><a href="#Harbor" class="headerlink" title="Harbor"></a>Harbor</h5><p>Harbor 是一个用于存储和分发 Docker 镜像的企业级 Registry 服务器<br>特点：</p>
 <ul>
@@ -43,8 +89,7 @@
 <li>用户管理，访问控制和活动审计</li>
 <li>RESTful API</li>
 </ul>
-<h4 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h4><p>步骤：</p>
-<ol>
+<h4 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h4><ol>
 <li>通过Jenkins 生成的secret token来关联gitlab Webhooks设置url 和token，当代码有更新时，自动触发构建</li>
 <li>将代码拉取到Jenkins运行节点中，通过基础镜像加dockerfile文件构建应用镜像，然后上传到Harbor服务器中</li>
 <li>在测试服务器中拉取对应的镜像，然后运行起来</li>
@@ -59,7 +104,7 @@
     
     <summary type="html">
     
-      &lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;最近研究了一下公司现有的发布流程，&lt;br&gt;开发在开发完成代码后， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到测试环境，
+      &lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenki
     
     </summary>
     
@@ -1131,58 +1176,6 @@
       <category term="ORM" scheme="https://ttxsgoto.github.io/tags/ORM/"/>
     
       <category term="Serializer" scheme="https://ttxsgoto.github.io/tags/Serializer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Django ORM数据查询操作优化</title>
-    <link href="https://ttxsgoto.github.io/2018/04/13/django-orm-queryset/"/>
-    <id>https://ttxsgoto.github.io/2018/04/13/django-orm-queryset/</id>
-    <published>2018-04-13T14:47:47.000Z</published>
-    <updated>2018-04-14T04:12:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>最近几天研究了一下django ORM查询优化，响应时间慢问题，主要原因还是代码规范和方法使用不当，如果正确使用相应方法，大部分的性能问题都是可以解决，记录如下：</p>
-<h4 id="Django-QuerySet懒执行"><a href="#Django-QuerySet懒执行" class="headerlink" title="Django QuerySet懒执行"></a>Django QuerySet懒执行</h4><p>只有访问到对应的数据时，才会访问数据库，如果再次读取查询到的数据时，不会触发访问数据库操作，返回的是QuerySet、ValuesQuerySet、ValuesListQuerySet、Model实例<br>会执行数据库操作的操作有：</p>
-<ul>
-<li>Iteration，对Queryset进行迭代操作</li>
-<li>slicing分片， 如queryset[:5]</li>
-<li>序列化Pickling</li>
-<li>repr()/str()将对象转为字符串</li>
-<li>len()/list()/bool()/print()操作</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">######## 实例一 ########</span></div><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> connection</div><div class="line">users = User.objects.all()</div><div class="line">users = User.objects.all().select_related(<span class="string">'group'</span>)</div><div class="line"><span class="keyword">for</span> user <span class="keyword">in</span> users:</div><div class="line">    print(user.name) <span class="comment"># 这里只查询一次数据库</span></div><div class="line">    print(user.group.name) <span class="comment"># 这里的group为外键，查询次数依次增加, 可通过select_related()来解决多次查询数据库问题</span></div><div class="line">    l = connection.queries</div><div class="line">    print(len(l), l)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="comment">######## 实例二 ########</span></div><div class="line"><span class="comment"># 这时不会访问数据库</span></div><div class="line">users = User.objects.filter(age=<span class="number">25</span>)</div><div class="line"> </div><div class="line"><span class="comment"># 这里需要访问数据，执行数据库查询操作</span></div><div class="line">list(users) <span class="keyword">or</span> <span class="keyword">if</span> users: <span class="keyword">pass</span></div><div class="line"> </div><div class="line"><span class="comment"># 再次读取数据，不会访问数据库</span></div><div class="line">user = users[<span class="number">0</span>]</div></pre></td></tr></table></figure>
-<h4 id="使用select-related-提升关联外键-一对一关联查询"><a href="#使用select-related-提升关联外键-一对一关联查询" class="headerlink" title="使用select_related 提升关联外键/一对一关联查询"></a>使用select_related 提升关联外键/一对一关联查询</h4><p>Model中一般会定义外键关联，查询如果编写不当，会多次访问数据库查询，影响效率；通过select_related方法来查询外键(ForeignKey)或一对一(OneToOneField)关系，其实就是sql语句中join操作；在后面使用外键关系查询时将不需要执行数据库查询</p>
-<p>使用prefetch_related提升关联多对多或多对一查询<br>prefetch_related 执行一个单独的查找，它允许预先读取多对多和多对一的对象数据，这是 select_related 做不到的。另外 perfetch_related 也可以与通用外键和关系一起使用<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">######## 实例一 ########</span></div><div class="line">DeviceInfo.objects.filter(operator_id=<span class="string">'dc8b37483b27402d90a5a28d13ce330c'</span>)</div><div class="line"><span class="comment"># 对应sql如下：</span></div><div class="line">SELECT `device_info`.`id`, `device_info`.`number`, `device_info`.`type`, `device_info`.`plate_no_id`, `device_info`.`status`, `device_info`.`offline_date`,  `device_info`.`operator_id` FROM `device_info` WHERE `device_info`.`operator_id` = dc8b37483b27402d90a5a28d13ce330c</div><div class="line">DeviceInfo.objects.select_related(<span class="string">'operator'</span>).filter(operator_id=<span class="string">'dc8b37483b27402d90a5a28d13ce330c'</span>)</div><div class="line"><span class="comment"># 对应sql如下：</span></div><div class="line">SELECT `device_info`.`id`,  `device_info`.`number`, `device_info`.`type`, `device_info`.`plate_no_id`, `device_info`.`status`, `device_info`.`offline_date`, `device_info`.`operator_id`, `user`.`password`, `user`.`last_login`, `user`.`is_superuser`, `user`.`id`, `user`.`created_at`, `user`.`is_deleted`, `user`.`mobile_number`, `user`.`is_active`, `user`.`is_staff`, `user`.`is_driver`, `user`.`depgroup_id` FROM `device_info` INNER JOIN `user` ON (`device_info`.`operator_id` = `user`.`id`) WHERE `device_info`.`operator_id` = dc8b37483b27402d90a5a28d13ce330c</div><div class="line"> </div><div class="line"><span class="comment">######## 实例二 ########</span></div><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">City</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    <span class="keyword">pass</span></div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    hometown = models.ForeignKey(City)</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Book</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="comment"># ...</span></div><div class="line">    author = models.ForeignKey(Person)</div><div class="line"> </div><div class="line">b = Book.objects.select_related(<span class="string">'author__hometown'</span>).get(id=<span class="number">4</span>)</div><div class="line">p = b.author         <span class="comment"># Doesn't hit the database.</span></div><div class="line">c = p.hometown       <span class="comment"># Doesn't hit the database.</span></div><div class="line"> </div><div class="line">b = Book.objects.get(id=<span class="number">4</span>) <span class="comment"># No select_related() in this example.</span></div><div class="line">p = b.author         <span class="comment"># Hits the database.</span></div><div class="line">c = p.hometown       <span class="comment"># Hits the database.</span></div></pre></td></tr></table></figure></p>
-<h4 id="不要查询不需要的值"><a href="#不要查询不需要的值" class="headerlink" title="不要查询不需要的值"></a>不要查询不需要的值</h4><ul>
-<li>通过values和values_list来限制返回值</li>
-<li>通过only指定字段和defer排除字段</li>
-<li>如果只需要id，可以使用queryset.values_list(‘id’, flat=True)</li>
-</ul>
-<h4 id="直接使用外键值"><a href="#直接使用外键值" class="headerlink" title="直接使用外键值"></a>直接使用外键值</h4><p>如果只想获取外键id，可通过obj_id的方式获取，优先于obj.id;obj.id方式会为子表内容保存额外查询</p>
-<h4 id="用count-代替len-exists-代替if-queryset"><a href="#用count-代替len-exists-代替if-queryset" class="headerlink" title="用count()代替len(), exists()代替if queryset"></a>用count()代替len(), exists()代替if queryset</h4><p>len()方法相当于会把整个queryset遍历一次，把所有的数据都取出来对象化，消耗大量的资源</p>
-<h4 id="对缓存的queryset只进行一次遍历，使用iterator"><a href="#对缓存的queryset只进行一次遍历，使用iterator" class="headerlink" title="对缓存的queryset只进行一次遍历，使用iterator()"></a>对缓存的queryset只进行一次遍历，使用iterator()</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 如此操作可减少数据载入内存中，同时和values一起使用可大大减少内存的使用</span></div><div class="line"><span class="keyword">for</span> user <span class="keyword">in</span> User.objects.all().iterator():</div><div class="line">    do_something(user)</div></pre></td></tr></table></figure>
-<h4 id="避免多次查询"><a href="#避免多次查询" class="headerlink" title="避免多次查询"></a>避免多次查询</h4><p>筛选表中不同条件的数据时，一般采用写多个查询进行筛选，数据多时严重影响性能<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">users = [</div><div class="line"><span class="string">'ttxsgoto01'</span>,</div><div class="line"><span class="string">'ttxsgoto02'</span>,</div><div class="line"><span class="string">'ttxsgoto03'</span>,</div><div class="line">]</div><div class="line"><span class="keyword">from</span> models <span class="keyword">import</span> User</div><div class="line"><span class="comment">######## 实例一 ########</span></div><div class="line"><span class="comment"># 这里会进行多次数据库查询操作</span></div><div class="line"><span class="keyword">for</span> user <span class="keyword">in</span> users:</div><div class="line">    user1 = User.objects.filter(username=user, age=<span class="number">21</span>)</div><div class="line">    user2 = User.objects.filter(username=user, age=<span class="number">22</span>)</div><div class="line">    user3 = User.objects.filter(username=user, age=<span class="number">23</span>)</div><div class="line">    user4 = User.objects.filter(username=user, sex=<span class="string">'M'</span>)</div><div class="line">    print(user1.count(), user2.count(), user3.count(), user4.count())</div><div class="line"> </div><div class="line"><span class="comment">######## 实例二 ########</span></div><div class="line"><span class="comment"># 减少数据库查询，一次把数据查询出来</span></div><div class="line"><span class="keyword">for</span> user <span class="keyword">in</span> users:</div><div class="line">    _user = User.objects.filter(username=user).values_list(<span class="string">'age'</span>, <span class="string">'sex'</span>)</div><div class="line">    user1 = filter(<span class="keyword">lambda</span> x:<span class="keyword">True</span> <span class="keyword">if</span> x[<span class="number">0</span>]==<span class="number">21</span> <span class="keyword">else</span> <span class="keyword">False</span>, _user)</div><div class="line">    user2 = filter(<span class="keyword">lambda</span> x:<span class="keyword">True</span> <span class="keyword">if</span> x[<span class="number">0</span>]==<span class="number">22</span> <span class="keyword">else</span> <span class="keyword">False</span>, _user)</div><div class="line">    user3 = filter(<span class="keyword">lambda</span> x:<span class="keyword">True</span> <span class="keyword">if</span> x[<span class="number">0</span>]==<span class="number">23</span> <span class="keyword">else</span> <span class="keyword">False</span>, _user)</div><div class="line">    user4 = filter(<span class="keyword">lambda</span> x:<span class="keyword">True</span> <span class="keyword">if</span> x[<span class="number">1</span>]==<span class="string">'M'</span> <span class="keyword">else</span> <span class="keyword">False</span>, _user)</div><div class="line">    print(user1.count(), user2.count(), user3.count(), user4.count())</div><div class="line"><span class="comment"># 如此操作，一个条件只执行一次数据库查询，不同于实例一中会执行多次数据库查询</span></div></pre></td></tr></table></figure></p>
-<h4 id="创建表索引"><a href="#创建表索引" class="headerlink" title="创建表索引"></a>创建表索引</h4><p>根据业务需求，创建对应的索引字段</p>
-<h4 id="对于复杂的数据库查询操作，使用原生SQL实现"><a href="#对于复杂的数据库查询操作，使用原生SQL实现" class="headerlink" title="对于复杂的数据库查询操作，使用原生SQL实现"></a>对于复杂的数据库查询操作，使用原生SQL实现</h4><h4 id="性能分析"><a href="#性能分析" class="headerlink" title="性能分析"></a>性能分析</h4><h5 id="方法一-code"><a href="#方法一-code" class="headerlink" title="方法一: code"></a>方法一: code</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> connection</div><div class="line">dbsql = connection.queries <span class="comment"># 具体sql执行情况和耗时情况</span></div></pre></td></tr></table></figure>
-<h5 id="方法二-shell"><a href="#方法二-shell" class="headerlink" title="方法二: shell"></a>方法二: shell</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- pip install django-extensions</div><div class="line">- INSTALLED_APPS = (</div><div class="line">    ...</div><div class="line">    <span class="string">'django_extensions'</span>,</div><div class="line">    ...</div><div class="line"> )</div><div class="line">- python manage.py shell_plus --<span class="keyword">print</span>-sql <span class="comment"># 查看执行sql和结果</span></div></pre></td></tr></table></figure>
-<h4 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h4><ul>
-<li><a href="https://docs.djangoproject.com/en/1.10/topics/db/optimization/" target="_blank" rel="external">https://docs.djangoproject.com/en/1.10/topics/db/optimization/</a></li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;最近几天研究了一下django ORM查询优化，响应时间慢问题，主要原因还是代码规范和方法使用不当，如果正确使用相应方法，大部分的性能问题都是可以解决，记录如下：&lt;/p&gt;
-&lt;h4 id=&quot;Django-QuerySet懒执行&quot;&gt;&lt;a href=&quot;#Django-QueryS
-    
-    </summary>
-    
-      <category term="Django" scheme="https://ttxsgoto.github.io/categories/Django/"/>
-    
-    
-      <category term="ORM" scheme="https://ttxsgoto.github.io/tags/ORM/"/>
-    
-      <category term="Queryset" scheme="https://ttxsgoto.github.io/tags/Queryset/"/>
     
   </entry>
   
