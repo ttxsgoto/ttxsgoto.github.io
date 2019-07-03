@@ -2,9 +2,9 @@
 title: Angularjs $modal模态框
 date: 2017-09-02 14:23:07
 tags:
-  - Modal
-categories:
   - Angularjs
+categories:
+  - Frontend
 ---
 记录angular模态框的使用
 #### html

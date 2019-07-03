@@ -1,0 +1,389 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Systemd服务 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明Systemd 是 Linux 系统工具，用来启动守护进程，已成为大多数发行版的标准配置；主要用于服务管理和自定义服务的管理，方便运维工作管理。
+systemctlsystemctl是 Systemd 的主命令，用于管理系统1234567891011121314151617181920# 重启系">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/06/29/yw-systemd/" title="Systemd服务" itemprop="url">Systemd服务</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2019-06-29T03:07:07.000Z" itemprop="datePublished">2019-06-29</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#systemctl"><span class="toc-number">1.1.</span> <span class="toc-text">systemctl</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#systemd-analyze"><span class="toc-number">1.2.</span> <span class="toc-text">systemd-analyze</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#hostnamectl"><span class="toc-number">1.3.</span> <span class="toc-text">hostnamectl</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#timedatectl"><span class="toc-number">1.4.</span> <span class="toc-text">timedatectl</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#loginctl"><span class="toc-number">1.5.</span> <span class="toc-text">loginctl</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unit"><span class="toc-number">2.</span> <span class="toc-text">Unit</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Unit-的状态"><span class="toc-number">2.1.</span> <span class="toc-text">Unit 的状态</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Unit-管理"><span class="toc-number">2.2.</span> <span class="toc-text">Unit 管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#依赖关系"><span class="toc-number">2.3.</span> <span class="toc-text">依赖关系</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unit-配置文件"><span class="toc-number">3.</span> <span class="toc-text">Unit 配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#配置文件的状态"><span class="toc-number">3.1.</span> <span class="toc-text">配置文件的状态</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置文件格式"><span class="toc-number">3.2.</span> <span class="toc-text">配置文件格式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置文件说明"><span class="toc-number">3.3.</span> <span class="toc-text">配置文件说明</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#日志管理"><span class="toc-number">4.</span> <span class="toc-text">日志管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#开机启动"><span class="toc-number">5.</span> <span class="toc-text">开机启动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改配置文件后重启"><span class="toc-number">6.</span> <span class="toc-text">修改配置文件后重启</span></a></li></ol>
+		</div>
+		
+		<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>Systemd 是 Linux 系统工具，用来启动守护进程，已成为大多数发行版的标准配置；主要用于服务管理和自定义服务的管理，方便运维工作管理。</p>
+<h4 id="systemctl"><a href="#systemctl" class="headerlink" title="systemctl"></a>systemctl</h4><p>systemctl是 Systemd 的主命令，用于管理系统<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"># 重启系统</div><div class="line">$ sudo systemctl reboot</div><div class="line"> </div><div class="line"># 关闭系统，切断电源</div><div class="line">$ sudo systemctl poweroff</div><div class="line"> </div><div class="line"># CPU停止工作</div><div class="line">$ sudo systemctl halt</div><div class="line"> </div><div class="line"># 暂停系统</div><div class="line">$ sudo systemctl suspend</div><div class="line"> </div><div class="line"># 让系统进入冬眠状态</div><div class="line">$ sudo systemctl hibernate</div><div class="line"> </div><div class="line"># 让系统进入交互式休眠状态</div><div class="line">$ sudo systemctl hybrid-sleep</div><div class="line"> </div><div class="line"># 启动进入救援状态（单用户状态）</div><div class="line">$ sudo systemctl rescue</div></pre></td></tr></table></figure></p>
+<h4 id="systemd-analyze"><a href="#systemd-analyze" class="headerlink" title="systemd-analyze"></a>systemd-analyze</h4><p>systemd-analyze命令用于查看启动耗时<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"># 查看启动耗时</div><div class="line">$ systemd-analyze</div><div class="line"> </div><div class="line"># 查看每个服务的启动耗时</div><div class="line">$ systemd-analyze blame</div><div class="line"> </div><div class="line"># 显示瀑布状的启动过程流</div><div class="line">$ systemd-analyze critical-chain</div><div class="line"> </div><div class="line"># 显示指定服务的启动流</div><div class="line">$ systemd-analyze critical-chain atd.service</div></pre></td></tr></table></figure></p>
+<h4 id="hostnamectl"><a href="#hostnamectl" class="headerlink" title="hostnamectl"></a>hostnamectl</h4><p>hostnamectl命令用于查看当前主机的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 显示当前主机的信息</div><div class="line">$ hostnamectl</div><div class="line"> </div><div class="line"># 设置主机名</div><div class="line">$ sudo hostnamectl set-hostname test01</div></pre></td></tr></table></figure></p>
+<h4 id="timedatectl"><a href="#timedatectl" class="headerlink" title="timedatectl"></a>timedatectl</h4><p>timedatectl命令用于查看当前时区设置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"># 查看当前时区设置</div><div class="line">$ timedatectl</div><div class="line"> </div><div class="line"># 显示所有可用的时区</div><div class="line">$ timedatectl list-timezones                                                        </div><div class="line"># 设置当前时区</div><div class="line">$ sudo timedatectl set-timezone America/New_York</div><div class="line">$ sudo timedatectl set-time YYYY-MM-DD</div><div class="line">$ sudo timedatectl set-time HH:MM:SS</div></pre></td></tr></table></figure></p>
+<h4 id="loginctl"><a href="#loginctl" class="headerlink" title="loginctl"></a>loginctl</h4><p>loginctl命令用于查看当前登录的用户<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"># 列出当前session</div><div class="line">$ loginctl list-sessions</div><div class="line"> </div><div class="line"># 列出当前登录用户</div><div class="line">$ loginctl list-users</div><div class="line"> </div><div class="line"># 列出显示指定用户的信息</div><div class="line">$ loginctl show-user test</div></pre></td></tr></table></figure></p>
+<h3 id="Unit"><a href="#Unit" class="headerlink" title="Unit"></a>Unit</h3><p>Systemd 可以管理所有系统资源，不同的资源统称为 Unit（单位）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">Service unit：系统服务</div><div class="line">Target unit：多个 Unit 构成的一个组</div><div class="line">Device Unit：硬件设备</div><div class="line">Mount Unit：文件系统的挂载点</div><div class="line">Automount Unit：自动挂载点</div><div class="line">Path Unit：文件或路径</div><div class="line">Scope Unit：不是由 Systemd 启动的外部进程</div><div class="line">Slice Unit：进程组</div><div class="line">Snapshot Unit：Systemd 快照，可以切回某个快照</div><div class="line">Socket Unit：进程间通信的 socket</div><div class="line">Swap Unit：swap 文件</div><div class="line">Timer Unit：定时器</div></pre></td></tr></table></figure></p>
+<p>systemctl list-units命令可以查看当前系统的所有 Unit<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"># 列出正在运行的 Unit</div><div class="line">$ systemctl list-units</div><div class="line"> </div><div class="line"># 列出所有Unit，包括没有找到配置文件的或者启动失败的</div><div class="line">$ systemctl list-units --all</div><div class="line"> </div><div class="line"># 列出所有没有运行的 Unit</div><div class="line">$ systemctl list-units --all --state=inactive</div><div class="line"> </div><div class="line"># 列出所有加载失败的 Unit</div><div class="line">$ systemctl list-units --failed</div><div class="line"> </div><div class="line"># 列出所有正在运行的、类型为 service 的 Unit</div><div class="line">$ systemctl list-units --type=service</div></pre></td></tr></table></figure></p>
+<h4 id="Unit-的状态"><a href="#Unit-的状态" class="headerlink" title="Unit 的状态"></a>Unit 的状态</h4><p>systemctl status命令用于查看系统状态和单个 Unit 的状态<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"># 显示系统状态</div><div class="line">$ systemctl status</div><div class="line"> </div><div class="line"># 显示单个 Unit 的状态</div><div class="line">$ sysystemctl status test.service</div><div class="line">  </div><div class="line"># 显示远程主机的某个 Unit 的状态</div><div class="line">$ systemctl -H root@localhost status httpd.service</div><div class="line">除了status命令，systemctl还提供了三个查询状态的简单方法，主要供脚本内部的判断语句使用。</div><div class="line">  </div><div class="line"># 显示某个 Unit 是否正在运行</div><div class="line">$ systemctl is-active test.service</div><div class="line"> </div><div class="line"># 显示某个 Unit 是否处于启动失败状态</div><div class="line">$ systemctl is-failed test.service</div><div class="line"> </div><div class="line"># 显示某个 Unit 服务是否建立了启动链接</div><div class="line">$ systemctl is-enabled test.service</div></pre></td></tr></table></figure></p>
+<h4 id="Unit-管理"><a href="#Unit-管理" class="headerlink" title="Unit 管理"></a>Unit 管理</h4><p>最常用的是下面这些命令，用于启动和停止 Unit（主要是 service）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"># 立即启动一个服务</div><div class="line">$ sudo systemctl start apache.service</div><div class="line"> </div><div class="line"># 立即停止一个服务</div><div class="line">$ sudo systemctl stop apache.service</div><div class="line"> </div><div class="line"># 重启一个服务</div><div class="line">$ sudo systemctl restart apache.service</div><div class="line"> </div><div class="line"># 杀死一个服务的所有子进程</div><div class="line">$ sudo systemctl kill apache.service</div><div class="line"> </div><div class="line"># 重新加载一个服务的配置文件</div><div class="line">$ sudo systemctl reload apache.service</div><div class="line"> </div><div class="line"># 重载所有修改过的配置文件</div><div class="line">$ sudo systemctl daemon-reload</div><div class="line"> </div><div class="line"># 显示某个 Unit 的所有底层参数</div><div class="line">$ systemctl show httpd.service</div><div class="line"> </div><div class="line"># 显示某个 Unit 的指定属性的值</div><div class="line">$ systemctl show -p CPUShares httpd.service</div><div class="line"> </div><div class="line"># 设置某个 Unit 的指定属性</div><div class="line">$ sudo systemctl set-property httpd.service CPUShares=500</div></pre></td></tr></table></figure></p>
+<h4 id="依赖关系"><a href="#依赖关系" class="headerlink" title="依赖关系"></a>依赖关系</h4><p>Unit 之间存在依赖关系：A 依赖于 B，就意味着 Systemd 在启动 A 的时候，同时会去启动 B<br>systemctl list-dependencies命令列出一个 Unit 的所有依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ systemctl list-dependencies nginx.service</div><div class="line">上面命令的输出结果之中，有些依赖是 Target 类型（详见下文），默认不会展开显示。如果要展开 Target，就需要使用--all参数。</div><div class="line"> </div><div class="line">$ systemctl list-dependencies --all nginx.service</div></pre></td></tr></table></figure></p>
+<h3 id="Unit-配置文件"><a href="#Unit-配置文件" class="headerlink" title="Unit 配置文件"></a>Unit 配置文件</h3><p>每一个 Unit 都有一个配置文件，告诉 Systemd 怎么启动这个Unit,Systemd 默认从目录/etc/systemd/system/读取配置文件。但是，里面存放的大部分文件都是符号链接，指向目录/usr/lib/systemd/system/，真正的配置文件存放在那个目录。<br>systemctl enable命令用于在上面两个目录之间，建立符号链接关系。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo systemctl enable test.service </div><div class="line">Created symlink from /etc/systemd/system/multi-user.target.wants/test.service to /usr/lib/systemd/system/test.service.</div></pre></td></tr></table></figure></p>
+<p>如果配置文件里面设置了开机启动，systemctl enable命令相当于激活开机启动。<br>与之对应的，systemctl disable命令用于在两个目录之间，撤销符号链接关系，相当于撤销开机启动。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo systemctl disable test.service</div></pre></td></tr></table></figure></p>
+<p>配置文件的后缀名，就是该 Unit 的种类，比如sshd.socket。如果省略，Systemd 默认后缀名为.service，所以sshd会被理解成sshd.service。</p>
+<h4 id="配置文件的状态"><a href="#配置文件的状态" class="headerlink" title="配置文件的状态"></a>配置文件的状态</h4><p>systemctl list-unit-files命令用于列出所有配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"># 列出所有配置文件</div><div class="line">$ systemctl list-unit-files</div><div class="line">UNIT FILE              STATE</div><div class="line">chronyd.service        enabled</div><div class="line">clamd@.service         static</div><div class="line">clamd@scan.service     disabled</div><div class="line"> </div><div class="line">enabled：已建立启动链接</div><div class="line">disabled：没建立启动链接</div><div class="line">static：该配置文件没有[Install]部分（无法执行），只能作为其他配置文件的依赖</div><div class="line">masked：该配置文件被禁止建立启动链接</div><div class="line"> </div><div class="line"># 列出指定类型的配置文件</div><div class="line">$ systemctl list-unit-files --type=service</div></pre></td></tr></table></figure></p>
+<p>从配置文件的状态无法看出，该 Unit 是否正在运行。这必须执行前面提到的systemctl status命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl status test.service</div></pre></td></tr></table></figure></p>
+<p>一旦修改配置文件，就要让 SystemD 重新加载配置文件，然后重新启动，否则修改不会生效<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo systemctl daemon-reload</div><div class="line">$ sudo systemctl restart httpd.service</div></pre></td></tr></table></figure></p>
+<h4 id="配置文件格式"><a href="#配置文件格式" class="headerlink" title="配置文件格式"></a>配置文件格式</h4><p>systemctl cat命令可以查看配置文件的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">$ systemctl cat test.service</div><div class="line"> </div><div class="line">[Unit]</div><div class="line">Description=Test Demo</div><div class="line">After=syslog.target network.target</div><div class="line"> </div><div class="line">[Service]</div><div class="line">ExecStart=/usr/bin/python2.7 /home/user/python/test.py</div><div class="line"> </div><div class="line">[Install]</div><div class="line">WantedBy=multi-user.target</div></pre></td></tr></table></figure></p>
+<h4 id="配置文件说明"><a href="#配置文件说明" class="headerlink" title="配置文件说明"></a>配置文件说明</h4><p>[Unit]区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系。它的主要字段如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">Description：简短描述</div><div class="line">Documentation：文档地址</div><div class="line">Requires：当前 Unit 依赖的其他 Unit，如果它们没有运行，当前 Unit 会启动失败</div><div class="line">Wants：与当前 Unit 配合的其他 Unit，如果它们没有运行，当前 Unit 不会启动失败</div><div class="line">BindsTo：与Requires类似，它指定的 Unit 如果退出，会导致当前 Unit 停止运行</div><div class="line">Before：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之后启动</div><div class="line">After：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之前启动</div><div class="line">Conflicts：这里指定的 Unit 不能与当前 Unit 同时运行</div><div class="line">Condition...：当前 Unit 运行必须满足的条件，否则不会运行</div><div class="line">Assert...：当前 Unit 运行必须满足的条件，否则会报启动失败</div></pre></td></tr></table></figure></p>
+<p>[Install]通常是配置文件的最后一个区块，用来定义如何启动，以及是否开机启动。它的主要字段如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">WantedBy：它的值是一个或多个 Target，当前 Unit 激活时（enable）符号链接会放入/etc/systemd/system目录下面以 Target 名 + .wants后缀构成的子目录中</div><div class="line">RequiredBy：它的值是一个或多个 Target，当前 Unit 激活时，符号链接会放入/etc/systemd/system目录下面以 Target 名 + .required后缀构成的子目录中</div><div class="line">Alias：当前 Unit 可用于启动的别名</div><div class="line">Also：当前 Unit 激活（enable）时，会被同时激活的其他 Unit</div></pre></td></tr></table></figure></p>
+<p>[Service]区块用来 Service 的配置，只有 Service 类型的 Unit 才有这个区块。它的主要字段如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">Type：定义启动时的进程行为。它有以下几种值。</div><div class="line">Type=simple：默认值，执行ExecStart指定的命令，启动主进程</div><div class="line">Type=forking：以 fork 方式从父进程创建子进程，创建后父进程会立即退出</div><div class="line">Type=oneshot：一次性进程，Systemd 会等当前服务退出，再继续往下执行</div><div class="line">Type=dbus：当前服务通过D-Bus启动</div><div class="line">Type=notify：当前服务启动完毕，会通知Systemd，再继续往下执行</div><div class="line">Type=idle：若有其他任务执行完毕，当前服务才会运行</div><div class="line">ExecStart：启动当前服务的命令</div><div class="line">ExecStartPre：启动当前服务之前执行的命令</div><div class="line">ExecStartPost：启动当前服务之后执行的命令</div><div class="line">ExecReload：重启当前服务时执行的命令</div><div class="line">ExecStop：停止当前服务时执行的命令</div><div class="line">ExecStopPost：停止当其服务之后执行的命令</div><div class="line">RestartSec：自动重启当前服务间隔的秒数</div><div class="line">Restart：定义何种情况 Systemd 会自动重启当前服务，可能的值包括always（总是重启）、on-success、on-failure、on-abnormal、on-abort、on-watchdog</div><div class="line">TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数</div><div class="line">Environment：指定环境变量</div></pre></td></tr></table></figure></p>
+<h3 id="日志管理"><a href="#日志管理" class="headerlink" title="日志管理"></a>日志管理</h3><p>Systemd 统一管理所有 Unit 的启动日志。带来的好处就是，可以只用journalctl一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是/etc/systemd/journald.conf。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div></pre></td><td class="code"><pre><div class="line"># 查看所有日志（默认情况下 ，只保存本次启动的日志）</div><div class="line">$ sudo journalctl</div><div class="line"> </div><div class="line"># 查看内核日志（不显示应用日志）</div><div class="line">$ sudo journalctl -k</div><div class="line"> </div><div class="line"># 查看系统本次启动的日志</div><div class="line">$ sudo journalctl -b</div><div class="line">$ sudo journalctl -b -0</div><div class="line"> </div><div class="line"># 查看上一次启动的日志（需更改设置）</div><div class="line">$ sudo journalctl -b -1</div><div class="line"> </div><div class="line"># 查看指定时间的日志</div><div class="line">$ sudo journalctl --since=&quot;2012-10-30 18:17:16&quot;</div><div class="line">$ sudo journalctl --since &quot;20 min ago&quot;</div><div class="line">$ sudo journalctl --since yesterday</div><div class="line">$ sudo journalctl --since &quot;2015-01-10&quot; --until &quot;2015-01-11 03:00&quot;</div><div class="line">$ sudo journalctl --since 09:00 --until &quot;1 hour ago&quot;</div><div class="line"> </div><div class="line"># 显示尾部的最新10行日志</div><div class="line">$ sudo journalctl -n</div><div class="line"> </div><div class="line"># 显示尾部指定行数的日志</div><div class="line">$ sudo journalctl -n 20</div><div class="line"> </div><div class="line"># 实时滚动显示最新日志</div><div class="line">$ sudo journalctl -f</div><div class="line"> </div><div class="line"># 查看指定服务的日志</div><div class="line">$ sudo journalctl /usr/lib/systemd/systemd</div><div class="line"> </div><div class="line"># 查看某个路径的脚本的日志</div><div class="line">$ sudo journalctl /usr/bin/bash</div><div class="line"> </div><div class="line"># 查看指定用户的日志</div><div class="line">$ sudo journalctl _UID=12 --since today</div><div class="line"> </div><div class="line"># 查看某个 Unit 的日志</div><div class="line">$ sudo journalctl -u nginx.service</div><div class="line">$ sudo journalctl -u nginx.service --since today</div><div class="line"> </div><div class="line"># 实时滚动显示某个 Unit 的最新日志</div><div class="line">$ sudo journalctl -u nginx.service -f</div><div class="line"> </div><div class="line"># 合并显示多个 Unit 的日志</div><div class="line">$ journalctl -u nginx.service -u php-fpm.service --since today</div><div class="line"> </div><div class="line"># 查看指定优先级（及其以上级别）的日志，共有8级</div><div class="line"># 0: emerg</div><div class="line"># 1: alert</div><div class="line"># 2: crit</div><div class="line"># 3: err</div><div class="line"># 4: warning</div><div class="line"># 5: notice</div><div class="line"># 6: info</div><div class="line"># 7: debug</div><div class="line">$ sudo journalctl -p err -b</div><div class="line"> </div><div class="line"># 日志默认分页输出，--no-pager 改为正常的标准输出</div><div class="line">$ sudo journalctl --no-pager</div><div class="line"> </div><div class="line"># 以 JSON 格式（单行）输出</div><div class="line">$ sudo journalctl -b -u nginx.service -o json</div><div class="line"> </div><div class="line"># 以 JSON 格式（多行）输出，可读性更好</div><div class="line">$ sudo journalctl -b -u nginx.serviceqq</div><div class="line"> -o json-pretty</div><div class="line"> </div><div class="line"># 显示日志占据的硬盘空间</div><div class="line">$ sudo journalctl --disk-usage</div><div class="line"> </div><div class="line"># 指定日志文件占据的最大空间</div><div class="line">$ sudo journalctl --vacuum-size=1G</div><div class="line"> </div><div class="line"># 指定日志文件保存多久</div><div class="line">$ sudo journalctl --vacuum-time=1years</div></pre></td></tr></table></figure></p>
+<h3 id="开机启动"><a href="#开机启动" class="headerlink" title="开机启动"></a>开机启动</h3><p>对于那些支持 Systemd 的软件，安装的时候，会自动在/usr/lib/systemd/system目录添加一个配置文件。</p>
+<p>如果你想让该软件开机启动，就执行下面的命令（以httpd.service为例）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo systemctl enable httpd</div></pre></td></tr></table></figure></p>
+<p>上面的命令相当于在/etc/systemd/system目录添加一个符号链接，指向/usr/lib/systemd/system里面的httpd.service文件。</p>
+<p>这是因为开机时，Systemd只执行/etc/systemd/system目录里面的配置文件。这也意味着，如果把修改后的配置文件放在该目录，就可以达到覆盖原始配置的效果。</p>
+<h3 id="修改配置文件后重启"><a href="#修改配置文件后重启" class="headerlink" title="修改配置文件后重启"></a>修改配置文件后重启</h3><p>修改配置文件以后，需要重新加载配置文件，然后重新启动相关服务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 重新加载配置文件</div><div class="line">$ sudo systemctl daemon-reload</div><div class="line"> </div><div class="line"># 重启相关服务</div><div class="line">$ sudo systemctl restart test.service</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/systemd/">systemd</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2019/06/29/yw-systemd/" data-title="Systemd服务 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2019/06/30/vue-life-cycle-function/" title="Vue 生命周期函数">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Vue 生命周期函数</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2019/01/10/yw-sersync/"  title="Sersync+Rsync文件同步">
+ <strong>旧一篇:</strong><br/> 
+ <span>Sersync+Rsync文件同步
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Systemd服务" data-thread-key="yw-systemd" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-systemd"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

@@ -2,9 +2,9 @@
 title: Angularjs Directive自定义指令
 date: 2017-08-22 19:56:41
 tags:
-  - Directive
-categories:
   - Angularjs
+categories:
+  - Frontend
 ---
 #### 创建自定义指令
 

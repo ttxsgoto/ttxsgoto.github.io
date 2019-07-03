@@ -2,10 +2,9 @@
 title: Angularjs $apply和$watch方法
 date: 2017-09-16 20:36:13
 tags:
-  - Apply
-  - Watch
-categories:
   - Angularjs
+categories:
+  - Frontend
 ---
 #### $apply说明
 手动触发脏检查，当我们更改一个不在AngularJS执行上下文中的数据模型(model)，需要人为的调用$apply()来提醒AngularJS数据发生变化

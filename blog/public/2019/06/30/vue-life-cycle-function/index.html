@@ -4,13 +4,14 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Angularjs $apply和$watch方法 | ttxsgoto&#39; Blog</title>
+    <title>Vue 生命周期函数 | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="$apply说明手动触发脏检查，当我们更改一个不在AngularJS执行上下文中的数据模型(model)，需要人为的调用$apply()来提醒AngularJS数据发生变化
-12345678910111213&amp;lt;div ng-controller=&quot;firstController&quot;&amp;gt;   ">
+    <meta name="description" content="记录vue 生命周期函数的学习
+生命周期图示
+实例1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253// 生命周期函数：就是vue实例在某一个时间点会自动执">
     
     
     
@@ -87,10 +88,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/09/16/angular-apply-watch/" title="Angularjs $apply和$watch方法" itemprop="url">Angularjs $apply和$watch方法</a>
+      <a href="/2019/06/30/vue-life-cycle-function/" title="Vue 生命周期函数" itemprop="url">Vue 生命周期函数</a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-09-16T12:36:13.000Z" itemprop="datePublished">2017-09-16</time>
+    <time datetime="2019-06-30T11:29:15.000Z" itemprop="datePublished">2019-06-30</time>
   </p>
 </header>
 	<div class="article-content">
@@ -98,33 +99,19 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#apply说明"><span class="toc-number">1.</span> <span class="toc-text">$apply说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#digest说明"><span class="toc-number">2.</span> <span class="toc-text">digest说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#watch说明"><span class="toc-number">3.</span> <span class="toc-text">$watch说明</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#生命周期图示"><span class="toc-number">1.</span> <span class="toc-text">生命周期图示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实例"><span class="toc-number">2.</span> <span class="toc-text">实例</span></a></li></ol>
 		</div>
 		
-		<h4 id="apply说明"><a href="#apply说明" class="headerlink" title="$apply说明"></a>$apply说明</h4><p>手动触发脏检查，当我们更改一个不在AngularJS执行上下文中的数据模型(model)，需要人为的调用$apply()来提醒AngularJS数据发生变化</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"firstController"</span>&gt;</span></div><div class="line">    &#123;&#123;date&#125;&#125;</div><div class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></div><div class="line">$scope.date = new Date();</div><div class="line">    setInterval(function()&#123;</div><div class="line">        $scope.$apply(function()    &#123;</div><div class="line">                $scope.date = new Date();</div><div class="line">                // 触发脏检查</div><div class="line">            &#125;)</div><div class="line">    &#125;,1000);</div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
-<h4 id="digest说明"><a href="#digest说明" class="headerlink" title="digest说明"></a>digest说明</h4><p>当调用ng开头的指令或者服务，在这种情况下，AngularJS就会自动调用$digest()触发$digest循环。当$digest循环开始的时候，他就会启动每一个监听器(watcher)。这些监听器(watcher)会去检查当前的数据模型(model)中的值是否与最后一次计算的值相同，如果不相同，那么，对应的监听函数就会被执行</p>
-<h4 id="watch说明"><a href="#watch说明" class="headerlink" title="$watch说明"></a>$watch说明</h4><ul>
-<li>在digest执行时，如果watch观察到value和上次执行时值不一样时，就会被触发</li>
-<li>angularjs内部的watch实现了页面随model的及时更新</li>
-<li><p>$watch(watchFn, watchAction, deepWatch)</p>
-<ul>
-<li>watchFn 表达式或函数的字符串</li>
-<li>watchAction(newvalue,oldvalue,scope) watchFn发生变化时被调用</li>
-<li>deepWatch 可选布尔值命令检查被监控的对象的每个属性是否发生变化</li>
-</ul>
-</li>
-<li><p>$watch会返回一个函数，想要注销这个watch可以使用函数</p>
-</li>
-</ul>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-app</span>=<span class="string">""</span>&gt;</span></div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">ng-controller</span>=<span class="string">"firstController"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">value</span>=<span class="string">""</span> <span class="attr">ng-model</span>=<span class="string">"name"</span>/&gt;</span></div><div class="line">            改变次数:&#123;&#123;count&#125;&#125;-&#123;&#123;name&#125;&#125;</div><div class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"app/index.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"angularjs.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div><div class="line">   </div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></div><div class="line">var firstController = function($scope)&#123;</div><div class="line"> </div><div class="line">    $scope.name = 'ttxsgoto';</div><div class="line">    $scope.data = &#123;</div><div class="line">        name :'ttxs',</div><div class="line">        count:20</div><div class="line">    &#125;</div><div class="line">    $scope.count = 0;</div><div class="line">  </div><div class="line">    // 监听一个model 当一个model每次改变时 都会触发第2个函数</div><div class="line">    $scope.$watch('name',function(newValue,oldValue)&#123;</div><div class="line">  </div><div class="line">        ++$scope.count;</div><div class="line">  </div><div class="line">        if($scope.count &gt; 30)&#123;</div><div class="line">            $scope.name = '已经大于30次了';</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">  </div><div class="line">    $scope.$watch('data',function()&#123;</div><div class="line"> </div><div class="line">    &#125;,true)</div><div class="line">&#125;</div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
+		<p>记录vue 生命周期函数的学习</p>
+<h3 id="生命周期图示"><a href="#生命周期图示" class="headerlink" title="生命周期图示"></a>生命周期图示</h3><p><img src="https://cn.vuejs.org/images/lifecycle.png" alt=""></p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 生命周期函数：就是vue实例在某一个时间点会自动执行的函数</span></div><div class="line"><span class="keyword">var</span> vm = <span class="keyword">new</span> Vue(&#123;</div><div class="line">    <span class="attr">el</span>: <span class="string">"#root"</span>,</div><div class="line">    <span class="comment">//template: "",</span></div><div class="line">    data: &#123;</div><div class="line">        <span class="attr">message</span>: <span class="string">"hello world"</span></div><div class="line">    &#125;,</div><div class="line">    <span class="attr">methods</span>: &#123;</div><div class="line">        <span class="attr">handleClick</span>: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">            alert(<span class="string">'xxxxx'</span>)</div><div class="line">        &#125;</div><div class="line">    &#125;,</div><div class="line">    <span class="comment">// 生命周期函数</span></div><div class="line">    <span class="comment">// 在实例初始化之后，数据观测 (data observer) 和 </span></div><div class="line">    <span class="comment">// event/watcher 事件配置之前被调用</span></div><div class="line">    beforeCreate: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; <span class="comment">// 自动执行</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'beforeCreate'</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="comment">// 在实例创建完成后被立即调用。在这一步，实例已完成以下的配置：</span></div><div class="line">    <span class="comment">// 数据观测 (data observer)，属性和方法的运算，</span></div><div class="line">    <span class="comment">// watch/event 事件回调。</span></div><div class="line">    <span class="comment">// 然而，挂载阶段还没开始，$el 属性目前不可见</span></div><div class="line">    created: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; <span class="comment">// 自动执行</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'created'</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="comment">// 在挂载开始之前被调用：相关的 render 函数首次被调用。</span></div><div class="line">    beforeMount: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; <span class="comment">// 页面还没有挂载，自动执行</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="keyword">this</span>.$el);</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'beforeMount'</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="comment">// el 被新创建的 vm.$el 替换，并挂载到实例上去之后调用该钩子</span></div><div class="line">    mounted: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; <span class="comment">// 页面挂载后，自动执行</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="keyword">this</span>.$el);</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'mounted'</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="comment">// 实例销毁之前调用。在这一步，实例仍然完全可用</span></div><div class="line">    beforeDestroy: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">     	<span class="comment">// 当调用$destroy()方法时，还没有被销毁时，方法被触发</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'beforeDestroy'</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="comment">// Vue 实例销毁后调用。调用后，Vue 实例指示的所有东西都会解绑定，</span></div><div class="line">    <span class="comment">// 所有的事件监听器会被移除，所有的子实例也会被销毁</span></div><div class="line">    destroyed: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; <span class="comment">// 当调用$destroy()方法时，完全销毁时方法被触发</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'destroy'</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="attr">beforeUpdate</span>: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123; </div><div class="line">    	<span class="comment">// 数据发生改变，还没有渲染之前执行该函数, vm.message= 'test'</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'beforeUpdate'</span>)</div><div class="line">    &#125;,</div><div class="line">    <span class="attr">updated</span>: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;  <span class="comment">// 数据渲染之后执行该函数</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'updated'</span>)</div><div class="line">    &#125;</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Angularjs/">Angularjs</a>
+  <span></span> <a href="/tags/Vue/">Vue</a>
   </div>
 
 
@@ -137,7 +124,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2017/09/16/angular-apply-watch/" data-title="Angularjs $apply和$watch方法 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2019/06/30/vue-life-cycle-function/" data-title="Vue 生命周期函数 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -147,18 +134,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/09/27/django-signals/" title="Django Signals信号">
+ <a href="/2019/07/03/vue-echarts/" title="Vue echarts可视化">
   <strong>新一篇:</strong><br/>
   <span>
-  Django Signals信号</span>
+  Vue echarts可视化</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/09/02/angular-modal/"  title="Angularjs $modal模态框">
+<a href="/2019/06/29/yw-systemd/"  title="Systemd服务">
  <strong>旧一篇:</strong><br/> 
- <span>Angularjs $modal模态框
+ <span>Systemd服务
 </span>
 </a>
 </div>
@@ -168,7 +155,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Angularjs $apply和$watch方法" data-thread-key="angular-apply-watch" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/angular-apply-watch"></div>
+	<div class="ds-thread" data-title="Vue 生命周期函数" data-thread-key="vue-life-cycle-function" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/vue-life-cycle-function"></div>
 	
 </section>
 

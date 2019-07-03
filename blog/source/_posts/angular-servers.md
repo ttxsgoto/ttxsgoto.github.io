@@ -2,9 +2,9 @@
 title: Angularjs Services常用服务
 date: 2017-08-20 20:22:02
 tags:
-  - Services
-categories:
   - Angularjs
+categories:
+  - Frontend
 ---
 - Constant
 - Value
