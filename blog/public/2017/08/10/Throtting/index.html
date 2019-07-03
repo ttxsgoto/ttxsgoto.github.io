@@ -1,0 +1,378 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>DRF Throtting | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Django Rest framework 频率控制配置说明
+全局设置setting.py12345678910111213141516171819202122# 设置节流方案&#39;DEFAULT_THROTTLE_CLASSES&#39;: (    # 开启匿名用户接口请求频率限制    &#39;rest_fra">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/10/Throtting/" title="DRF Throtting" itemprop="url">DRF Throtting</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-08-10T11:56:37.000Z" itemprop="datePublished">2017-08-10</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#全局设置"><span class="toc-number">1.</span> <span class="toc-text">全局设置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#自定义"><span class="toc-number">2.</span> <span class="toc-text">自定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#类视图使用"><span class="toc-number">3.</span> <span class="toc-text">类视图使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他说明"><span class="toc-number">4.</span> <span class="toc-text">其他说明</span></a></li></ol>
+		</div>
+		
+		<p>Django Rest framework 频率控制配置说明</p>
+<h4 id="全局设置"><a href="#全局设置" class="headerlink" title="全局设置"></a>全局设置</h4><p>setting.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 设置节流方案</span></div><div class="line"><span class="string">'DEFAULT_THROTTLE_CLASSES'</span>: (</div><div class="line">    <span class="comment"># 开启匿名用户接口请求频率限制</span></div><div class="line">    <span class="string">'rest_framework.throttling.AnonRateThrottle'</span>,</div><div class="line">    <span class="comment"># 开启授权用户接口请求频率限制</span></div><div class="line">    <span class="string">'rest_framework.throttling.UserRateThrottle'</span>,</div><div class="line">    <span class="comment"># 开启自定义设置接口请求频率，在views中通过设置throttle_scope 来使用</span></div><div class="line">    <span class="string">'rest_framework.throttling.ScopedRateThrottle'</span>,</div><div class="line">    <span class="comment"># 自定义</span></div><div class="line">    <span class="string">'app.throttling.UserRecordThrottle'</span>,</div><div class="line">),</div><div class="line"><span class="string">'DEFAULT_THROTTLE_RATES'</span>: &#123;</div><div class="line">    <span class="comment"># 频率限制有second, minute, hour, day</span></div><div class="line">    <span class="comment"># 匿名用户请求频率</span></div><div class="line">    <span class="string">'anon'</span>: <span class="string">'1000/day'</span>,</div><div class="line">    <span class="comment"># 授权用户请求频率</span></div><div class="line">    <span class="string">'user'</span>: <span class="string">'20000/day'</span>,</div><div class="line">    <span class="comment"># 自定义请求频率,DEFAULT_THROTTLE_CLASSES中需要设置ScopedRateThrottle</span></div><div class="line">    <span class="string">'ttxs'</span>: <span class="string">'10/minute'</span>,</div><div class="line">    <span class="comment"># 自定义请求频率</span></div><div class="line">    <span class="string">'user_record'</span>: <span class="keyword">None</span></div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<h4 id="自定义"><a href="#自定义" class="headerlink" title="自定义"></a>自定义</h4><p>throttling.py<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> rest_framework.throttling <span class="keyword">import</span> UserRateThrottle, AnonRateThrottle</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserRecordThrottle</span><span class="params">(UserRateThrottle)</span>:</span></div><div class="line">    scope = <span class="string">'user_record'</span></div><div class="line">    rate = <span class="string">'5/minute'</span></div></pre></td></tr></table></figure></p>
+<p>使用方式说明：</p>
+<p>方式一: 在views.py中使用，设置为throttle_classes = ([UserRecordThrottle,])</p>
+<p>方式二: 在setting.py中设置，</p>
+<ul>
+<li>在DEFAULT_THROTTLE_CLASSES添加’app.throttling.UserRecordThrottle’</li>
+<li>DEFAULT_THROTTLE_RATES中添加user_record</li>
+<li>在views.py中通过throttle_scope = ‘user_record’ 调用</li>
+</ul>
+<h4 id="类视图使用"><a href="#类视图使用" class="headerlink" title="类视图使用"></a>类视图使用</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> rest_framework.response <span class="keyword">import</span> Response</div><div class="line"><span class="keyword">from</span> rest_framework.throttling <span class="keyword">import</span> UserRateThrottle</div><div class="line"><span class="keyword">from</span> rest_framework.views <span class="keyword">import</span> APIView</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExampleView</span><span class="params">(APIView)</span>:</span></div><div class="line">    throttle_classes = ([UserRateThrottle,UserParserRecordThrottle])</div><div class="line">    throttle_scope = <span class="string">'ttxs'</span> <span class="comment"># 设置了ScopedRateThrottle对应的RATES</span></div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self, request, format=None)</span>:</span></div><div class="line">        <span class="keyword">pass</span></div><div class="line">        <span class="keyword">return</span> Response(<span class="string">'ok'</span>)</div><div class="line"> </div><div class="line"><span class="comment"># 超过设置访问频率后，错误信息</span></div><div class="line">&#123;</div><div class="line">  <span class="string">"msg"</span>: <span class="string">"request was throttled."</span>,</div><div class="line">  <span class="string">"code"</span>: <span class="number">10429</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="其他说明"><a href="#其他说明" class="headerlink" title="其他说明"></a>其他说明</h4><ol>
+<li>匿名用户频率如果设置大于授权用户频率，则以授权用户频率为准</li>
+<li>频率限制是针对单个接口的频率，而不是所有接口的频率</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/DRF/">DRF</a><a href="/tags/Throtting/">Throtting</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/DRF/">DRF</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/08/10/Throtting/" data-title="DRF Throtting | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/08/11/Filters/" title="DRF Filters">
+  <strong>新一篇:</strong><br/>
+  <span>
+  DRF Filters</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/07/21/iptables-forward/"  title="运维 Iptables做端口映射">
+ <strong>旧一篇:</strong><br/> 
+ <span>运维 Iptables做端口映射
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="DRF Throtting" data-thread-key="Throtting" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/Throtting"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

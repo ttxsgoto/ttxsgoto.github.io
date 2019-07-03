@@ -1,0 +1,369 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Django 基于URL权限管理模块 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="背景Django自带的权限系统为model层面的，也就是说给某个用户或者组对应的model权限，拥有了操作该model的权限，不能更精细化的控制权限，如对象级别的权限
+现在引用了基于url的权限系统，可以控制用户访问一个接口的不同方法 ，可以很方便的控制权限；如：用户对于某个接口可以做到只拥有查看的">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/01/17/django-url-permisson/" title="Django 基于URL权限管理模块" itemprop="url">Django 基于URL权限管理模块</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-01-17T14:38:28.000Z" itemprop="datePublished">2018-01-17</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#功能说明"><span class="toc-number">2.</span> <span class="toc-text">功能说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#主要代码说明"><span class="toc-number">3.</span> <span class="toc-text">主要代码说明</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#models-py"><span class="toc-number">3.1.</span> <span class="toc-text">models.py</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#middleware-py"><span class="toc-number">3.2.</span> <span class="toc-text">middleware.py</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#接口说明"><span class="toc-number">4.</span> <span class="toc-text">接口说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Git地址"><span class="toc-number">5.</span> <span class="toc-text">Git地址</span></a></li></ol>
+		</div>
+		
+		<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>Django自带的权限系统为model层面的，也就是说给某个用户或者组对应的model权限，拥有了操作该model的权限，不能更精细化的控制权限，如对象级别的权限</p>
+<p>现在引用了基于url的权限系统，可以控制用户访问一个接口的不同方法 ，可以很方便的控制权限；如：用户对于某个接口可以做到只拥有查看的权限而没有修改的权限，因为对于相同的url请求的方法不同</p>
+<h4 id="功能说明"><a href="#功能说明" class="headerlink" title="功能说明"></a>功能说明</h4><p>1.类似于django自身权限模块，拥有用户和用户组两类权限<br>2.通过swagger 获取项目URL 列表用于分配权限<br>3.通过中间件来拦截判断用户对请求的url是否有对应的权限</p>
+<h4 id="主要代码说明"><a href="#主要代码说明" class="headerlink" title="主要代码说明"></a>主要代码说明</h4><h5 id="models-py"><a href="#models-py" class="headerlink" title="models.py"></a>models.py</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># coding: utf-8</span></div><div class="line"> </div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> unicode_literals</div><div class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</div><div class="line"><span class="keyword">from</span> django.conf <span class="keyword">import</span> settings</div><div class="line"><span class="keyword">from</span> django.db.models.signals <span class="keyword">import</span> post_save</div><div class="line"><span class="keyword">from</span> django.dispatch <span class="keyword">import</span> receiver</div><div class="line"><span class="keyword">from</span> django.contrib.auth.models <span class="keyword">import</span> Permission, User</div><div class="line"><span class="keyword">from</span> .managers <span class="keyword">import</span> UserprofileManager</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Userprofile</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户相关信息"""</span></div><div class="line"> </div><div class="line">    user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=<span class="keyword">True</span>)</div><div class="line">    sex = models.IntegerField(choices=(</div><div class="line">        (<span class="number">0</span>, <span class="string">'女性'</span>),</div><div class="line">        (<span class="number">1</span>, <span class="string">'男性'</span>),</div><div class="line">        (<span class="number">2</span>, <span class="string">'未填写'</span>)</div><div class="line">    ), default=<span class="number">2</span>, help_text=<span class="string">'sex'</span>)</div><div class="line">    groups = models.ManyToManyField(</div><div class="line">        <span class="string">'Group'</span>,</div><div class="line">        verbose_name=<span class="string">'user groups'</span>,</div><div class="line">        blank=<span class="keyword">True</span>,</div><div class="line">        through=<span class="string">'UserGroup'</span>,</div><div class="line">        through_fields=(<span class="string">'user'</span>, <span class="string">'group'</span>)</div><div class="line">    )</div><div class="line">    user_permissions = models.ManyToManyField(</div><div class="line">        <span class="string">'URLSource'</span>,</div><div class="line">        verbose_name=<span class="string">'user permissions'</span>,</div><div class="line">        blank=<span class="keyword">True</span>,</div><div class="line">        through=<span class="string">'UserURL'</span>,</div><div class="line">        through_fields=(<span class="string">'user'</span>, <span class="string">'url'</span>)</div><div class="line">    )</div><div class="line">    desc = models.CharField(<span class="string">u'描述'</span>, null=<span class="keyword">True</span>, blank=<span class="keyword">True</span>, max_length=<span class="number">100</span>, default=<span class="string">''</span>)</div><div class="line">    create_time = models.DateTimeField(auto_now_add=<span class="keyword">True</span>)</div><div class="line"> </div><div class="line">    objects = UserprofileManager()</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'user_profile'</span></div><div class="line">        verbose_name = <span class="string">u'用户信息'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        ordering = [<span class="string">'-create_time'</span>]</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;'</span>.format(self.user.username)</div><div class="line"> </div><div class="line"><span class="meta">    @receiver(post_save, sender=User)</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">create_user_profile</span><span class="params">(sender, instance=None, created=False, **kwargs)</span>:</span></div><div class="line">        <span class="keyword">if</span> created:</div><div class="line">            Userprofile.objects.get_or_create(user=instance, defaults=&#123;<span class="string">'desc'</span>: instance.username&#125;)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_permissions</span><span class="params">(self, permissions)</span>:</span></div><div class="line">        <span class="string">"""用户添加权限"""</span></div><div class="line">        history_permission = self.userurl_set.all()  <span class="comment"># 现在已有的权限</span></div><div class="line">        <span class="keyword">if</span> history_permission:</div><div class="line">            <span class="comment"># 如果有就不添加,没有再添加,多余的删除</span></div><div class="line">            <span class="keyword">for</span> _permiss <span class="keyword">in</span> history_permission:</div><div class="line">                <span class="keyword">if</span> _permiss.url <span class="keyword">in</span> permissions:</div><div class="line">                    permissions.remove(_permiss.url)</div><div class="line">                <span class="keyword">else</span>:</div><div class="line">                    _permiss.delete()</div><div class="line">            permisson_list = [UserURL(user=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            permisson_list = [UserURL(user=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        self.userurl_set.bulk_create(permisson_list)</div><div class="line">        <span class="keyword">return</span> self</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_groups</span><span class="params">(self, group)</span>:</span></div><div class="line">        <span class="string">"""</span></div><div class="line">        用户添加到组(目前只支持添加到单个组)</div><div class="line">        :param group: 权限组实例</div><div class="line">        :return:</div><div class="line">        """</div><div class="line">        user_group = self.usergroup_set.all()</div><div class="line">        <span class="keyword">if</span> user_group:</div><div class="line">            user_group.delete()</div><div class="line">        self.usergroup_set.create(group=group)</div><div class="line">        <span class="keyword">return</span> self</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_group_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""获取用户所在组的权限"""</span></div><div class="line">        <span class="keyword">return</span> self.usergroup_set.all()</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_url_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""获取用户单独关联的权限"""</span></div><div class="line">        <span class="keyword">return</span> self.userurl_set.all()</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_all_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""该用户的所有权限,包括所在组权限和自己单独关联权限"""</span></div><div class="line">        permissions = set()</div><div class="line">        <span class="comment"># group 权限</span></div><div class="line">        group_permission = self.get_group_permissions()</div><div class="line">        <span class="keyword">for</span> permission <span class="keyword">in</span> group_permission:</div><div class="line">            URL = GroupURL.objects.filter(group=permission.group)</div><div class="line">            <span class="keyword">for</span> _permission <span class="keyword">in</span> URL:</div><div class="line">                permissions.add(_permission.url)</div><div class="line">        <span class="comment"># user 权限</span></div><div class="line">        url_permission = self.get_url_permissions()</div><div class="line">        <span class="keyword">for</span> url <span class="keyword">in</span> url_permission:</div><div class="line">            permissions.add(url.url)</div><div class="line">        <span class="keyword">return</span> permissions</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">URLSource</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""URL资源信息"""</span></div><div class="line"> </div><div class="line">    url = models.CharField(<span class="string">u'url'</span>, max_length=<span class="number">128</span>)</div><div class="line">    action = models.CharField(<span class="string">u'请求方法'</span>, max_length=<span class="number">16</span>)</div><div class="line">    description = models.CharField(<span class="string">u'描述信息'</span>, max_length=<span class="number">256</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line">    parameters = models.CharField(<span class="string">u'参数, 逗号分隔'</span>, max_length=<span class="number">128</span>, default=<span class="string">''</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        verbose_name = <span class="string">u'URL信息'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        db_table = <span class="string">'url_source'</span></div><div class="line">        unique_together = ((<span class="string">'url'</span>, <span class="string">'action'</span>),)</div><div class="line">        ordering = [<span class="string">'id'</span>]</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;-&#123;&#125;'</span>.format(self.id, self.description, self.action)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Group</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户组信息"""</span></div><div class="line"> </div><div class="line">    name = models.CharField(max_length=<span class="number">64</span>, verbose_name=<span class="string">'组名'</span>, unique=<span class="keyword">True</span>, help_text=<span class="string">'组名'</span>)</div><div class="line">    code = models.CharField(max_length=<span class="number">64</span>, verbose_name=<span class="string">'用户组中文名'</span>, default=<span class="string">''</span>, help_text=<span class="string">'组code'</span>)</div><div class="line">    permissions = models.ManyToManyField(</div><div class="line">        URLSource,</div><div class="line">        verbose_name=<span class="string">'permissions'</span>,</div><div class="line">        blank=<span class="keyword">True</span>,</div><div class="line">        through=<span class="string">'GroupURL'</span>,</div><div class="line">        through_fields=(<span class="string">'group'</span>, <span class="string">'url'</span>)</div><div class="line">    )</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'group'</span></div><div class="line">        verbose_name = <span class="string">u'用户权限组'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.name</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_permissions</span><span class="params">(self, permissions)</span>:</span></div><div class="line">        <span class="string">"""</span></div><div class="line">        给组添加权限</div><div class="line">        :param permissons: 权限列表,filter查询列表</div><div class="line">        :return:</div><div class="line">        """</div><div class="line">        history_permission = self.groupurl_set.all()  <span class="comment"># 现在已有的权限</span></div><div class="line">        <span class="keyword">if</span> history_permission:</div><div class="line">            <span class="comment"># 如果有就不添加,没有再添加,多余的删除</span></div><div class="line">            <span class="keyword">for</span> _permiss <span class="keyword">in</span> history_permission:</div><div class="line">                <span class="keyword">if</span> _permiss.url <span class="keyword">in</span> permissions:</div><div class="line">                    permissions.remove(_permiss.url)</div><div class="line">                <span class="keyword">else</span>:</div><div class="line">                    _permiss.delete()</div><div class="line">            permisson_list = [GroupURL(group=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            permisson_list = [GroupURL(group=self, url=permisson) <span class="keyword">for</span> permisson <span class="keyword">in</span> permissions]</div><div class="line">        self.groupurl_set.bulk_create(permisson_list)</div><div class="line">        <span class="keyword">return</span> self</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_group_permissions</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="string">"""获取该组对应的权限列表"""</span></div><div class="line">        <span class="keyword">return</span> self.groupurl_set.all()</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserGroup</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户和组关联"""</span></div><div class="line"> </div><div class="line">    user = models.ForeignKey(Userprofile, verbose_name=<span class="string">u'用户'</span>)</div><div class="line">    group = models.ForeignKey(Group, verbose_name=<span class="string">u'组'</span>)</div><div class="line">    desc = models.CharField(<span class="string">u'其他信息'</span>, max_length=<span class="number">100</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'user_groups'</span></div><div class="line">        verbose_name = <span class="string">u'用户和组关系'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        unique_together = ((<span class="string">'user'</span>, <span class="string">'group'</span>),)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;'</span>.format(self.user, self.group)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserURL</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""用户和URL关联"""</span></div><div class="line"> </div><div class="line">    user = models.ForeignKey(Userprofile, verbose_name=<span class="string">u'用户'</span>)</div><div class="line">    url = models.ForeignKey(URLSource, verbose_name=<span class="string">u'URL'</span>)</div><div class="line">    desc = models.CharField(<span class="string">u'其他信息'</span>, max_length=<span class="number">100</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'user_urls'</span></div><div class="line">        verbose_name = <span class="string">u'用户权限关系'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        unique_together = ((<span class="string">'user'</span>, <span class="string">'url'</span>),)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;'</span>.format(self.user, self.url)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">GroupURL</span><span class="params">(models.Model)</span>:</span></div><div class="line">    <span class="string">"""组和URL关系"""</span></div><div class="line"> </div><div class="line">    group = models.ForeignKey(Group, verbose_name=<span class="string">u'组'</span>)</div><div class="line">    url = models.ForeignKey(URLSource, verbose_name=<span class="string">u'URL'</span>)</div><div class="line">    desc = models.CharField(<span class="string">u'其他信息'</span>, max_length=<span class="number">100</span>, blank=<span class="keyword">True</span>, null=<span class="keyword">True</span>, default=<span class="string">''</span>)</div><div class="line"> </div><div class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Meta</span>:</span></div><div class="line">        db_table = <span class="string">'group_urls'</span></div><div class="line">        verbose_name = <span class="string">u'用户权限组关系'</span></div><div class="line">        verbose_name_plural = verbose_name</div><div class="line">        unique_together = ((<span class="string">'group'</span>, <span class="string">'url'</span>),)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'&#123;&#125;-&#123;&#125;'</span>.format(self.group, self.url)</div></pre></td></tr></table></figure>
+<h5 id="middleware-py"><a href="#middleware-py" class="headerlink" title="middleware.py"></a>middleware.py</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># coding: utf-8</span></div><div class="line"> </div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> unicode_literals</div><div class="line"><span class="keyword">import</span> logging</div><div class="line"><span class="keyword">import</span> json</div><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</div><div class="line"><span class="keyword">from</span> django.http <span class="keyword">import</span> HttpResponseForbidden</div><div class="line"><span class="keyword">from</span> django.utils.deprecation <span class="keyword">import</span> MiddlewareMixin</div><div class="line"><span class="keyword">from</span> .models <span class="keyword">import</span> Userprofile</div><div class="line"><span class="keyword">from</span> django.contrib.auth <span class="keyword">import</span> get_user_model</div><div class="line"><span class="keyword">from</span> .settings <span class="keyword">import</span> url_permisson_settings</div><div class="line"> </div><div class="line">logs = logging.getLogger(<span class="string">'django'</span>)</div><div class="line"> </div><div class="line">User = get_user_model()</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">URLPermissionMiddleWare</span><span class="params">(MiddlewareMixin)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_request</span><span class="params">(self, request)</span>:</span></div><div class="line">        response = &#123;</div><div class="line">            <span class="string">"status_code"</span>: <span class="number">403</span>,</div><div class="line">            <span class="string">"message"</span>: <span class="string">u"无权限操作,请联系管理员."</span></div><div class="line">        &#125;</div><div class="line">        path = request.path.split(<span class="string">'/'</span>)</div><div class="line">        <span class="keyword">if</span> path[<span class="number">1</span>] <span class="keyword">in</span> url_permisson_settings.ALL_ALLOW_URL:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">not</span> isinstance(request.user, User):</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line">        <span class="keyword">if</span> request.user.is_superuser:</div><div class="line">            <span class="keyword">return</span> <span class="keyword">None</span></div><div class="line">        <span class="keyword">try</span>:</div><div class="line">            profile = Userprofile.objects.get(user=request.user)</div><div class="line">        <span class="keyword">except</span> Userprofile.DoesNotExist:</div><div class="line">            <span class="keyword">return</span> HttpResponseForbidden(json.dumps(response), content_type=<span class="string">'application/json'</span>)</div><div class="line">        method = request.method.lower()</div><div class="line">        path = request.path.strip()</div><div class="line">        <span class="keyword">if</span> method == <span class="string">'get'</span>:</div><div class="line">            parameter = []</div><div class="line">            <span class="keyword">for</span> _parameter <span class="keyword">in</span> request.GET.items():</div><div class="line">                parameter.append(_parameter[<span class="number">0</span>])</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">try</span>:</div><div class="line">                parameter_dict = json.loads(request.body)</div><div class="line">            <span class="keyword">except</span> Exception:</div><div class="line">                parameter_dict = &#123;&#125;</div><div class="line">            parameter = parameter_dict.keys()</div><div class="line">        all_permission = profile.get_all_permissions()</div><div class="line">        result = <span class="keyword">None</span></div><div class="line">        <span class="keyword">for</span> _url <span class="keyword">in</span> all_permission:</div><div class="line">            url = _url.url</div><div class="line">            action = _url.action</div><div class="line">            parameters = _url.parameters.split(<span class="string">','</span>)</div><div class="line">            <span class="keyword">if</span> method == action <span class="keyword">and</span> path == url <span class="keyword">and</span> (len(Counter(parameter) - Counter(parameters)) == <span class="number">0</span>):</div><div class="line">                result = <span class="keyword">True</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">not</span> result:</div><div class="line">            <span class="keyword">return</span> HttpResponseForbidden(json.dumps(response), content_type=<span class="string">'application/json'</span>)</div><div class="line">        <span class="keyword">return</span> <span class="keyword">None</span></div></pre></td></tr></table></figure>
+<h4 id="接口说明"><a href="#接口说明" class="headerlink" title="接口说明"></a>接口说明</h4><p><img src="https://ttxsgoto.github.io/img/django/permission.png" alt=""></p>
+<h4 id="Git地址"><a href="#Git地址" class="headerlink" title="Git地址"></a>Git地址</h4><p><a href="https://github.com/ttxsgoto/url_permission" target="_blank" rel="external">https://github.com/ttxsgoto/url_permission</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/permisson/">permisson</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Django/">Django</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/01/17/django-url-permisson/" data-title="Django 基于URL权限管理模块 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/01/30/python-dyn-attr-prop/" title="Python 动态属性和特性">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Python 动态属性和特性</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/27/elasticsearch-mongo-to-es/"  title="Elasticsearch Mongo-connector同步mongo数据到ES">
+ <strong>旧一篇:</strong><br/> 
+ <span>Elasticsearch Mongo-connector同步mongo数据到ES
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Django 基于URL权限管理模块" data-thread-key="django-url-permisson" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/django-url-permisson"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

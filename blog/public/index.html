@@ -1,0 +1,605 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="好好学习 努力工作 享受生活...">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      
+
+<div id="main">
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2019/01/10/yw-sersync/" title="Sersync+Rsync文件同步" itemprop="url">
+      
+        Sersync+Rsync文件同步
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >背景需要将某台服务器目录实时同步到另外一台服务器上的某个目录下，其实本来可以通过远程目录挂载的方式完成， 但是现在的需求是某两台服务器的目录实时同步到另外一台的同一目录中，这时就不能使用远程目录挂载方式完成了， 这里使用sersync+rsync来完成需求
+Sersync特点
+c</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-01-10T13:58:34.000Z" itemprop="datePublished">2019-01-10</time>
+      
+          <a href="/2019/01/10/yw-sersync/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2019/01/07/yw-apollo/" title="Apollo配置中心" itemprop="url">
+      
+        Apollo配置中心
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >背景之前文章中说过发布流程(Jenkins+Gitlab+Harbor构建持续集成),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能“一刀切”使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发
+特点
+</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-01-07T12:59:45.000Z" itemprop="datePublished">2019-01-07</time>
+      
+          <a href="/2019/01/07/yw-apollo/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2019/01/04/yw-jenkins-ci/" title="Jenkins+Gitlab+Harbor构建持续集成" itemprop="url">
+      
+        Jenkins+Gitlab+Harbor构建持续集成
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >背景最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作
+组件说明Jenkinsjenkins是基于Ja</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-01-04T12:41:44.000Z" itemprop="datePublished">2019-01-04</time>
+      
+          <a href="/2019/01/04/yw-jenkins-ci/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/28/yw-mysql-count/" title="Count计数变慢" itemprop="url">
+      
+        Count计数变慢
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >count(*) 实现方式不同的引擎，实现方式不同
+
+Myisam把一个表的总行存在磁盘上，执行时直接返回这个数
+Innodb，需要把数据一行行的从引擎中读出来，然后累积计数，遍历全表
+
+不同的count用法count()为聚合函数，对于返回的结果集，一行行判断，如果count函</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T14:48:50.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-count/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/28/yw-mysql-order-by/" title="Order by工作原理" itemprop="url">
+      
+        Order by工作原理
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >全字段排序mysql会给每个线程分配一块内存用于排序，称为sort_buffer
+sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T14:46:51.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-order-by/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/28/yw-mysql-addindex-to-string/" title="字符串加索引" itemprop="url">
+      
+        字符串加索引
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >前缀索引前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数
+在建立索引时需要关注的是区分度，区分度越高越好
+查看对应索引的区分度方法123456select count(distinct a) as L from user;select count(*) as tota</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T12:41:50.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-addindex-to-string/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/27/yw-mysql-lock/" title="全局锁、表级锁和行锁" itemprop="url">
+      
+        全局锁、表级锁和行锁
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >锁分类
+全局锁
+表级锁
+行锁
+
+全局锁全局锁就是对整个数据库实例加锁命令1flush tables with read lock
+使用该命令后其他线程的执行语句都会被阻塞：数据更新语句(数据的增删改)和数据定义语句(建表和修改表结构等)和更新事务的提交语句
+应用：全库逻辑备份
+
+</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-27T14:44:05.000Z" itemprop="datePublished">2018-12-27</time>
+      
+          <a href="/2018/12/27/yw-mysql-lock/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/26/yw-mysql-transaction/" title="事务隔离" itemprop="url">
+      
+        事务隔离
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >事务事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持
+事务的特性
+原子性
+一致性
+隔离性
+持久性
+
+多事务同时执行引起的问题
+脏读
+不可重复读
+幻读
+
+事务隔离级别
+读未提交(read uncommitted) 一个事务还没</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-26T13:42:58.000Z" itemprop="datePublished">2018-12-26</time>
+      
+          <a href="/2018/12/26/yw-mysql-transaction/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/25/yw-mysql-redo-binlog/" title="Redo log 和 Binlog" itemprop="url">
+      
+        Redo log 和 Binlog
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >WAL(Write-Ahead-Logging),先写日志，再写磁盘
+
+redo log(重做日志)
+存储引擎层面
+存储容量大小固定，循环写
+checkpoint 当前要擦除的位置，擦除记录前需要将数据更新到数据文件中
+write-pos 当前写入记录的位置
+功能：保证InnoD</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-25T11:43:38.000Z" itemprop="datePublished">2018-12-25</time>
+      
+          <a href="/2018/12/25/yw-mysql-redo-binlog/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/21/yw-mysql-select-index/" title="索引选择" itemprop="url">
+      
+        索引选择
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >优化器选择索引逻辑
+扫描行数
+使用临时表
+是否排序
+
+基数一个索引上不同值的个数，称之为“基数(cardinality)”;基数越大，索引的区分度越好
+show index from x 查看索引对应的基数
+
+采样统计， 通过设置参数innodb_stats_persistent</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-21T03:14:08.000Z" itemprop="datePublished">2018-12-21</time>
+      
+          <a href="/2018/12/21/yw-mysql-select-index/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+
+  <nav id="page-nav" class="clearfix">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
+  </nav>
+
+</div>
+      <div id="asidepart">
+<div id="authorInfo">
+	
+		<div class="author-logo"></div>		
+	
+	
+	<section class="author-info">
+		
+			<p> ttxsgoto</p>
+		
+		
+			<p>	天天向上goto</p>
+		
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		<a href="https://github.com/ttxsgoto" target="_blank" title="github"></a>
+		
+		
+	</div>
+</div>
+<aside class="clearfix">
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/Angularjs/" title="Angularjs">Angularjs<sup>4</sup></a></li>
+		
+			<li><a href="/categories/DRF/" title="DRF">DRF<sup>5</sup></a></li>
+		
+			<li><a href="/categories/Django/" title="Django">Django<sup>12</sup></a></li>
+		
+			<li><a href="/categories/Docker/" title="Docker">Docker<sup>3</sup></a></li>
+		
+			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
+		
+			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
+		
+			<li><a href="/categories/Scrapy/" title="Scrapy">Scrapy<sup>5</sup></a></li>
+		
+			<li><a href="/categories/python/" title="python">python<sup>25</sup></a></li>
+		
+			<li><a href="/categories/中间件/" title="中间件">中间件<sup>1</sup></a></li>
+		
+			<li><a href="/categories/运维/" title="运维">运维<sup>19</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/Ansible/" title="Ansible">Ansible<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Api/" title="Api">Api<sup>2</sup></a></li>
+		
+			<li><a href="/tags/Apollo/" title="Apollo">Apollo<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Apply/" title="Apply">Apply<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Architecture/" title="Architecture">Architecture<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Auth/" title="Auth">Auth<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Awk/" title="Awk">Awk<sup>1</sup></a></li>
+		
+			<li><a href="/tags/CPU/" title="CPU">CPU<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Celery/" title="Celery">Celery<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Channels/" title="Channels">Channels<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Class/" title="Class">Class<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Collections/" title="Collections">Collections<sup>1</sup></a></li>
+		
+			<li><a href="/tags/ConfigParser/" title="ConfigParser">ConfigParser<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Contextlib/" title="Contextlib">Contextlib<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Copy/" title="Copy">Copy<sup>1</sup></a></li>
+		
+			<li><a href="/tags/DRF/" title="DRF">DRF<sup>2</sup></a></li>
+		
+			<li><a href="/tags/Datetime/" title="Datetime">Datetime<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Decorator/" title="Decorator">Decorator<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Deepcopy/" title="Deepcopy">Deepcopy<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Descriptor/" title="Descriptor">Descriptor<sup>2</sup></a></li>
+		
+		</ul>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+
+
+
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+ </html>

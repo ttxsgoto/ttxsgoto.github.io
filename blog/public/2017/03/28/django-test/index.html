@@ -1,0 +1,418 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Django 测试 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明Python单元测试类扩展了unittest测试用例,Django提供了这个基类的一些扩展，如下图：
+
+SimpleTestCase:扩展了unittest.TestCase的一些基本功能
+
+保存和恢复python警告机制状态
+使用client Client
+自定义测试时间URL maps
+使用">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/28/django-test/" title="Django 测试" itemprop="url">Django 测试</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-03-28T12:55:48.000Z" itemprop="datePublished">2017-03-28</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#特殊方法"><span class="toc-number">2.</span> <span class="toc-text">特殊方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#测试客户端"><span class="toc-number">3.</span> <span class="toc-text">测试客户端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#测试响应属性"><span class="toc-number">4.</span> <span class="toc-text">测试响应属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用断言（runtests-case-py）"><span class="toc-number">5.</span> <span class="toc-text">常用断言（runtests/case.py）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#跳过测试"><span class="toc-number">6.</span> <span class="toc-text">跳过测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#运行"><span class="toc-number">7.</span> <span class="toc-text">运行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#测试数据库"><span class="toc-number">8.</span> <span class="toc-text">测试数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考链接"><span class="toc-number">9.</span> <span class="toc-text">参考链接</span></a></li></ol>
+		</div>
+		
+		<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>Python单元测试类扩展了unittest测试用例,Django提供了这个基类的一些扩展，如下图：</p>
+<p><img src="https://ttxsgoto.github.io/img/django/django_test01.png" alt=""></p>
+<p><strong>SimpleTestCase</strong>:扩展了unittest.TestCase的一些基本功能</p>
+<ul>
+<li>保存和恢复python警告机制状态</li>
+<li>使用client Client</li>
+<li>自定义测试时间URL maps</li>
+<li>使用modified settings运行测试的能力</li>
+</ul>
+<p><strong>TransactionTestCase</strong>:事务测试类，继承SimpleTestCase</p>
+<p><strong>TestCase</strong>:用来测试网站正常转换unittest.TestCase到Django TestCase</p>
+<ul>
+<li>自动加载fixtures</li>
+<li>将测试包含在两个嵌套的atomic块中：一个用于整个类，一个用于每个测试</li>
+<li>创建一个TestClient实例</li>
+<li>Django特定的断言用于测试重定向和形式错误</li>
+</ul>
+<p><strong>LiveServerTestCase</strong>:基本上与TransactionTestCase相同，具有一个额外的功能：它在设置的后台启动一个活动的Django服务器，并在卸载时将其关闭</p>
+<h4 id="特殊方法"><a href="#特殊方法" class="headerlink" title="特殊方法"></a>特殊方法</h4><ul>
+<li>setUp():每个测试函数运行前执行</li>
+<li>tearDown():每个测试函数运行完成后执行</li>
+<li>setUpClass(cls):必须使用@classmethod装饰器，所有test函数运行前执行一次</li>
+<li>tearDownClass(cls):必须使用@classmethod装饰器，所有test函数运行完成后执行一次</li>
+</ul>
+<p><strong>默认测试客户端</strong><br>django.test.*TestCase实例中的每个测试用例都可以访问Django测试客户端的实例。此客户端可以作为self.client访问。每个测试都重新创建此客户端，因此您不必担心从一个测试到另一个测试的状态（例如Cookie）<br>实例如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> unittest</div><div class="line"><span class="keyword">from</span> django.test <span class="keyword">import</span> Client</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SimpleTest</span><span class="params">(unittest.TestCase)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">test_details</span><span class="params">(self)</span>:</span></div><div class="line">        client = Client()</div><div class="line">        response = client.get(<span class="string">'/customer/details/'</span>)</div><div class="line">        self.assertEqual(response.status_code, <span class="number">200</span>)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">test_index</span><span class="params">(self)</span>:</span></div><div class="line">        client = Client()</div><div class="line">        response = client.get(<span class="string">'/customer/index/'</span>)</div><div class="line">        self.assertEqual(response.status_code, <span class="number">200</span>)</div><div class="line"> </div><div class="line"><span class="comment">################等同于如下################</span></div><div class="line"><span class="keyword">from</span> django.test <span class="keyword">import</span> TestCase</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SimpleTest</span><span class="params">(TestCase)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">test_details</span><span class="params">(self)</span>:</span></div><div class="line">        response = self.client.get(<span class="string">'/customer/details/'</span>)</div><div class="line">        self.assertEqual(response.status_code, <span class="number">200</span>)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">test_index</span><span class="params">(self)</span>:</span></div><div class="line">        response = self.client.get(<span class="string">'/customer/index/'</span>)</div><div class="line">        self.assertEqual(response.status_code, <span class="number">200</span>)</div></pre></td></tr></table></figure></p>
+<h4 id="测试客户端"><a href="#测试客户端" class="headerlink" title="测试客户端"></a>测试客户端</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&gt;&gt;&gt; from django.test import Client</div><div class="line">&gt;&gt;&gt; c = Client()</div><div class="line">&gt;&gt;&gt; response = c.post(&apos;/login/&apos;, &#123;&apos;username&apos;: &apos;john&apos;, &apos;password&apos;: &apos;smith&apos;&#125;)</div><div class="line">&gt;&gt;&gt; response.status_code</div><div class="line">200</div><div class="line">&gt;&gt;&gt; response = c.get(&apos;/customer/details/&apos;)</div><div class="line">&gt;&gt;&gt; response.content    # 返回数据主体</div></pre></td></tr></table></figure>
+<h4 id="测试响应属性"><a href="#测试响应属性" class="headerlink" title="测试响应属性"></a>测试响应属性</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">- client:用于生成导致响应的请求的测试客户端</div><div class="line">- content:响应的主体</div><div class="line">- context:用于呈现产生响应内容的模板的模板Context实例</div><div class="line">- request:响应的请求数据</div><div class="line">- wsgi_request:由生成响应的测试处理程序生成的WSGIRequest实例</div><div class="line">- status_code:响应http状态码</div><div class="line">- templates:用于渲染最终内容的Template实例列表，按渲染顺序排列</div><div class="line">- resolver_match:响应的实例ResolverMatch</div></pre></td></tr></table></figure>
+<h4 id="常用断言（runtests-case-py）"><a href="#常用断言（runtests-case-py）" class="headerlink" title="常用断言（runtests/case.py）"></a>常用断言（runtests/case.py）</h4><ul>
+<li>self.assertEqual(first, second)</li>
+<li>self.assertNotEqual(first, second)</li>
+<li>self.assertFalse(expr)</li>
+<li>self.assertTrue(expr)</li>
+<li>self.assertEqual(first, second)</li>
+<li>self.assertNotEqual(first, second)</li>
+<li>self.assertSequenceEqual(seq1, seq2)</li>
+<li>self.assertListEqual(list1, list2):</li>
+<li>self.assertTupleEqual(tuple1, tuple2):</li>
+<li>self.assertDictEqual(dic1, dic2):</li>
+<li>self.assertSetEqual(set1, set2):</li>
+<li>self.assertIn(mem, container):</li>
+<li>self.assertIs(expr1, expr2)</li>
+<li>self.assertIsNotNone(obj):</li>
+<li>self.assertIsNone(obj)</li>
+<li>self.assertIsInstance(obj, cls)</li>
+</ul>
+<h4 id="跳过测试"><a href="#跳过测试" class="headerlink" title="跳过测试"></a>跳过测试</h4><p>unittest库提供@skipIf和@skipUnless装饰器，如果提前知道这些测试在某些条件下会失败，可以跳过测试</p>
+<h4 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">python manage.py test runtests.test_user</div><div class="line">python manage.py test xxx.test		#执行xxx项目下的testx里的测试</div><div class="line">python manage.py test animals.tests.AnimalTestCase	#单独执行某个test case</div></pre></td></tr></table></figure>
+<h4 id="测试数据库"><a href="#测试数据库" class="headerlink" title="测试数据库"></a>测试数据库</h4><p>测试需要数据库，django会为测试单独生成数据库。不管你的测试是否通过,当你所有的测试都执行过后,这个测试数据库就会被销毁</p>
+<p>默认情况下,测试数据库的名字是test_DATABASE_NAME,DATABASE_NAME是你在settings.py里配置的数据库名.如果 你需要给测试数据库一个其他的名字,在settings.py中指定TEST_DATABASE_NAME的值。使用sqlite3时，数据库是在内存中创建的</p>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><p><a href="https://docs.djangoproject.com/en/1.10/topics/testing/tools/" target="_blank" rel="external">https://docs.djangoproject.com/en/1.10/topics/testing/tools/</a><br><a href="http://python.usyiyi.cn/django/topics/testing/tools.html" target="_blank" rel="external">http://python.usyiyi.cn/django/topics/testing/tools.html</a><br><a href="http://www.cnblogs.com/linxiyue/p/3886035.html" target="_blank" rel="external">http://www.cnblogs.com/linxiyue/p/3886035.html</a><br><a href="http://www.weiguda.com/blog/31/" target="_blank" rel="external">http://www.weiguda.com/blog/31/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/TestCase/">TestCase</a><a href="/tags/unittest/">unittest</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Django/">Django</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/03/28/django-test/" data-title="Django 测试 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/03/29/tmux/" title="运维 Tmux日常">
+  <strong>新一篇:</strong><br/>
+  <span>
+  运维 Tmux日常</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/03/27/API-auth/"  title="Python API接口认证">
+ <strong>旧一篇:</strong><br/> 
+ <span>Python API接口认证
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Django 测试" data-thread-key="django-test" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/django-test"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

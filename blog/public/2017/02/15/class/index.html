@@ -1,0 +1,406 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Python Class | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="相关概念
+类：是对事物的抽象，人/动物/机器,如汽车模型；创建实例的模板对象：是类的一个实例，如大客车；则是一个一个具体的对象，各个实例拥有的数据相互独立，互不影响范例说明：汽车模型可以对汽车的特征和行为进行抽象，然后可以实例化为一台真实的汽车实体出来
+方法：人会走，会思考，定义一个类的各个功能,类">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/15/class/" title="Python Class" itemprop="url">Python Class</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-02-15T12:40:38.000Z" itemprop="datePublished">2017-02-15</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#相关概念"><span class="toc-number">1.</span> <span class="toc-text">相关概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#装饰器"><span class="toc-number">2.</span> <span class="toc-text">装饰器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#类的属性"><span class="toc-number">3.</span> <span class="toc-text">类的属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#类的方法"><span class="toc-number">4.</span> <span class="toc-text">类的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#构造函数与析构函数"><span class="toc-number">5.</span> <span class="toc-text">构造函数与析构函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#类的特殊成员"><span class="toc-number">6.</span> <span class="toc-text">类的特殊成员</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#垃圾回收机制"><span class="toc-number">7.</span> <span class="toc-text">垃圾回收机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#类的继承，多继承"><span class="toc-number">8.</span> <span class="toc-text">类的继承，多继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多继承"><span class="toc-number">9.</span> <span class="toc-text">多继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多态"><span class="toc-number">10.</span> <span class="toc-text">多态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#新式类和经典类"><span class="toc-number">11.</span> <span class="toc-text">新式类和经典类</span></a></li></ol>
+		</div>
+		
+		<h3 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h3><hr>
+<p>类：是对事物的抽象，人/动物/机器,如汽车模型；创建实例的模板<br>对象：是类的一个实例，如大客车；则是一个一个具体的对象，各个实例拥有的数据相互独立，互不影响<br>范例说明：汽车模型可以对汽车的特征和行为进行抽象，然后可以实例化为一台真实的汽车实体出来</p>
+<p>方法：人会走，会思考，定义一个类的各个功能,类中定义的函数<br>数据成员：类变量或者实例变量用于处理类及其实例对象的相关的数据<br>消息传递：狗叫了，人听见了，就叫通信</p>
+<p>继承：即一个派生类（derived class）继承基类（base class）的字段和方法。继承也允许把一个派生类的对象作为一个基类对象对待。例如，有这样一个设计：一个Dog类型的对象派生自Animal类，这是模拟”是一个（is-a）”关系（例图，Dog是一个Animal）,狗都四条腿走路<br>封装：人不能引用狗的特性，比如四条腿走路<br>多态性：一个叫的功能，可能是低吼，也也可能是大声叫<br>抽象性：简单复杂的现实问题的途径，它可以为具体问题找到最恰当的类定义<br>类方法重写：如果从父类继承的方法不能满足子类的需求，可以对其进行改写，这个过程叫方法的覆盖（override），也称为方法的重写</p>
+<p>静态字段：在class中直接定义的字段，直接通过class去获取，也可通过实例来访问，如 value = “abc”<br>动态字段：在class中对象中定义的字段，通过class的实例来访问，不能通过class直接访问，如在init函数后定义的字段<br>静态方法：在类中直接定义，没有self参数，同时使用staticmethod装饰器装饰，访问时直接通过class访问</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></div><div class="line">    name = <span class="string">"静态字段"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,name,age)</span>:</span></div><div class="line">        self.Name = name</div><div class="line">        self.Age = age</div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> self.Name + <span class="string">"正在跑步"</span></div><div class="line"><span class="meta">    @staticmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run1</span><span class="params">()</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"静态方法"</span></div><div class="line"><span class="meta">    @classmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run2</span><span class="params">(cls)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"类方法"</span></div><div class="line"><span class="meta">    @property    #转换为特性，直接以属性的形式访问</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Bar</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> self.Name</div><div class="line"></div><div class="line">person1 = Person(<span class="string">'人1'</span>,<span class="number">20</span>)</div><div class="line"><span class="comment"># 访问动态字段</span></div><div class="line"><span class="keyword">print</span> person1.Name</div><div class="line"><span class="comment"># 访问动态方法</span></div><div class="line">person1.run()</div><div class="line"><span class="comment"># 访问静态字段</span></div><div class="line"><span class="keyword">print</span> Person.name</div><div class="line"><span class="comment"># 访问静态方法</span></div><div class="line">Person.run1()</div><div class="line"><span class="comment"># 调用类方法</span></div><div class="line">Person.run2()</div><div class="line"><span class="comment"># property的访问形式,直接以属性的形式访问</span></div><div class="line">person1.Bar</div></pre></td></tr></table></figure>
+<hr>
+<h3 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h3><p>@staticmethod ：类中的静态方法设置<br>@classmethod：类方法设置<br>@property ：将类中的方法转换为特性，直接以属性的形式访问</p>
+<p>@staticmethod和@classmethod的作用与区别：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">@staticmethod和@classmethod都可以直接类名.方法名(),实例名.方法名()调用</div><div class="line">@staticmethod不需要表示自身对象的self和自身类的cls参数，和使用函数一样</div><div class="line">@classmethod也不需要self参数，但第一个参数需要是表示自身类的cls参数</div></pre></td></tr></table></figure></p>
+<p>python类的定义：</p>
+<pre><code>使用class关键字定义一个类，并且类名的首字母要大写
+当程序员需要创建的类型不能用简单类型表示时就需要创建类
+类把需要的变量和函数组合在一起，这种包含也称之为“封装”
+</code></pre><p>对象的创建：<br>创建对象的过程称之为实例化；当一个对象被创建后，包括三个方面的特性： 对象的句柄，属性和方法<br>句柄：用来区分不同的对象，如a，b<br>对象的属性和方法与类中的成员变量和成员函数对应</p>
+<hr>
+<h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><p>类由属性和方法组成，类的属性是对数据的封装，类的方法则是对类的行为的封装。类的属性按使用范围分为公有属性和私有属性，类的属性范围取决于属性的名称<br>公有属性：所谓公有属性就是在类中和类外调用的属性<br>私有属性：不能被类以外的函数调用（可以通过instance._classname_attribute方式访问，但只用于调试程序）<br>定义方式：以“__”双下划线开始的成员变量就是私有属性，否则是公有属性<br>私有属性通过内部方法调用，实现对数据的封装隐藏。<br>内置属性：由系统在定义类的时候默认添加的，由前后两个下划线构成<strong>dict</strong>，<strong>module</strong></p>
+<hr>
+<h3 id="类的方法"><a href="#类的方法" class="headerlink" title="类的方法"></a>类的方法</h3><p>和函数定义一样，但是需要self作为第一个参数<br>类的方法也分为：公有方法和私有方法<br>    私有方法：不能被外部的类和方法调用，私有方法的定义和私有属性都是一样的，在方法的前面加上“__”双下划线<br>    类方法：被classmethod()函数处理过的函数，能被类所调用，也能被对象所调用（是继承的关系）<br>    静态方法：相当与“全局函数”，可以被类直接调用，可以被所有实例化对象共享，通过staticmethod()定义静态方法没有“self”语句；<br>    用于区分函数和类的方法（必须有一个self），self参数表示指向对象本身</p>
+<p>内部类：<br>    所谓内部类，就是在类的内部定义的类，主要目的是为了更好的抽象现实世界;<br>    一般不赞同使用内部类，会使程序结构复杂，但是理解内部类有助于理解模块的调用</p>
+<hr>
+<h3 id="构造函数与析构函数"><a href="#构造函数与析构函数" class="headerlink" title="构造函数与析构函数"></a>构造函数与析构函数</h3><p>构造函数：用于初始化类的内部状态，python提供的构造函数是<strong>init</strong>();<br><strong>init</strong>()方法是可选的，如果不提供，python会给出一个默认的<strong>init</strong>方法<br><strong>init</strong>(self,name,score):  用于定义初始化类的属性，在实例时，可以将相关属性的值定义好<br>一般对数据的获取需要自定义的get和set方法</p>
+<p>析构函数：用于释放对象占用的资源，python提供的析构函数是<strong>del</strong>();<br><strong>del</strong>()也是可选的，如果不提供，则python会在后台提供默认析构函数<br>如果要显式的调用析够函数，可以使用del关键字，方式如下：  del  对象名</p>
+<p><strong>call</strong>()方法：通过实例化后，直接使用person1()来执行call方法</p>
+<p><strong>str</strong>()方法：通过实例化后，直接print person1 就可以显示str中返回的内容</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,name,age)</span>:</span></div><div class="line">        self.Name = name</div><div class="line">        self.Age = age</div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> self.Name + <span class="string">"正在跑步"</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"解释器要销毁了"</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__call__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"这是call方法"</span></div><div class="line">person1 = Person(<span class="string">'人1'</span>,<span class="number">20</span>)</div><div class="line">person1()    <span class="comment">#可以通过实例化后，添加括号直接执行call方法</span></div><div class="line">person1.run()</div></pre></td></tr></table></figure>
+<hr>
+<h3 id="类的特殊成员"><a href="#类的特殊成员" class="headerlink" title="类的特殊成员"></a>类的特殊成员</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">__doc__	   类的描述信息，print Foo.__doc__</div><div class="line">__module__ 当前操作的对象在那个模块，f = Foo();print f.__module__  # 输出__main__，即：输出模块</div><div class="line">__class__  当前操作的对象的类是什么，f = Foo();print f.__class__   # 输出&lt;class &apos;__main__.Foo&apos;&gt;，即：输出类</div><div class="line">__init__   构造方法，通过类创建对象时，自动触发执行</div><div class="line">__del__	   析构方法，当对象在内存中被释放时，自动触发执行</div><div class="line">__call__   对象后面加括号，触发执行；f = Foo(); f()或者 Foo()() 执行__call__方法</div><div class="line">__dict__   类或对象中的所有成员;	f = Foo();print Foo.__dict__,print f.__dict__</div><div class="line">__str__	   默认输出该方法的返回值;  f = Foo();print f</div><div class="line">__getitem__  用于索引操作，如字典以,表示获取</div><div class="line">__setitem__	 用于索引操作，如字典以,表示设置</div><div class="line">__delitem__  用于索引操作，如字典以,表示删除</div><div class="line">__iter__   用于迭代器，之所以列表、字典、元组可以进行for循环，因为类型内部定义了__iter__</div><div class="line">__new__    在__init__之前被调用的特殊方法,用来创建对象并返回之的方法</div></pre></td></tr></table></figure>
+<hr>
+<h3 id="垃圾回收机制"><a href="#垃圾回收机制" class="headerlink" title="垃圾回收机制"></a>垃圾回收机制</h3><pre><code>python采用垃圾回收机制来清理不再使用的对象；python提供gc模块释放不再使用的对象python采用“引用计数”的算法方式来处理回收，即：当某个对象在其作用域内不再被其他对象引用的时候，python会自动清除对象； 
+python的函数collect()可以一次性收集所有待处理的对象（gc.collect()）
+</code></pre><hr>
+<h3 id="类的继承，多继承"><a href="#类的继承，多继承" class="headerlink" title="类的继承，多继承"></a>类的继承，多继承</h3><p>我们定义一个class时，可以从某个现有的class继承，新的class称之为子类（Subclass），而被继承的class的class称之为父类（Base class）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Father</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        self.Fname =<span class="string">"father"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Func</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"Father func "</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"Father func_public"</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Son</span><span class="params">(Father)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        self.Sname = <span class="string">"son"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Bar</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"Son bar_function"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span> <span class="comment">#重写父类的方法</span></div><div class="line">        Father.run(self)</div><div class="line">        <span class="keyword">print</span> <span class="string">"xxxxxxxxxx"</span></div><div class="line"></div><div class="line">s1 = Son()</div><div class="line">s1.Func()</div><div class="line">s1.run()</div></pre></td></tr></table></figure>
+<h3 id="多继承"><a href="#多继承" class="headerlink" title="多继承"></a>多继承</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"A class"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"THis is A run Function"</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span><span class="params">(A)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"B class"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"This is B run Function"</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span><span class="params">(A)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"C class"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"This is C run Function"</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span><span class="params">(B,C)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"D class"</span></div><div class="line"></div><div class="line">c = D()</div><div class="line">c.run()</div></pre></td></tr></table></figure>
+<p>在继承关系中，如果一个实例的数据类型是某个子类，那么它的数据类型也可以看着是父类的类型；但是反过来不行<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf8</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SchoolMember</span><span class="params">(object)</span>:</span><span class="comment">#基类</span></div><div class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,name,age,sex)</span>:</span></div><div class="line">    	self.name=name</div><div class="line">		self.age=age</div><div class="line">		self.sex=sex</div><div class="line">	<span class="function"><span class="keyword">def</span> <span class="title">tell</span><span class="params">(self)</span>:</span></div><div class="line">    	<span class="keyword">print</span> <span class="string">"""--info of %s----</span></div><div class="line">        	name:%s</div><div class="line">			age:%s</div><div class="line">            sex:%s</div><div class="line">            """ %(self.name,self.name,self.age,self.sex)</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">School</span><span class="params">(object)</span>:</span></div><div class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,name,addr,tel)</span>:</span></div><div class="line">    	self.school_name=name</div><div class="line">        self.addr=addr</div><div class="line">        self.tel=tel</div><div class="line">        self.stu_list=[]</div><div class="line">        self.tech_list=[]</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span><span class="params">(SchoolMember,School)</span>:</span><span class="comment">#子类，继承，多继承</span></div><div class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,name,age,sex,grade,school)</span>:</span></div><div class="line">    	SchoolMember.__init__(self,name,age,sex)<span class="comment">#初始化基类变量</span></div><div class="line">		self.grade=grade</div><div class="line">		self.school=school</div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pay_money</span><span class="params">(self)</span>:</span></div><div class="line">		<span class="keyword">print</span> <span class="string">"-----%s is paying the tuition fee----"</span> %(self.name)</div><div class="line">	<span class="function"><span class="keyword">def</span> <span class="title">tell</span><span class="params">(self)</span>:</span></div><div class="line">		SchoolMember.tell(self)</div><div class="line">		<span class="keyword">print</span> <span class="string">"---------from school name : ---------%s"</span> %(self.school.school_name)</div><div class="line"></div><div class="line">school1 = School(<span class="string">'AAAA'</span>,<span class="string">'AAAA'</span>,<span class="number">999</span>)</div><div class="line">school2 = School(<span class="string">'BBBB'</span>,<span class="string">'BBBB'</span>,<span class="number">999</span>)</div><div class="line">s1 = Student(<span class="string">'a'</span>,<span class="number">23</span>,<span class="string">'M'</span>,<span class="string">'python'</span>,school1)</div><div class="line">s2 = Student(<span class="string">'b'</span>,<span class="number">24</span>,<span class="string">'M'</span>,<span class="string">'Linux'</span>,school2)</div><div class="line">s1.tell()</div><div class="line">s2.tell()</div></pre></td></tr></table></figure></p>
+<hr>
+<h3 id="多态"><a href="#多态" class="headerlink" title="多态"></a>多态</h3><p>当子类和父类都存在相同的方法时，子类的方法会覆盖父类的方法，在代码运行时，总是会调用子类的相应方法<br>当父类中有某种方法，传入的任何类型只要是父类或者子类就会自动的调用相关父类或子类的方法，即多态</p>
+<p>“开闭”原则：<br>对扩展开放：允许新增子类<br>对修改封闭：不需要修改依赖父类的相关函数</p>
+<hr>
+<h3 id="新式类和经典类"><a href="#新式类和经典类" class="headerlink" title="新式类和经典类"></a>新式类和经典类</h3><p>在定义时，有无object</p>
+<p>区别：<br>1.在继承__init__函数写法<br>新式类：Father.__init__(self.name,self.sex)<br>新式类：super(Son,self).__init____(name,age,sex)</p>
+<p>2.继承特性<br>经典类：深度优先<br>新式类：广度优先</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding:utf-8</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span><span class="params">(object)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"A class"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"THis is A run Function"</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span><span class="params">(A)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"B class"</span></div><div class="line">        A.__init__(self)    <span class="comment">#新式类继承init函数，方法一</span></div><div class="line"><span class="comment">#         super(B, self).__init__() #新式类继承init函数，方法二</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span><span class="params">(A)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"C class"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"This is C run Function"</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span><span class="params">(B,C)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"D class"</span></div><div class="line">d = D()</div><div class="line">d.run()</div><div class="line"><span class="string">"""</span></div><div class="line">经典类(深度优先)：D-B-A-C</div><div class="line">结果：</div><div class="line">D class</div><div class="line">THis is A run Function</div><div class="line">新式类(广度优先)：</div><div class="line">结果： D-B-C-A</div><div class="line">D class</div><div class="line">This is C run Function</div><div class="line">"""</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Class/">Class</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/02/15/class/" data-title="Python Class | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/16/mongo/" title="运维 Mongo日常笔记">
+  <strong>新一篇:</strong><br/>
+  <span>
+  运维 Mongo日常笔记</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/11/docker-compose/"  title="Docker Compose">
+ <strong>旧一篇:</strong><br/> 
+ <span>Docker Compose
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Python Class" data-thread-key="class" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/class"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

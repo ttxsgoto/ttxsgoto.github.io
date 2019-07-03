@@ -1,0 +1,365 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Python Fabric模块 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明基于paramiko的封装，远程执行命令，方便简单，实用性强。
+参数1234567-l  显示可用的task-f  指定入口文件，默认为fabfile.py-H  指定目标主机，主机之间用，号分隔-P  已并行执行，默认为串行-R  指定role角色-t  连接超时时间(s)-T  执行命令超时">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/19/fabric/" title="Python Fabric模块" itemprop="url">Python Fabric模块</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-03-19T12:47:15.000Z" itemprop="datePublished">2017-03-19</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参数"><span class="toc-number">2.</span> <span class="toc-text">参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#API"><span class="toc-number">3.</span> <span class="toc-text">API</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实例"><span class="toc-number">4.</span> <span class="toc-text">实例</span></a></li></ol>
+		</div>
+		
+		<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>基于paramiko的封装，远程执行命令，方便简单，实用性强。</p>
+<h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">-l  显示可用的task</div><div class="line">-f  指定入口文件，默认为fabfile.py</div><div class="line">-H  指定目标主机，主机之间用，号分隔</div><div class="line">-P  已并行执行，默认为串行</div><div class="line">-R  指定role角色</div><div class="line">-t  连接超时时间(s)</div><div class="line">-T  执行命令超时时间(s)</div></pre></td></tr></table></figure>
+<h4 id="API"><a href="#API" class="headerlink" title="API"></a>API</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">from fabric.api import env</div><div class="line">########## 属性 ##########</div><div class="line">env.hosts    -主机ip</div><div class="line">env.port    -主机端口，默认为22</div><div class="line">env.passworkd   -ssh密码</div><div class="line">env.roledefs    -角色分组，env.roledefs=&#123;&apos;web1&apos;:[&apos;192.168.0.192&apos;]&#125;，调用@roles(&apos;web1&apos;)</div><div class="line">env.passwords   -字典，为每台机器设置密码，key是ip，value是密码，如&#123;&apos;root@192.168.0.200:22&apos;:&apos;root&apos;&#125;，调用：@hosts(&apos;root@192.168.0.200:22&apos;)</div><div class="line">env.exclude_hosts   -指定排除主机列表，在fab执行时，忽略列表中的机器；env.exclude_hosts= [&apos;10.1.1.2&apos;]</div><div class="line"> </div><div class="line">########## API ##########</div><div class="line">local(&apos;pwd&apos;)    -执行本地命令</div><div class="line">lcd(&apos;/tmp&apos;)     -切换本地目录</div><div class="line">cd(&apos;/tmp&apos;)      -切换远程目录</div><div class="line">run(&apos;uname -s&apos;) -执行远程命令</div><div class="line">sudo(&apos;service sshd restart&apos;)   -执行远程sudo，</div><div class="line">put(&apos;/local/test&apos;,&apos;/remote/test&apos;)   -上传</div><div class="line">get(&apos;/remote/test/&apos;,&apos;/local/test&apos;)  -下载</div><div class="line">prompt  -获得用户输入信息,如:prompt(&apos;please Input password:&apos;);</div><div class="line">confirm -获得提示信息确认,如:confirm(&quot;Continue[Y/N]？&quot;);</div><div class="line">@task(alias=&apos;&apos;)   -函数修饰符,标识的函数为fab可调用的,非标记对fab不可见,alias设置别名</div><div class="line">@parallel(pool_size=5)   -并行执行任务影响的最小单位是任务，所以功能启用或禁用以任务为单位,pool_size指定并发个数</div><div class="line">@serial     -顺序执行，非并发执行</div><div class="line">@runs_once  -只有第一台执行此函数</div><div class="line">with cd(&apos;/root&apos;):   pass    -with让后面的执行继承当前所在状态</div><div class="line"> </div><div class="line">__all__ = [&apos;run1&apos;,&apos;hello&apos;]  -定义全局的可用tasks列表</div><div class="line"></div><div class="line">from fabric.colors import * #用于打印显示颜色   -print(yellow(&quot;This text is yellow!&quot;,bold=True))    bold：用于设置粗体</div></pre></td></tr></table></figure>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment">#coding: utf_8</span></div><div class="line"> </div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> with_statement</div><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> unicode_literals</div><div class="line"> </div><div class="line"><span class="keyword">import</span> time</div><div class="line"><span class="keyword">from</span> fabric.api <span class="keyword">import</span> local, cd, run, settings,env,task</div><div class="line"><span class="keyword">from</span> fabric.context_managers <span class="keyword">import</span> prefix</div><div class="line"><span class="keyword">from</span> fabric.contrib.console <span class="keyword">import</span> confirm</div><div class="line"><span class="keyword">from</span> fabric.decorators <span class="keyword">import</span> roles, parallel, serial, runs_once</div><div class="line"><span class="keyword">from</span> fabric.colors <span class="keyword">import</span> *</div><div class="line"><span class="keyword">from</span> fabric.operations <span class="keyword">import</span> prompt</div><div class="line"> </div><div class="line">env.hosts=[<span class="string">'192.168.0.192'</span>,<span class="string">'192.168.0.200'</span>]</div><div class="line">env.password=<span class="string">'root'</span></div><div class="line">env.user=<span class="string">'root'</span></div><div class="line"><span class="comment">#env.roledefs=&#123;'web1':['192.168.0.192'],'web2':['192.168.0.200']&#125;</span></div><div class="line"> </div><div class="line">__all__ = [<span class="string">'local_deploy'</span>,<span class="string">'run1'</span>,<span class="string">'hello'</span>,<span class="string">'test_confirm'</span>,<span class="string">'test_prompt'</span>]     <span class="comment">#定义全局可用的tasks列表</span></div><div class="line"> </div><div class="line"><span class="meta">@task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">(name)</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">    传递参数: fab hello:name=ttxsgoto</div><div class="line">    '''</div><div class="line">    <span class="keyword">print</span> <span class="string">"hello,&#123;&#125;"</span>.format(name)</div><div class="line"> </div><div class="line"><span class="meta">@task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">local_deploy</span><span class="params">()</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">    执行本地命令</div><div class="line">    :return:</div><div class="line">    '''</div><div class="line">    <span class="keyword">with</span> settings(warn_only=<span class="keyword">True</span>):</div><div class="line">        <span class="keyword">return</span> local(<span class="string">'ls /Users/study/studypy/train/fabric_demo/fabfile.py'</span>)</div><div class="line">    <span class="comment"># local('cat fabfile.py')</span></div><div class="line"> </div><div class="line"><span class="meta">@task   #标识为fab可调用</span></div><div class="line"><span class="meta">@roles('web2')  #调用roles</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">with_deploy</span><span class="params">()</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">    执行with函数</div><div class="line">    :return:</div><div class="line">    lcd 本地执行,cd 远程执行</div><div class="line">    '''</div><div class="line">    dir = <span class="string">'/etc/network/'</span></div><div class="line">    <span class="keyword">with</span> cd(dir):</div><div class="line">        run(<span class="string">'ls .'</span>)</div><div class="line"> </div><div class="line"><span class="meta">@task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">dir</span><span class="params">()</span>:</span></div><div class="line">    <span class="string">"""</span></div><div class="line">    remote list</div><div class="line">    :return:</div><div class="line">    """</div><div class="line">    dir = <span class="string">'/etc/'</span></div><div class="line">    <span class="keyword">with</span> cd(dir):</div><div class="line">        run(<span class="string">'ls -l rc.local'</span>)</div><div class="line"> </div><div class="line"><span class="meta">@task(default=True)</span></div><div class="line"><span class="meta">@parallel(pool_size=3)</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">run1</span><span class="params">()</span>:</span></div><div class="line">    <span class="string">"""</span></div><div class="line">    启动</div><div class="line">    :return:</div><div class="line">    """</div><div class="line">    <span class="keyword">print</span> time.ctime()</div><div class="line">    hello(<span class="string">'ttxsgoto'</span>)</div><div class="line">    local_deploy()</div><div class="line">    dir()</div><div class="line">    time.sleep(<span class="number">2</span>)</div><div class="line">    <span class="keyword">print</span> time.ctime()</div><div class="line">    print(yellow(<span class="string">"This text is green!"</span>,bold=<span class="keyword">True</span>)) <span class="comment">#用于打印显示颜色, bold：用于设置粗体</span></div><div class="line"> </div><div class="line"><span class="meta">@task()</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">runserver</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">with</span> prefix(<span class="string">'workon ownserver'</span>):</div><div class="line">        run(<span class="string">'cd /date/ownserver &amp;&amp; python manage.py runserver 0.0.0.0:8000'</span>)</div><div class="line"> </div><div class="line"><span class="meta">@task()</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_confirm</span><span class="params">()</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">    测试交互确认</div><div class="line">    :return:</div><div class="line">    '''</div><div class="line">    INFO = confirm(<span class="string">'Are you sure?[yes/no]?'</span>)</div><div class="line">    <span class="keyword">if</span> INFO:</div><div class="line">        <span class="keyword">print</span> <span class="string">'yes'</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        <span class="keyword">print</span> <span class="string">'no'</span></div><div class="line"> </div><div class="line"><span class="meta">@task()</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_prompt</span><span class="params">()</span>:</span></div><div class="line">    <span class="string">'''</span></div><div class="line">    测试输入信息</div><div class="line">    :return:</div><div class="line">    '''</div><div class="line">    Text = prompt(<span class="string">'Input word:'</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">'-----'</span>,Text</div></pre></td></tr></table></figure>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Fabric/">Fabric</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/03/19/fabric/" data-title="Python Fabric模块 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/03/25/mysqldb/" title="Python Mysqldb模块">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Python Mysqldb模块</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/03/18/ansible/"  title="运维 Ansible">
+ <strong>旧一篇:</strong><br/> 
+ <span>运维 Ansible
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Python Fabric模块" data-thread-key="fabric" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/fabric"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

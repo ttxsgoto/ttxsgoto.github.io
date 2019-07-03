@@ -1,0 +1,366 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Sersync+Rsync文件同步 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="背景需要将某台服务器目录实时同步到另外一台服务器上的某个目录下，其实本来可以通过远程目录挂载的方式完成， 但是现在的需求是某两台服务器的目录实时同步到另外一台的同一目录中，这时就不能使用远程目录挂载方式完成了， 这里使用sersync+rsync来完成需求
+Sersync特点
+c++编写，对linu">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/01/10/yw-sersync/" title="Sersync+Rsync文件同步" itemprop="url">Sersync+Rsync文件同步</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2019-01-10T13:58:34.000Z" itemprop="datePublished">2019-01-10</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sersync特点"><span class="toc-number">2.</span> <span class="toc-text">Sersync特点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Rsync"><span class="toc-number">3.</span> <span class="toc-text">Rsync</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sersync"><span class="toc-number">4.</span> <span class="toc-text">Sersync</span></a></li></ol>
+		</div>
+		
+		<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>需要将某台服务器目录实时同步到另外一台服务器上的某个目录下，其实本来可以通过远程目录挂载的方式完成， 但是现在的需求是某两台服务器的目录实时同步到另外一台的同一目录中，这时就不能使用远程目录挂载方式完成了， 这里使用sersync+rsync来完成需求</p>
+<h4 id="Sersync特点"><a href="#Sersync特点" class="headerlink" title="Sersync特点"></a>Sersync特点</h4><ul>
+<li>c++编写，对linux系统文件系统产生的临时文件和重复的文件操作进行过滤，结合rsync同步的时候，节省了运行时耗和网络资源</li>
+<li>使用多线程进行同步，在同步较大文件时，能够保证多个服务器实时保持同步状态</li>
+<li>自带crontab功能，只需在xml配置文件中开启，隔一段时间整体同步一次</li>
+<li>自定义同步规则</li>
+</ul>
+<h4 id="Rsync"><a href="#Rsync" class="headerlink" title="Rsync"></a>Rsync</h4><p>配置文件说明<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">uid = root</div><div class="line">gid = root</div><div class="line">port = <span class="number">873</span></div><div class="line">max connections = <span class="number">1000</span></div><div class="line">timeout = <span class="number">600</span></div><div class="line">pid file = /var/run/rsyncd.pid</div><div class="line">log file = /var/log/rsync.log</div><div class="line">lockfile = /var/run/rsyncd.lock</div><div class="line">motd file = /etc/rsyncd/rsyncd.moth</div><div class="line">log format = %t %a %m %f %b</div><div class="line"> </div><div class="line">[yw_test]</div><div class="line">path = /data/yw_test</div><div class="line">ignore errors = yes</div><div class="line">list = no</div><div class="line">ignore errors</div><div class="line">read only = no</div><div class="line">auth users = rsync</div><div class="line">secrets file = /etc/rsync/rsyncd.secrets</div></pre></td></tr></table></figure></p>
+<p>启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">chmod 600 /etc/rsync/rsyncd.secrets</div><div class="line">rsync --daemon --config=/etc/rsync/rsyncd.conf</div></pre></td></tr></table></figure></p>
+<h4 id="Sersync"><a href="#Sersync" class="headerlink" title="Sersync"></a>Sersync</h4><p>配置文件confxml.xml说明<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">head</span> <span class="attr">version</span>=<span class="string">"2.5"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">host</span> <span class="attr">hostip</span>=<span class="string">"localhost"</span> <span class="attr">port</span>=<span class="string">"8008"</span>&gt;</span><span class="tag">&lt;/<span class="name">host</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">debug</span> <span class="attr">start</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">fileSystem</span> <span class="attr">xfs</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">    <span class="comment">&lt;!--监控事件的过程中过滤特定文件，和特定文件夹的文件 --&gt;</span> </div><div class="line">    <span class="tag">&lt;<span class="name">filter</span> <span class="attr">start</span>=<span class="string">"true"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">exclude</span> <span class="attr">expression</span>=<span class="string">"log.txt"</span>&gt;</span><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">exclude</span> <span class="attr">expression</span>=<span class="string">"(.*)\.svn"</span>&gt;</span><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">exclude</span> <span class="attr">expression</span>=<span class="string">"(.*)\.gz"</span>&gt;</span><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">filter</span>&gt;</span></div><div class="line">    <span class="comment">&lt;!--设置要监控的事件 --&gt;</span> </div><div class="line">    <span class="tag">&lt;<span class="name">inotify</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">delete</span> <span class="attr">start</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">createFolder</span> <span class="attr">start</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">createFile</span> <span class="attr">start</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">closeWrite</span> <span class="attr">start</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">moveFrom</span> <span class="attr">start</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">moveTo</span> <span class="attr">start</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">attrib</span> <span class="attr">start</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">modify</span> <span class="attr">start</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">inotify</span>&gt;</span></div><div class="line">  </div><div class="line">    <span class="tag">&lt;<span class="name">sersync</span>&gt;</span></div><div class="line">     <span class="comment">&lt;!--设定监控目录--&gt;</span> </div><div class="line">	<span class="tag">&lt;<span class="name">localpath</span> <span class="attr">watch</span>=<span class="string">"/data/test"</span>&gt;</span></div><div class="line">		<span class="comment">&lt;!--指定远端rsync的地址和模块名--&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">remote</span> <span class="attr">ip</span>=<span class="string">"192.168.0.1"</span> <span class="attr">name</span>=<span class="string">"yw_test"</span>/&gt;</span>   </div><div class="line">	<span class="tag">&lt;/<span class="name">localpath</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">rsync</span>&gt;</span></div><div class="line">	    <span class="comment">&lt;!--commonParams params="-rczgop"/--&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">commonParams</span> <span class="attr">params</span>=<span class="string">"-artuz"</span>/&gt;</span></div><div class="line">	    <span class="comment">&lt;!--是否启用验证，并指定密码存放文件 --&gt;</span> </div><div class="line">	    <span class="tag">&lt;<span class="name">auth</span> <span class="attr">start</span>=<span class="string">"true"</span> <span class="attr">users</span>=<span class="string">"rsync"</span> <span class="attr">passwordfile</span>=<span class="string">"/etc/rsync_client.pass "</span>/&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">userDefinedPort</span> <span class="attr">start</span>=<span class="string">"false"</span> <span class="attr">port</span>=<span class="string">"873"</span>/&gt;</span><span class="comment">&lt;!-- port=874 --&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">timeout</span> <span class="attr">start</span>=<span class="string">"false"</span> <span class="attr">time</span>=<span class="string">"100"</span>/&gt;</span><span class="comment">&lt;!-- timeout=100 --&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">ssh</span> <span class="attr">start</span>=<span class="string">"false"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">rsync</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">failLog</span> <span class="attr">path</span>=<span class="string">"/tmp/rsync_fail_log.log"</span> <span class="attr">timeToExecute</span>=<span class="string">"10"</span>/&gt;</span></div><div class="line">	<span class="comment">&lt;!--default every 60mins execute once--&gt;</span></div><div class="line">	<span class="comment">&lt;!--是否启用执行完整rsync，并指定执行周期 --&gt;</span>     </div><div class="line">	<span class="tag">&lt;<span class="name">crontab</span> <span class="attr">start</span>=<span class="string">"true"</span> <span class="attr">schedule</span>=<span class="string">"5"</span>&gt;</span><span class="comment">&lt;!--5mins--&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">crontabfilter</span> <span class="attr">start</span>=<span class="string">"true"</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">exclude</span> <span class="attr">expression</span>=<span class="string">"log.txt"</span>&gt;</span><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">exclude</span> <span class="attr">expression</span>=<span class="string">"(.*)\.svn"</span>&gt;</span><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">exclude</span> <span class="attr">expression</span>=<span class="string">"(.*)\.gz"</span>&gt;</span><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">exclude</span> <span class="attr">expression</span>=<span class="string">"info/*"</span>&gt;</span><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></div><div class="line">	    <span class="tag">&lt;/<span class="name">crontabfilter</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">crontab</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">plugin</span> <span class="attr">start</span>=<span class="string">"false"</span> <span class="attr">name</span>=<span class="string">"command"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">sersync</span>&gt;</span></div><div class="line">  </div><div class="line">    <span class="tag">&lt;<span class="name">plugin</span> <span class="attr">name</span>=<span class="string">"command"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">param</span> <span class="attr">prefix</span>=<span class="string">"/bin/sh"</span> <span class="attr">suffix</span>=<span class="string">""</span> <span class="attr">ignoreError</span>=<span class="string">"true"</span>/&gt;</span>	<span class="comment">&lt;!--prefix /opt/tongbu/mmm.sh suffix--&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">filter</span> <span class="attr">start</span>=<span class="string">"false"</span>&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">include</span> <span class="attr">expression</span>=<span class="string">"(.*)\.php"</span>/&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">include</span> <span class="attr">expression</span>=<span class="string">"(.*)\.sh"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">filter</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">plugin</span> <span class="attr">name</span>=<span class="string">"socket"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">localpath</span> <span class="attr">watch</span>=<span class="string">"/opt/tongbu"</span>&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">deshost</span> <span class="attr">ip</span>=<span class="string">"192.168.138.20"</span> <span class="attr">port</span>=<span class="string">"8009"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">localpath</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">plugin</span> <span class="attr">name</span>=<span class="string">"refreshCDN"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">localpath</span> <span class="attr">watch</span>=<span class="string">"/data0/htdocs/cms.xoyo.com/site/"</span>&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">cdninfo</span> <span class="attr">domainname</span>=<span class="string">"ccms.chinacache.com"</span> <span class="attr">port</span>=<span class="string">"80"</span> <span class="attr">username</span>=<span class="string">"xxxx"</span> <span class="attr">passwd</span>=<span class="string">"xxxx"</span>/&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">sendurl</span> <span class="attr">base</span>=<span class="string">"http://pic.xoyo.com/cms"</span>/&gt;</span></div><div class="line">	    <span class="tag">&lt;<span class="name">regexurl</span> <span class="attr">regex</span>=<span class="string">"false"</span> <span class="attr">match</span>=<span class="string">"cms.xoyo.com/site([/a-zA-Z0-9]*).xoyo.com/images"</span>/&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">localpath</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">chmod 600 /etc/rsync_client.pass </div><div class="line">/etc/rsync/sersync2 -r -d -o /etc/rsync/confxml.xml</div><div class="line"> </div><div class="line">-d:启用守护进程模式</div><div class="line">-r:在监控前，将监控目录与远程主机用rsync命令推送一遍</div><div class="line">-n: 指定开启守护线程的数量，默认为10个</div><div class="line">-o:指定配置文件，默认使用confxml.xml文件</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/sersync/">sersync</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2019/01/10/yw-sersync/" data-title="Sersync+Rsync文件同步 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2019/01/07/yw-apollo/"  title="Apollo配置中心">
+ <strong>旧一篇:</strong><br/> 
+ <span>Apollo配置中心
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Sersync+Rsync文件同步" data-thread-key="yw-sersync" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-sersync"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

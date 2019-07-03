@@ -1,0 +1,373 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>运维 Git日常笔记 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="常用命令12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758git push origin master		# 将本地origin提交到远">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/12/14/yw-git-basic/" title="运维 Git日常笔记" itemprop="url">运维 Git日常笔记</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-12-14T14:10:05.000Z" itemprop="datePublished">2017-12-14</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#常用命令"><span class="toc-number">1.</span> <span class="toc-text">常用命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#git-检查修改"><span class="toc-number">2.</span> <span class="toc-text">git 检查修改</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#git-撤销修改"><span class="toc-number">3.</span> <span class="toc-text">git 撤销修改</span></a></li></ol>
+		</div>
+		
+		<h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">git push origin master		# 将本地origin提交到远端 </div><div class="line">git push origin master -f       # 将本地origin 强制覆盖远端</div><div class="line">git pull --rebase upstream master# 将upstream master 和本地master合并到本地</div><div class="line">git checkout -b xxx   		# 创建并切换到xxx分支;相当于（git branch dev；git checkout dev）</div><div class="line">git checkout xxx      		# 切换到xxx分支</div><div class="line">git checkout -- xxx   		# 撤销xxx文件的修改内容</div><div class="line">git branch            		# 查看本地分支</div><div class="line">git branch -d xxx     		# 删除xxx分支</div><div class="line">git branch -D xxx     		# 强制删除xxx分支</div><div class="line">git status    	      		# 查看文件是否被修改过</div><div class="line">git diff      	      		# 查看文件修改</div><div class="line">git merge dev         		# 将dev分支的工作成果合并到master分支上，git merge命令用于合并指定分支到当前分支(Fast-forward 说明这次合并是&quot;快进模式&quot;)</div><div class="line"> </div><div class="line">##### git clone #####</div><div class="line">git clone git@github.com:ttxsgoto/studypy.git     	# 克隆为origin名称</div><div class="line">git clone -o abc git@github.com:ttxsgoto/studypy.git    # -o 指定 克隆出来的名称为abc</div><div class="line">git clone git@github.com:ttxsgoto/studypy.git  xxx  	# 将远端的版本克隆下来到 xxx文件下</div><div class="line"> </div><div class="line">##### git remote #####</div><div class="line">git remote -v  		   	# 查看主机名称和远端的地址</div><div class="line">git remote show xxx(主机名) 	# 查看xxx的具体相关信息</div><div class="line">git remote add name url    	# 添加仓库名称</div><div class="line">git remote rm name    	   	# 删除本地仓库名称</div><div class="line">git remote rename old new  	# 修改本地仓库名称</div><div class="line"> </div><div class="line">##### git fetch #####</div><div class="line">git fetch    			# 将远程所有的更新取回本地</div><div class="line">git fetch 远程主机名    	 	# 将某个远程主机的更新，全部取回本地</div><div class="line">git fetch 远程主机名    分支名	# 将远程主机的分支，取回本地</div><div class="line"> </div><div class="line">##### git pull #####</div><div class="line">git pull &lt;远程主机名&gt; &lt;远程分支名&gt;:&lt;本地分支名&gt;</div><div class="line">git pull origin master  	# 远程主机的master分支和当前所在分支合并</div><div class="line">git pull origin next:master     # 取回origin主机的next分支和本地master分支合并</div><div class="line">git pull --rebase &lt;remote&gt;  &lt;master&gt;:&lt;master&gt;    # 合并采用--rebase模式合并</div><div class="line"> </div><div class="line">##### git push #####</div><div class="line">git push &lt;远程主机名&gt; &lt;本地分支名&gt;:&lt;远程分支名&gt;</div><div class="line">git push origin master    	# 将本地分支推送与之存在&quot;追踪关系&quot;的远程分支（通常两者同名），如果该远程分支不存在，则会被新建</div><div class="line">git push origin :master    	# 删除远程分支名master</div><div class="line">git push -u origin master    	# -u 选项指定一个默认主机，这样后面就可以不加任何参数使用</div><div class="line">git push --all origin           # 无论是否存在对应的远程分支，将本地的所有分支都推送到远程主机</div><div class="line">git push --force origin         # 远程主机版本比本地版本新，推送时会报错，需要先git pull合并差异在推送，也可以强制推送，添加--force参数</div><div class="line">git push origin --tags          # git push 不会推送标签(tag),可以使用--tags选项，来推送标签</div><div class="line"> </div><div class="line">##### git stash #####</div><div class="line">git stash  			# 将工作暂存起来，进行其他操作</div><div class="line">git stash pop  			# 将栈中的信息重新打开</div><div class="line">git stash list  		# 列出栈中的信息</div><div class="line"> </div><div class="line">##### git log #####</div><div class="line">git log --graph --pretty=oneline --abbrev-commit  # 查看分支合并图</div><div class="line">git log --pretty=oneline</div><div class="line"> </div><div class="line">##### git reset #####</div><div class="line">git log   			# 查看详细日志，有时间点</div><div class="line">git reflog 			# 查看命令历史，以便确定要回到未来的哪个版本</div><div class="line">git reset --hard 83ec811628a08  # 回到相对应的版本，需要知道版本号，版本号没必要写全，前几位就可以</div></pre></td></tr></table></figure>
+<h4 id="git-检查修改"><a href="#git-检查修改" class="headerlink" title="git 检查修改"></a>git 检查修改</h4><ol>
+<li>已修改，未暂存, 查看更改内容— git diff   内容修改后，没有使用 git add xxx 添加到缓存区</li>
+<li>已暂存，未提交, 查看更改内容— git diff –cached  使用git add xxx已添加到缓存区</li>
+<li>已提交，未推送,  查看更改内容— git diff master origin/master 使用git commit 提交到本地仓库<br> – 这里master就是你的本地仓库，而origin/master就是你的远程仓库<br> – master是主分支的意思,origin就代表远程<br> – 比较本地master和origin的master区别</li>
+</ol>
+<h4 id="git-撤销修改"><a href="#git-撤销修改" class="headerlink" title="git 撤销修改"></a>git 撤销修改</h4><ol>
+<li>已修改，未暂存,  撤销修改内容— git reset –hard 或者(git checkout xxx) 内容修改后，没有使用 git add xxx 添加到缓存区</li>
+<li>已暂存，未提交,  撤销修改内容— git reset –hard 或者(git reset 然后执行 git checkout xxx)  使用git add xxx已添加到缓存区</li>
+<li>已提交，未推送,  撤销修改内容— git reset –hard origin/master  使用git commit 提交到本地仓库<br> – git reset –hard origin/master 远程仓库把代码取回来</li>
+<li>已推送到远程仓库, 撤销修改内容,回到上一个版本 — git reset –hard HEAD^ 然后git push origin master -f<br> –  回滚到上一个版本<br> –  将本地分支，强制覆盖origin maser</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Git/">Git</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/12/14/yw-git-basic/" data-title="运维 Git日常笔记 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/12/16/scrapy-sample/" title="Scrapy Scrapy抓取本站博客">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Scrapy Scrapy抓取本站博客</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/12/13/python-selenium/"  title="Python Selenium模块">
+ <strong>旧一篇:</strong><br/> 
+ <span>Python Selenium模块
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="运维 Git日常笔记" data-thread-key="yw-git-basic" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-git-basic"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

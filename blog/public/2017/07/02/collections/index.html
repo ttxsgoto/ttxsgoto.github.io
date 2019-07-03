@@ -1,0 +1,368 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Python Collections模块 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Python拥有内置的数据类型，比如str, int, list, tuple, dict；collections模块在这基础上进行了扩展，使用更加灵活，常用方法整理如下：
+namedtuple功能:将名称映射到序列的元素上 namedtuple是不可变的;用于将元祖的位置访问转换为通过名称访问,使">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/02/collections/" title="Python Collections模块" itemprop="url">Python Collections模块</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-07-02T12:53:00.000Z" itemprop="datePublished">2017-07-02</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#namedtuple"><span class="toc-number">1.</span> <span class="toc-text">namedtuple</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Counter"><span class="toc-number">2.</span> <span class="toc-text">Counter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#OrderedDict"><span class="toc-number">3.</span> <span class="toc-text">OrderedDict</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#defaultdict"><span class="toc-number">4.</span> <span class="toc-text">defaultdict</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考链接"><span class="toc-number">5.</span> <span class="toc-text">参考链接</span></a></li></ol>
+		</div>
+		
+		<p>Python拥有内置的数据类型，比如str, int, list, tuple, dict；collections模块在这基础上进行了扩展，使用更加灵活，常用方法整理如下：</p>
+<h4 id="namedtuple"><a href="#namedtuple" class="headerlink" title="namedtuple"></a>namedtuple</h4><p>功能:将名称映射到序列的元素上 namedtuple是不可变的;用于将元祖的位置访问转换为通过名称访问,使代码易读；<br>常用于将csv/sqlite3中得到的大型元祖列表,通过元素来访问数据,容易出错,这时将返回的元祖转换为命名元祖就很有必要<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># encoding: utf-8</span></div><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> namedtuple</div><div class="line"><span class="keyword">import</span> csv</div><div class="line"> </div><div class="line">EmployeeRecord = namedtuple(<span class="string">'EmployeeRecord'</span>, <span class="string">'name, age, title, department, paygrade'</span>)  <span class="comment"># typename: 元组名称 field_names: 元祖字段名称</span></div><div class="line"><span class="keyword">for</span> emp <span class="keyword">in</span> map(EmployeeRecord._make, csv.reader(open(<span class="string">"employees.csv"</span>, <span class="string">"rb"</span>))):</div><div class="line">    <span class="keyword">print</span> emp.name, emp.title</div><div class="line"> </div><div class="line"><span class="keyword">import</span> sqlite3</div><div class="line">conn = sqlite3.connect(<span class="string">'/companydata'</span>)</div><div class="line">cursor = conn.cursor()</div><div class="line">cursor.execute(<span class="string">'SELECT name, age, title, department, paygrade FROM employees'</span>)</div><div class="line"><span class="keyword">for</span> emp <span class="keyword">in</span> map(EmployeeRecord._make, cursor.fetchall()):</div><div class="line">    <span class="keyword">print</span> emp.name, emp.title</div><div class="line"> </div><div class="line">dict_website=[(<span class="string">'a'</span>,<span class="string">'www.a.com'</span>,<span class="string">'aaa'</span>),(<span class="string">'b'</span>,<span class="string">'www.b.com'</span>,<span class="string">'bbb'</span>),(<span class="string">'c'</span>,<span class="string">'www.c.com'</span>,<span class="string">'ccc'</span>)]</div><div class="line">name_websit = namedtuple(<span class="string">'sites'</span>,[<span class="string">'name'</span>,<span class="string">'www'</span>,<span class="string">'finder'</span>])</div><div class="line"><span class="keyword">for</span> website <span class="keyword">in</span> dict_website:</div><div class="line">    <span class="keyword">print</span>  name_websit._make(website)</div><div class="line"> </div><div class="line">Subscriber = namedtuple(<span class="string">'Sub'</span>, <span class="string">'addr, joined, name'</span>)</div><div class="line">list_demo = (<span class="string">'cd'</span>, <span class="string">'2017-07-01'</span>, <span class="string">'ttxsgoto'</span>)</div><div class="line"><span class="keyword">print</span> Subscriber._make(list_demo)</div><div class="line">ttxsgoto = Subscriber(<span class="string">'ttxs'</span>, <span class="string">'2017-07-01'</span>, <span class="string">'goto'</span>)</div><div class="line"><span class="keyword">print</span> ttxsgoto</div><div class="line"><span class="keyword">print</span> ttxsgoto.addr, ttxsgoto.joined, len(ttxsgoto)</div><div class="line"><span class="comment">########## 结果 ##########</span></div><div class="line"><span class="string">"""</span></div><div class="line">sites(name='a', www='www.a.com', finder='aaa')</div><div class="line">sites(name='b', www='www.b.com', finder='bbb')</div><div class="line">sites(name='c', www='www.c.com', finder='ccc')</div><div class="line">Sub(addr='cd', joined='2017-07-01', name='ttxsgoto')</div><div class="line">Sub(addr='ttxs', joined='2017-07-01', name='goto')</div><div class="line">ttxs 2017-07-01 3</div><div class="line">"""</div></pre></td></tr></table></figure></p>
+<h4 id="Counter"><a href="#Counter" class="headerlink" title="Counter"></a>Counter</h4><p>功能:统计序列中元素出现的次数<br>most_common(n): 统计出现次数,从高到低,依次排列个数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># encoding: utf-8</span></div><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</div><div class="line"> </div><div class="line">default_list = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'b'</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">3</span>]</div><div class="line">c = Counter(default_list)</div><div class="line"> </div><div class="line"><span class="keyword">print</span> c, c.most_common(<span class="number">2</span>)</div><div class="line"><span class="comment">########## 结果 ##########</span></div><div class="line"><span class="comment"># Counter(&#123;1: 2, 'b': 2, 'a': 1, 3: 1&#125;) [(1, 2), ('b', 2)]</span></div></pre></td></tr></table></figure></p>
+<h4 id="OrderedDict"><a href="#OrderedDict" class="headerlink" title="OrderedDict"></a>OrderedDict</h4><p>功能:指定字典中的顺序,根据添加顺序排序,大小为普通dict的2倍多<br>因为添加了额外的链表,如果涉及大量数据,需要考虑本身占用的内存<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># encoding: utf-8</span></div><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> OrderedDict</div><div class="line"> </div><div class="line">items = (</div><div class="line">    (<span class="string">'a'</span>,<span class="number">1</span>),</div><div class="line">    (<span class="string">'b'</span>,<span class="number">2</span>),</div><div class="line">    (<span class="string">'c'</span>,<span class="number">3</span>),</div><div class="line">)</div><div class="line"> </div><div class="line">default_dict = dict(items)</div><div class="line">order_dict = OrderedDict(items)</div><div class="line"> </div><div class="line"><span class="keyword">print</span> default_dict, order_dict</div><div class="line"><span class="comment">########## 结果 ##########</span></div><div class="line"><span class="comment"># &#123;'a': 1, 'c': 3, 'b': 2&#125; OrderedDict([('a', 1), ('b', 2), ('c', 3)])</span></div></pre></td></tr></table></figure></p>
+<h4 id="defaultdict"><a href="#defaultdict" class="headerlink" title="defaultdict"></a>defaultdict</h4><p>功能:带有默认值的字典, 一键多值的字典<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/env python</span></div><div class="line"><span class="comment"># encoding: utf-8</span></div><div class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</div><div class="line"> </div><div class="line">members = (</div><div class="line">    [<span class="string">'male'</span>, <span class="string">'John'</span>],</div><div class="line">    [<span class="string">'male'</span>, <span class="string">'Jack'</span>],</div><div class="line">    [<span class="string">'female'</span>, <span class="string">'Lily'</span>],</div><div class="line">    [<span class="string">'male'</span>, <span class="string">'Pony'</span>],</div><div class="line">    [<span class="string">'female'</span>, <span class="string">'Lucy'</span>],</div><div class="line">)</div><div class="line"> </div><div class="line">result_list = defaultdict(list)  <span class="comment"># 默认列表</span></div><div class="line">result_dict = defaultdict(dict)  <span class="comment"># 默认字典</span></div><div class="line">result_set = defaultdict(set)    <span class="comment"># 默认集合</span></div><div class="line"> </div><div class="line"><span class="keyword">for</span> sex, name <span class="keyword">in</span> members:</div><div class="line">    result_list[sex].append(name)  <span class="comment"># 列表</span></div><div class="line">    result_dict[sex] = name        <span class="comment"># 字典</span></div><div class="line">    result_set[sex].add(name)      <span class="comment"># 集合</span></div><div class="line"> </div><div class="line"><span class="keyword">print</span> result_list, result_dict, result_set</div><div class="line"><span class="comment">########## 结果 ##########</span></div><div class="line"><span class="string">"""</span></div><div class="line">defaultdict(&lt;type 'list'&gt;, &#123;'male': ['John', 'Jack', 'Pony'], 'female': ['Lily', 'Lucy']&#125;)</div><div class="line">defaultdict(&lt;type 'dict'&gt;, &#123;'male': 'Pony', 'female': 'Lucy'&#125;)</div><div class="line">defaultdict(&lt;type 'set'&gt;, &#123;'male': set(['John', 'Pony', 'Jack']), 'female': set(['Lily', 'Lucy'])&#125;)</div><div class="line">"""</div></pre></td></tr></table></figure></p>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><p><a href="https://docs.python.org/2/library/collections.html#module-collections" target="_blank" rel="external">https://docs.python.org/2/library/collections.html#module-collections</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Collections/">Collections</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/07/02/collections/" data-title="Python Collections模块 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/07/15/django-forms/" title="Django Forms表单">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Django Forms表单</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/06/14/setup/"  title="Python Setuptools模块">
+ <strong>旧一篇:</strong><br/> 
+ <span>Python Setuptools模块
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Python Collections模块" data-thread-key="collections" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/collections"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,472 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Mysql必知必会笔记 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="最近看了一下mysql基础知识， 主要集中在相关查询操作上，记录如下：
+其中使用的数据库结构和数据为http://forta.com/books/0672327120/ 中的SQL脚本
+计算次序12345SELECT * FROM products WHERE vend_id=1002 or ven">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/09/16/mysql-queryset/" title="Mysql必知必会笔记" itemprop="url">Mysql必知必会笔记</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-09-16T11:02:58.000Z" itemprop="datePublished">2018-09-16</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#计算次序"><span class="toc-number">1.</span> <span class="toc-text">计算次序</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#正则表达式"><span class="toc-number">2.</span> <span class="toc-text">正则表达式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建计算字段"><span class="toc-number">3.</span> <span class="toc-text">创建计算字段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用数据处理函数"><span class="toc-number">4.</span> <span class="toc-text">使用数据处理函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#汇总数据"><span class="toc-number">5.</span> <span class="toc-text">汇总数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#分组数据"><span class="toc-number">6.</span> <span class="toc-text">分组数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用子查询"><span class="toc-number">7.</span> <span class="toc-text">使用子查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#联结表查询"><span class="toc-number">8.</span> <span class="toc-text">联结表查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#组合查询"><span class="toc-number">9.</span> <span class="toc-text">组合查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#全文本搜索"><span class="toc-number">10.</span> <span class="toc-text">全文本搜索</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#视图"><span class="toc-number">11.</span> <span class="toc-text">视图</span></a></li></ol>
+		</div>
+		
+		<p>最近看了一下mysql基础知识， 主要集中在相关查询操作上，记录如下：</p>
+<p>其中使用的数据库结构和数据为<a href="http://forta.com/books/0672327120/" target="_blank" rel="external">http://forta.com/books/0672327120/</a> 中的SQL脚本</p>
+<h4 id="计算次序"><a href="#计算次序" class="headerlink" title="计算次序"></a>计算次序</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">SELECT * FROM products WHERE vend_id=1002 or vend_id =1003;</div><div class="line">SELECT * FROM products WHERE (vend_id=1002 or vend_id=1003) AND prod_price &gt;=10;</div><div class="line">SELECT * FROM products WHERE vend_id not in (1002, 1003) ORDER BY prod_name;</div><div class="line">SELECT * FROM products ;</div><div class="line">SELECT * FROM products WHERE prod_name like &apos;_ ton anv%&apos;;	# _ 只匹配单个字符而不是多个字符</div></pre></td></tr></table></figure>
+<h4 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">SELECT * FROM products ;</div><div class="line">SELECT * FROM products WHERE prod_name REGEXP &apos;.000&apos; ORDER BY prod_name;	# 匹配任意一个字符</div><div class="line">SELECT * FROM products WHERE prod_name regexp &apos;1000|2000&apos;;</div><div class="line">SELECT * FROM products WHERE prod_name regexp &apos;[123] ton&apos;;</div></pre></td></tr></table></figure>
+<h4 id="创建计算字段"><a href="#创建计算字段" class="headerlink" title="创建计算字段"></a>创建计算字段</h4><p>拼接： 将值联结到一起构成单个值， 使用Concat()函数来来拼接两个列, 函数中为多个字符串<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SELECT CONCAT(vend_name, &apos; (&apos;, vend_country, &apos;) &apos;) AS vend_title FROM vendors order by vend_name;</div></pre></td></tr></table></figure></p>
+<p>执行算术计算<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SELECT prod_id, quantity, item_price, quantity*item_price as total_price FROM orderitems WHERE order_num=20005;</div></pre></td></tr></table></figure></p>
+<h4 id="使用数据处理函数"><a href="#使用数据处理函数" class="headerlink" title="使用数据处理函数"></a>使用数据处理函数</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">日期和时间处理函数</div><div class="line">ADDDATE(expr,days)	添加一个日期(天，周等)</div><div class="line">ADDTIME(expr1,expr2)	添加一个时间(时，分等)</div><div class="line">CURDATE()	返回当前日期</div><div class="line">CURTIME()	返回当前时间</div><div class="line">DATE(expr)	返回日期时间的日期部分</div><div class="line">DATEDIFF(expr1,expr2)	计算两个日期之差</div><div class="line">DATE_ADD(date,INTERVAL expr unit)	高度灵活的日期运算函数</div><div class="line">DATE_FORMAT(date,format)	返回一个格式化的日期或时间串</div><div class="line">DAY(date)	返回一个日期的天数部分</div><div class="line">DAYOFWEEK(date)	对于一个日期，返回对应的星期几</div><div class="line">HOUR(time)	返回一个时间的小时部分</div><div class="line">MINUTE(time)	返回一个时间的分钟部分</div><div class="line">MONTH(date)	返回一个日期的月份部分</div><div class="line">NOW()		返回当前日期和时间</div><div class="line">SECOND(time)	返回一个时间的秒部分</div><div class="line">TIME(expr)	返回一个日期时间的时间部分</div><div class="line">YEAR()		返回一个日期的年份部分</div><div class="line"> </div><div class="line">数值处理函数</div><div class="line">ABS(X)	返回一个数的绝对值</div><div class="line">COS(X)	返回一个角度的余弦</div><div class="line">EXP(X)	返回一个数的指数值</div><div class="line">MOD(N,M)	返回除操作的余数</div><div class="line">PI()	返回圆周率</div><div class="line">RAND()	返回一个随机数</div><div class="line">SIN(X)	返回一个角度的正弦</div><div class="line">SQRT(X)	返回一个数的平方根</div><div class="line">TAN(X)	返回一个角度的正切</div><div class="line"> </div><div class="line">SELECT * FROM orders;</div><div class="line">SELECT * from orders WHERE DATE(order_date) = &apos;2005-09-01&apos;;</div><div class="line">SELECT * FROM orders WHERE DATE(order_date) BETWEEN &apos;2005-09-01&apos; and &apos;2005-10-01&apos;;</div><div class="line">SELECT * from orders where YEAR(order_date)=2005 and MONTH(order_date) = 10;</div></pre></td></tr></table></figure>
+<h4 id="汇总数据"><a href="#汇总数据" class="headerlink" title="汇总数据"></a>汇总数据</h4><ul>
+<li>聚合函数<br>  运行在行组上，计算和返回单个值的函数</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">AVG([DISTINCT] expr)	返回某列的平均值</div><div class="line">COUNT(expr)	返回某列的行数</div><div class="line">MAX(expr)	返回某列的最大值</div><div class="line">MIN(expr)	返回某列的最小值</div><div class="line">SUM(expr)	返回某列值之和</div><div class="line"> </div><div class="line"> </div><div class="line">SELECT AVG(prod_price) AS avg_price FROM products WHERE vend_id=1003;</div><div class="line">SELECT COUNT(*) FROM customers;</div><div class="line">SELECT COUNT(cust_email) FROM customers;</div><div class="line">SELECT SUM(item_price* quantity) FROM orderitems WHERE order_num=20005;</div><div class="line">-- 集合不同值 DISTINCT</div><div class="line">SELECT AVG(DISTINCT prod_price) AS avg_price FROM products WHERE vend_id=1003;</div><div class="line">SELECT COUNT(*) AS num_items, MIN(prod_price), MAX(prod_price), AVG(prod_price) FROM products;</div></pre></td></tr></table></figure>
+<h4 id="分组数据"><a href="#分组数据" class="headerlink" title="分组数据"></a>分组数据</h4><ul>
+<li>分组允许把数据分为多个逻辑组，以便能对每个组进行聚集计算</li>
+<li>WHERE 过滤行， HAVING 过滤分组</li>
+<li>WHERE 在数据分组前进行过滤，having在数据分组后进行过滤</li>
+<li>GROUP BY子句可以包含任何数目的列</li>
+<li>如果在group by子句中嵌套了分组， 数据将在最后规定的分组上进行汇总</li>
+<li>GROUP BY子句中列出的每个列都必须是检索列或有效的表达式(单不能是聚集函数)</li>
+<li>SELECT 语句中的每个列都必须在group by 子句中给出</li>
+<li>如果分组列中具有null值，则null将作为一个分组返回，如果列中有多行null值，它们将分为一组</li>
+<li>GROUP BY 子句必须出现在where子句之后，order by子句之前</li>
+<li>使用 with rollup关键字， 可以得到每个分组汇总的值</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">SELECT * FROM orders;</div><div class="line">SELECT vend_id, COUNT(*) as num FROM products GROUP BY vend_id WITH ROLLUP;</div><div class="line">SELECT cust_id,COUNT(*) as order_count FROM orders GROUP BY cust_id HAVING order_count &gt;= 2;</div><div class="line">SELECT * FROM products;</div><div class="line">SELECT vend_id,COUNT(*) FROM products WHERE prod_price &gt;=10 GROUP BY vend_id HAVING COUNT(*) &gt;=2;</div></pre></td></tr></table></figure>
+<p>SELECT子句及其顺序</p>
+<table>
+<thead>
+<tr>
+<th>子句</th>
+<th>说明</th>
+<th>是否必须使用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SELECT</td>
+<td>要返回的列或表达式</td>
+<td>是</td>
+</tr>
+<tr>
+<td>FROM</td>
+<td>从中检索数据的表</td>
+<td>仅在从表选择数据时使用</td>
+</tr>
+<tr>
+<td>WHERE</td>
+<td>行级过滤</td>
+<td>否</td>
+</tr>
+<tr>
+<td>GROUP BY</td>
+<td>分组说明</td>
+<td>仅在按组计算聚集时使用</td>
+</tr>
+<tr>
+<td>HAVING</td>
+<td>组级过滤</td>
+<td>否</td>
+</tr>
+<tr>
+<td>ORDER BY</td>
+<td>输出排序顺序</td>
+<td>否</td>
+</tr>
+<tr>
+<td>LIMIT</td>
+<td>要检索的行数</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SELECT order_num, SUM(quantity*item_price) AS total  FROM orderitems GROUP BY order_num HAVING total &gt;=50 ORDER BY total;</div></pre></td></tr></table></figure>
+<h4 id="使用子查询"><a href="#使用子查询" class="headerlink" title="使用子查询"></a>使用子查询</h4><p>子查询：嵌套在其他查询中的查询<br>子查询进行过滤<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">SELECT * FROM orderitems WHERE prod_id=&apos;TNT2&apos;;</div><div class="line">SELECT * FROM orders WHERE order_num in (20005, 20007);</div><div class="line">SELECT cust_id FROM orders WHERE order_num in (SELECT order_num FROM orderitems WHERE prod_id=&apos;TNT2&apos;);</div><div class="line">SELECT cust_name, cust_contact FROM customers WHERE cust_id IN (SELECT cust_id FROM orders WHERE order_num in (SELECT order_num FROM orderitems WHERE prod_id=&apos;TNT2&apos;));</div></pre></td></tr></table></figure></p>
+<p>计算字段使用子查询</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">SELECT COUNT(*) AS orders FROM orders WHERE cust_id=10001;</div><div class="line"></div><div class="line">SELECT cust_name, cust_state, (SELECT COUNT(*) FROM orders WHERE orders.cust_id = customers.cust_id) AS orders FROM customers ORDER BY cust_name;</div></pre></td></tr></table></figure>
+<h4 id="联结表查询"><a href="#联结表查询" class="headerlink" title="联结表查询"></a>联结表查询</h4><ul>
+<li>内部联结： 基于两个表之间的相等测试</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">SELECT vend_name, prod_name, prod_price FROM vendors INNER JOIN products ON vendors.vend_id = products.vend_id;</div><div class="line">SELECT prod_name, vend_name, prod_price, quantity FROM orderitems, products, vendors WHERE products.vend_id = vendors.vend_id AND orderitems.prod_id = products.prod_id AND order_num=20005;</div><div class="line">SELECT cust_name, cust_contact FROM customers, orders, orderitems WHERE customers.cust_id = orders.cust_id AND orderitems.order_num = orders.order_num AND prod_id = &apos;TNT2&apos;;</div></pre></td></tr></table></figure>
+<h4 id="组合查询"><a href="#组合查询" class="headerlink" title="组合查询"></a>组合查询</h4><p>利用union操作符将多条select组合成一个结果集<br>使用场景：</p>
+<pre><code>- 在单个查询中从不同的表返回类似结构的数据
+- 对单个表执行多个查询，按单个查询返回数据
+</code></pre><p> 规则：</p>
+<ul>
+<li>SELECT 语句之间使用UNION关键字连接</li>
+<li>UNION每个查询必须包含相同的列、表达式或者聚集函数</li>
+<li>列数据类型必须兼容，类型不必完全相同，但必须是DBMS可以隐含地转换类型</li>
+<li>UNION 从查询结果中自动去除了重复的行，如果需要返回所有匹配行，可以使用UNION ALL来展示</li>
+<li>UNION 只能使用一条ORDER BY 子句，必须出现在最后一条SELECT语句之后,作用于所有SELECT语句返回的结果</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">SELECT vend_id, prod_id, prod_price FROM products WHERE prod_price&lt;=5;</div><div class="line">SELECT vend_id, prod_id, prod_price FROM products WHERE vend_id IN (1001, 1002);</div><div class="line">SELECT vend_id, prod_id, prod_price FROM products WHERE prod_price &lt;=5 UNION ALL SELECT vend_id, prod_id, prod_price FROM products WHERE vend_id IN (1001,1002);</div><div class="line">SELECT vend_id, prod_id, prod_price FROM products WHERE prod_price&lt;=5 OR vend_id IN (1001, 1002);</div><div class="line">SELECT vend_id, prod_id, prod_price FROM products WHERE prod_price&lt;=5 UNION SELECT  vend_id, prod_id, prod_price FROM products WHERE vend_id IN (1001,1002) ORDER BY vend_id,prod_price;</div></pre></td></tr></table></figure>
+<h4 id="全文本搜索"><a href="#全文本搜索" class="headerlink" title="全文本搜索"></a>全文本搜索</h4><ul>
+<li>MyISAM引擎支持全文本搜索，InnoDB不支持</li>
+<li>MATCH()指定被搜索的列</li>
+<li>Against()指定要使用的搜索表达式</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">SELECT * FROM productnotes WHERE MATCH(note_text) Against(&apos;rabbit&apos;);</div><div class="line">SELECT * FROM productnotes WHERE note_text like &quot;%rabbit%&quot;;</div><div class="line">SELECT * FROM productnotes WHERE MATCH(note_text) Against(&apos;anvils&apos;);</div></pre></td></tr></table></figure>
+<h4 id="视图"><a href="#视图" class="headerlink" title="视图"></a>视图</h4><p>视图是虚拟的表， 视图只包含使用时动态检索数据的查询</p>
+<p>视图功能</p>
+<pre><code>- 重用sql语句
+- 简化复杂的sql操作
+- 使用表的组成部分而不是整个表
+- 保护数据
+- 更改数据格式和表示 
+</code></pre><p>基本语句</p>
+<pre><code>- 创建使用 CREATE VIEW
+- 查看创建视图的语句 SHOW CREATE VIEW viewname
+- 删除视图， DROP VIEW viewname
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">SELECT cust_name, cust_contact FROM customers, orders, orderitems WHERE customers.cust_id = orders.cust_id AND </div><div class="line">orderitems.order_num = orders.order_num AND prod_id=&quot;TNT2&quot;;</div><div class="line">-- 创建视图</div><div class="line">CREATE VIEW productcustomers AS SELECT cust_name, cust_contact, prod_id FROM customers, orders, orderitems WHERE customers.cust_id=orders.cust_id AND</div><div class="line">orderitems.order_num = orders.order_num;</div><div class="line">SELECT cust_name, cust_contact FROM productcustomers;</div><div class="line">SELECT cust_name, cust_contact FROM productcustomers WHERE prod_id=&apos;TNT2&apos;;</div><div class="line">-- 重新格式化检索出的数据</div><div class="line">CREATE VIEW vendorlocations AS SELECT CONCAT(RTRIM(vend_name), &apos;(&apos;, RTRIM(vend_country), &apos;)&apos;) AS vend_title FROM vendors ORDER BY vend_name;</div><div class="line">SELECT * FROM vendorlocations;</div><div class="line">-- 视图过滤不想要的数据</div><div class="line">CREATE VIEW customeremiallist AS SELECT * FROM customers WHERE cust_email IS NOT NULL;</div><div class="line">SELECT * FROM customeremiallist;</div><div class="line">-- 使用视图与计算字段</div><div class="line">CREATE VIEW orderitemsexpanded AS SELECT order_num, prod_id, quantity, item_price, quantity*item_price AS expanded_price FROM orderitems;</div><div class="line">SELECT * FROM orderitemsexpanded WHERE order_num=20005;</div><div class="line">-- 查看视图</div><div class="line">SHOW CREATE VIEW orderitemsexpanded;</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Mysql/">Mysql</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Mysql/">Mysql</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/09/16/mysql-queryset/" data-title="Mysql必知必会笔记 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/09/17/django-migrations-error/" title="Django mgirate 错误">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Django mgirate 错误</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/25/rabbitmq/"  title="RabbitMQ">
+ <strong>旧一篇:</strong><br/> 
+ <span>RabbitMQ
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Mysql必知必会笔记" data-thread-key="mysql-queryset" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/mysql-queryset"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
