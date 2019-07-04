@@ -15,6 +15,12 @@ categories:
 - 按照对应的数据格式，填充到option中
 - 多组数据通过for循环来完成
 
+### 效果图
+
+![](https://ttxsgoto.github.io/img/vue/echarts/bar.png)
+![](https://ttxsgoto.github.io/img/vue/echarts/line.png)
+![](https://ttxsgoto.github.io/img/vue/echarts/pie.png)
+
 ### 实例
 - chart.vue组件
 ```bash
@@ -90,7 +96,7 @@ categories:
 ```bash
 <style scoped lang="less">
 </style>
-   
+ 
 <template>
   <div>
     <h2>Bar Num</h2>
@@ -119,26 +125,26 @@ export default {
       // 模拟后端返回的数据
       dateTime: ["20190624", "20190625", "20190626", "20190627"],
       selectObject: {
-        'gps_time_std': [7, 5, 15, 10],
-        'video_not_exist': [2, 5, 10, 8],
+        'TYPE01': [7, 5, 15, 10],
+        'TYPE02': [2, 5, 10, 8],
       },
       selectAllObject: {
-        'meta_wrong':{
+        'TYPE03':{
           'total_num': [20, 20, 25, 30],
           'error_num': [3, 5, 5, 10]
         },
-        'meta_not_exist': {
+        'TYPE04': {
           'total_num': [20, 20, 25, 30],
           'error_num': [2, 5, 15, 8]
         }
       },
       optionData: [],
       optionAllData: [],
-  
+
       // Pie数据
       pieOption: {
         title : {
-          text: 'TYPE',
+          text: 'COLOUR TYPE',
           // subtext: '-',
           x:'center'
         },
@@ -149,7 +155,7 @@ export default {
         legend: {
             orient: 'vertical',
             left: 'left',
-            data: ['type01','type02','type03','type04']
+            data: ['RED','BLUE','YELLOW','GREEN']
         },
         // 保存为图片设置
         toolbox: {
@@ -164,15 +170,15 @@ export default {
           }
         },
         series : [{
-            name: 'TYPE',
+            name: 'COLOUR TYPE',
             type: 'pie',
             radius : '55%',
             center: ['50%', '50%'],
             data:[
-                {value:335, name:'type01'},
-                {value:310, name:'type02'},
-                {value:234, name:'type03'},
-                {value:135, name:'type04'},
+                {value:335, name:'RED'},
+                {value:310, name:'BLUE'},
+                {value:234, name:'YELLOW'},
+                {value:135, name:'GREEN'},
             ],
             itemStyle: {
               emphasis: {
@@ -313,12 +319,3 @@ export default {
 }
 </script>
 ```
-### 效果图
---
-
-
-
-
-
-
-
