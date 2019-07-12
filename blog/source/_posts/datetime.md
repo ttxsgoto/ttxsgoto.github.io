@@ -42,26 +42,26 @@ python中时间日期格式化符号：
 把str转换为datetime,转换方法是通过datetime.strptime()实现，需要一个日期和时间的格式化字符串
 '''
 In [1]: from datetime import datetime
-
+ 
 In [2]: print datetime.now()
 2017-04-10 21:10:03.619051
-
+ 
 In [3]: type(datetime.now())
 Out[3]: datetime.datetime
-
+ 
 In [4]: str = '2017-04-10 21:13:14'
-
+ 
 In [5]: type(str)
 Out[5]: str
-
+ 
 In [6]: daytime = datetime.strptime(str,'%Y-%m-%d %H:%M:%S')
-
+ 
 In [7]: daytime
 Out[7]: datetime.datetime(2017, 4, 10, 21, 13, 14)
-
+ 
 In [8]: print daytime
 2017-04-10 21:13:14
-
+ 
 In [9]: type(daytime)
 Out[9]: datetime.datetime
 ```
@@ -72,10 +72,10 @@ Out[9]: datetime.datetime
 In [1]: import datetime
 In [2]: datetime.datetime.now().date()
 Out[2]: datetime.date(2017, 6, 20)
-
+ 
 # date ——> datetime
 In [5]: today = datetime.date.today()
-
+ 
 In [6]: datetime.datetime.combine(today, datetime.time())
 Out[6]: datetime.datetime(2017, 6, 20, 0, 0)
 In [7]: datetime.datetime.combine(today, datetime.time.min)
@@ -88,27 +88,27 @@ datetime是模块，datetime模块还包含一个datetime类，通过from dateti
 如果仅导入import datetime，则需要使用datetime.datetime.now()返回当前日期和时间，其类型是datetime
 '''
 In [1]: from datetime import datetime
-
+ 
 In [2]: now = datetime.now()
-
+ 
 In [3]: now
 Out[3]: datetime.datetime(2017, 4, 10, 20, 11, 7, 241762)
-
+ 
 In [4]: print now
 2017-04-10 20:11:07.241762
-
+ 
 In [5]: type(now)
 Out[5]: datetime.datetime
 ```
 #### 特定时间
 ```python
 In [1]: from datetime import datetime
-
+ 
 In [2]: day = datetime(2017,4,10,13,14)
-
+ 
 In [3]: day
 Out[3]: datetime.datetime(2017, 4, 10, 13, 14)
-
+ 
 In [4]: print day
 2017-04-10 13:14:00
 ```
@@ -118,18 +118,18 @@ In [4]: print day
 对日期和时间进行加减实际上就是把datetime往后或往前计算，得到新的datetime。加减可以直接用+和-运算符，需要导入timedelta
 '''
 In [1]: from datetime import datetime,timedelta
-
+ 
 In [2]: now = datetime.now()
-
+ 
 In [3]: now
 Out[3]: datetime.datetime(2017, 4, 10, 21, 39, 8, 413031)
-
+ 
 In [4]: now+timedelta(hours=2)
 Out[4]: datetime.datetime(2017, 4, 10, 23, 39, 8, 413031)
-
+ 
 In [5]: now-timedelta(days=2)
 Out[5]: datetime.datetime(2017, 4, 8, 21, 39, 8, 413031)
-
+ 
 In [6]: now+timedelta(days=1,hours=1)
 Out[6]: datetime.datetime(2017, 4, 11, 22, 39, 8, 413031)
 ```
