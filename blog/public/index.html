@@ -89,6 +89,89 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2019/07/28/yw-airflow-dynamic-dags-tasks/" title="Airflow动态生成Tasks和dags" itemprop="url">
+      
+        Airflow动态生成Tasks和dags
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >动态生成task任务现在有这样的需求， 需要根据计算结果动态生成任务列表，来执行dags，查找资料后发现主要使用动态生成TaskInstance实例来完成具体说明如下：
+
+将计算得到值使用Variables变量保存
+  1airflow variables --set keyNa</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-07-28T08:21:22.000Z" itemprop="datePublished">2019-07-28</time>
+      
+          <a href="/2019/07/28/yw-airflow-dynamic-dags-tasks/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2019/07/27/yw-airflow-operator/" title="Airflow变量和执行器" itemprop="url">
+      
+        Airflow变量和执行器
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >问题描述最近在调研Airflow demo相关的问题和解决方案， 主要问题有：
+
+Dags中任务启动时，参数如何传递
+Task任务之间的依赖关系，返回值如何被其他task使用
+运行docker程序
+Http API请求实现
+
+具体说明Dags中任务启动时，参数如何传递Airflo</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-07-27T08:15:08.000Z" itemprop="datePublished">2019-07-27</time>
+      
+          <a href="/2019/07/27/yw-airflow-operator/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2019/07/26/yw-airflow-install/" title="Airflow架构、安装部署" itemprop="url">
+      
+        Airflow架构、安装部署
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >说明Airflow是一个工作流分配管理系统，通过有向非循环图的方式管理任务流程，设置任务依赖关系和时间调度。Airflow独立于我们要运行的任务，只需要把任务的名字和运行方式提供给Airflow作为一个task就可以， 以代码的方式来定义任务执行流程，可操作性强。
+Airflow</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-07-26T07:50:35.000Z" itemprop="datePublished">2019-07-26</time>
+      
+          <a href="/2019/07/26/yw-airflow-install/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2019/07/03/vue-echarts/" title="Vue echarts可视化" itemprop="url">
       
         Vue echarts可视化
@@ -274,90 +357,6 @@ Innodb，需要把数据一行行的从引擎中读出来，然后累积计数�
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/12/28/yw-mysql-order-by/" title="Order by工作原理" itemprop="url">
-      
-        Order by工作原理
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >全字段排序mysql会给每个线程分配一块内存用于排序，称为sort_buffer
-sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-12-28T14:46:51.000Z" itemprop="datePublished">2018-12-28</time>
-      
-          <a href="/2018/12/28/yw-mysql-order-by/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/12/28/yw-mysql-addindex-to-string/" title="字符串加索引" itemprop="url">
-      
-        字符串加索引
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >前缀索引前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数
-在建立索引时需要关注的是区分度，区分度越高越好
-查看对应索引的区分度方法123456select count(distinct a) as L from user;select count(*) as tota</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-12-28T12:41:50.000Z" itemprop="datePublished">2018-12-28</time>
-      
-          <a href="/2018/12/28/yw-mysql-addindex-to-string/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/12/27/yw-mysql-lock/" title="全局锁、表级锁和行锁" itemprop="url">
-      
-        全局锁、表级锁和行锁
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >锁分类
-全局锁
-表级锁
-行锁
-
-全局锁全局锁就是对整个数据库实例加锁命令1flush tables with read lock
-使用该命令后其他线程的执行语句都会被阻塞：数据更新语句(数据的增删改)和数据定义语句(建表和修改表结构等)和更新事务的提交语句
-应用：全库逻辑备份
-
-</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-12-27T14:44:05.000Z" itemprop="datePublished">2018-12-27</time>
-      
-          <a href="/2018/12/27/yw-mysql-lock/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
@@ -414,7 +413,7 @@ sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如
 		
 			<li><a href="/categories/中间件/" title="中间件">中间件<sup>1</sup></a></li>
 		
-			<li><a href="/categories/运维/" title="运维">运维<sup>20</sup></a></li>
+			<li><a href="/categories/运维/" title="运维">运维<sup>23</sup></a></li>
 		
 		</ul>
 </div>
@@ -424,6 +423,8 @@ sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如
 <div class="tagslist">
 	<p class="asidetitle">标签</p>
 		<ul class="clearfix">
+		
+			<li><a href="/tags/Airflow/" title="Airflow">Airflow<sup>3</sup></a></li>
 		
 			<li><a href="/tags/Angularjs/" title="Angularjs">Angularjs<sup>4</sup></a></li>
 		
@@ -462,8 +463,6 @@ sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如
 			<li><a href="/tags/Decorator/" title="Decorator">Decorator<sup>1</sup></a></li>
 		
 			<li><a href="/tags/Deepcopy/" title="Deepcopy">Deepcopy<sup>1</sup></a></li>
-		
-			<li><a href="/tags/Descriptor/" title="Descriptor">Descriptor<sup>2</sup></a></li>
 		
 		</ul>
 </div>
