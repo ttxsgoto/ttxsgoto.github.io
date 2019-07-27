@@ -1,0 +1,405 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Airflow架构、安装部署 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明Airflow是一个工作流分配管理系统，通过有向非循环图的方式管理任务流程，设置任务依赖关系和时间调度。Airflow独立于我们要运行的任务，只需要把任务的名字和运行方式提供给Airflow作为一个task就可以， 以代码的方式来定义任务执行流程，可操作性强。
+Airflow架构Airflow ">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/07/26/yw-airflow-install/" title="Airflow架构、安装部署" itemprop="url">Airflow架构、安装部署</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2019-07-26T07:50:35.000Z" itemprop="datePublished">2019-07-26</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Airflow架构"><span class="toc-number">2.</span> <span class="toc-text">Airflow架构</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#调度器操作"><span class="toc-number">2.1.</span> <span class="toc-text">调度器操作</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#进程说明"><span class="toc-number">3.</span> <span class="toc-text">进程说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#airflow-的守护进程是如何一起工作的"><span class="toc-number">4.</span> <span class="toc-text">airflow 的守护进程是如何一起工作的</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用CLI命令行接口"><span class="toc-number">5.</span> <span class="toc-text">常用CLI命令行接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#部署说明"><span class="toc-number">6.</span> <span class="toc-text">部署说明</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Environmental-dependence"><span class="toc-number">6.1.</span> <span class="toc-text">Environmental dependence</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Install-Airflow"><span class="toc-number">6.2.</span> <span class="toc-text">Install Airflow</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Run-Docker-Mysql-amp-amp-RabbitMQ"><span class="toc-number">6.3.</span> <span class="toc-text">Run Docker(Mysql && RabbitMQ)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Supervisor管理进程"><span class="toc-number">6.4.</span> <span class="toc-text">Supervisor管理进程</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#遇到的问题"><span class="toc-number">7.</span> <span class="toc-text">遇到的问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#参考链接"><span class="toc-number">8.</span> <span class="toc-text">参考链接</span></a></li></ol>
+		</div>
+		
+		<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>Airflow是一个工作流分配管理系统，通过有向非循环图的方式管理任务流程，设置任务依赖关系和时间调度。Airflow独立于我们要运行的任务，只需要把任务的名字和运行方式提供给Airflow作为一个task就可以， 以代码的方式来定义任务执行流程，可操作性强。</p>
+<h4 id="Airflow架构"><a href="#Airflow架构" class="headerlink" title="Airflow架构"></a>Airflow架构</h4><p>Airflow 是建立在元数据库上的队列系统。数据库存储队列任务的状态，调度器使用这些状态来确定如何将其它任务添加到队列的优先级。此功能由四个主要组件编排</p>
+<ol>
+<li>元数据库：这个数据库存储有关任务状态的信息。数据库使用在 SQLAlchemy 中实现的抽象层执行更新。该抽象层将 Airflow 剩余组件功能从数据库中干净地分离了出来。</li>
+<li>调度器：调度器是一种使用 DAG 定义结合元数据中的任务状态来决定哪些任务需要被执行以及任务执行优先级的过程。调度器通常作为服务运行。</li>
+<li>执行器：Excutor 是一个消息队列进程，它被绑定到调度器中，用于确定实际执行每个任务计划的工作进程。有不同类型的执行器，每个执行器都使用一个指定工作进程的类来执行任务。例如，LocalExecutor 使用与调度器进程在同一台机器上运行的并行进程执行任务。其他像 CeleryExecutor 的执行器使用存在于独立的工作机器集群中的工作进程执行任务。</li>
+<li>Workers：这些是实际执行任务逻辑的进程，由正在使用的执行器确定。</li>
+</ol>
+<p>Airflow 的操作建立于存储任务状态和工作流的元数据库之上（即 DAG）。调度器和执行器将任务发送至队列，让 Worker 进程执行。WebServer 运行（经常与调度器在同一台机器上运行）并与数据库通信，在 Web UI 中呈现任务状态和任务执行日志。每个有色框表明每个组件都可以独立于其他组件存在，这取决于部署配置的类型。</p>
+<h5 id="调度器操作"><a href="#调度器操作" class="headerlink" title="调度器操作"></a>调度器操作</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">0. 从磁盘中加载可用的 DAG 定义（填充 DagBag）</div><div class="line">调度器running：</div><div class="line">  1. 调度器使用 DAG 定义来标识并且/或者初始化在元数据的 db 中的任何 DagRuns。</div><div class="line">  2. 调度器检查与活动 DagRun 关联的 TaskInstance 的状态，解析 TaskInstance 之间的任何依赖，标识需要被执行的 TaskInstance，然后将它们添加至 worker 队列，将新排列的 TaskInstance 状态更新为数据库中的“排队”状态。</div><div class="line">  3. 每个可用的 worker 从队列中取一个 TaskInstance，然后开始执行它，将此 TaskInstance 的数据库记录从“排队”更新为“运行”。</div><div class="line">  4. 一旦一个 TaskInstance 完成运行，关联的 worker 就会报告到队列并更新数据库中的 TaskInstance 的状态（例如“完成”、“失败”等）。</div><div class="line">  5. 调度器根据所有已完成的相关 TaskInstance 的状态更新所有活动 DagRuns 的状态（“运行”、“失败”、“完成”）。</div><div class="line">  6. 重复步骤 1-5</div></pre></td></tr></table></figure>
+<h4 id="进程说明"><a href="#进程说明" class="headerlink" title="进程说明"></a>进程说明</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">airflow webserver -p 8090   # web管理页面， 如果添加-D 以后台进程启动</div><div class="line">airflow scheduler           # 调度进程</div><div class="line">airflow worker              # worker执行进程， -q 指定启用的quene</div><div class="line">airflow flower              # 监控celery进程</div></pre></td></tr></table></figure>
+<h4 id="airflow-的守护进程是如何一起工作的"><a href="#airflow-的守护进程是如何一起工作的" class="headerlink" title="airflow 的守护进程是如何一起工作的"></a>airflow 的守护进程是如何一起工作的</h4><ol>
+<li>调度器 scheduler 会间隔性的去轮询元数据库（Metastore）已注册的 DAG（有向无环图，可理解为作业流）是否需要被执行。如果一个具体的 DAG 根据其调度计划需要被执行，scheduler 守护进程就会先在元数据库创建一个 DagRun 的实例，并触发 DAG 内部的具体 task（任务，可以这样理解：DAG 包含一个或多个task），触发其实并不是真正的去执行任务，而是推送 task 消息至消息队列（即 broker）中，每一个 task 消息都包含此 task 的 DAG ID，task ID，及具体需要被执行的函数。如果 task 是要执行 bash 脚本，那么 task 消息还会包含 bash 脚本的代码。</li>
+<li>用户可能在 webserver 上来控制 DAG，比如手动触发一个 DAG 去执行。当用户这样做的时候，一个DagRun 的实例将在元数据库被创建，scheduler 使同 #1 一样的方法去触发 DAG 中具体的 task 。</li>
+<li>worker 守护进程将会监听消息队列，如果有消息就从消息队列中取出消息，当取出任务消息时，它会更新元数据中的 DagRun 实例的状态为正在运行，并尝试执行 DAG 中的 task，如果 DAG 执行成功，则更新任 DagRun 实例的状态为成功，否则更新状态为失败。</li>
+</ol>
+<h4 id="常用CLI命令行接口"><a href="#常用CLI命令行接口" class="headerlink" title="常用CLI命令行接口"></a>常用CLI命令行接口</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">airflow test DAG_ID TASK_ID EXECUTION_DAT  # 测试任务调用是否可用</div><div class="line">airflow list_dags   # 查看dags</div><div class="line">airflow list_tasks DAG_ID  # 查看对应dag的task</div><div class="line">airflow clear DAG_ID    # 移除dag_id元数据库中的taskinstance记录</div><div class="line">airflow resetdb     # 重载数据库，删表在新创建</div></pre></td></tr></table></figure>
+<h4 id="部署说明"><a href="#部署说明" class="headerlink" title="部署说明"></a>部署说明</h4><ul>
+<li>两台ubuntu 16.04 ,</li>
+<li>192.168.0.10  (webserver,scheduler,worker,flower)</li>
+<li><p>192.168.0.11  (worker)</p>
+<p>说明 两台服务器airflow.cfg配置要一样，对应的dags文件路径也要相同</p>
+</li>
+</ul>
+<h5 id="Environmental-dependence"><a href="#Environmental-dependence" class="headerlink" title="Environmental dependence"></a>Environmental dependence</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># python3.5 &amp;&amp; pip3</span></div><div class="line">sudo apt-get update</div><div class="line">ln -s /usr/bin/python3 /usr/bin/python</div><div class="line">sudo apt install python3-pip -y</div><div class="line">pip3 install --upgrade pip</div><div class="line"> </div><div class="line"><span class="comment"># Docker Install</span></div><div class="line">sudo apt-get install -y apt-transport-https ca-certificates</div><div class="line">sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:<span class="number">80</span> --recv-keys <span class="number">58118E89</span>F3A912897C070ADBF76221572C52609D</div><div class="line">echo <span class="string">"deb https://mirrors.tuna.tsinghua.edu.cn/docker/apt/repo ubuntu-trusty main"</span> \</div><div class="line">| sudo tee /etc/apt/sources.list.d/docker.list</div><div class="line">sudo apt-get update</div><div class="line">apt-cache policy docker-engine</div><div class="line">sudo apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual</div><div class="line">sudo apt install -y docker.io</div></pre></td></tr></table></figure>
+<h5 id="Install-Airflow"><a href="#Install-Airflow" class="headerlink" title="Install Airflow"></a>Install Airflow</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">pip3 install apache-airflow</div><div class="line">pip3 install <span class="string">'apache-airflow[celery]'</span></div><div class="line">pip3 install -U werkzeug Jinja2</div><div class="line">pip3 install flask_bcrypt</div><div class="line"> </div><div class="line"><span class="comment">####</span></div><div class="line">修改对应的配置(dags路径)</div><div class="line">executor = CeleryExecutor</div><div class="line">demo_mode = <span class="keyword">False</span></div><div class="line">sql_alchemy_conn = mysql://root:admin@<span class="number">192.168</span><span class="number">.0</span><span class="number">.10</span>:<span class="number">3306</span>/airflow</div><div class="line">broker_url = pyamqp://airflow:airflow@<span class="number">192.168</span><span class="number">.0</span><span class="number">.10</span>:<span class="number">5672</span>/airflow</div><div class="line">sql_alchemy_conn = mysql://root:admin@<span class="number">192.168</span><span class="number">.0</span><span class="number">.10</span>:<span class="number">3306</span>/airflow</div></pre></td></tr></table></figure>
+<h5 id="Run-Docker-Mysql-amp-amp-RabbitMQ"><a href="#Run-Docker-Mysql-amp-amp-RabbitMQ" class="headerlink" title="Run Docker(Mysql &amp;&amp; RabbitMQ)"></a>Run Docker(Mysql &amp;&amp; RabbitMQ)</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">- docker mysql</div><div class="line">    docker pull mysql</div><div class="line">    docker run -it -d --name airflow-mysql -v /data/airflow_mysql_data/:/var/lib/mysql/ -p <span class="number">3306</span>:<span class="number">3306</span> -e MYSQL_ROOT_PASSWORD=admin --restart=always -d mysql</div><div class="line"> </div><div class="line"> </div><div class="line">- docker rabbitmq</div><div class="line">    docker pull rabbitmq</div><div class="line">    docker run -it -d -p <span class="number">5672</span>:<span class="number">5672</span> -p <span class="number">15672</span>:<span class="number">15672</span> -v /data/airflow_rabbitmq_data:/var/lib/rabbitmq --restart=always --name airflow_rabbitmq rabbitmq</div><div class="line">    <span class="comment">#创建一个RabbitMQ用户</span></div><div class="line">    rabbitmqctl add_user airflow airflow</div><div class="line">    <span class="comment">#创建一个RabbitMQ虚拟主机</span></div><div class="line">    rabbitmqctl add_vhost airflow</div><div class="line">    <span class="comment">#将这个用户赋予admin的角色</span></div><div class="line">    rabbitmqctl set_user_tags airflow admin</div><div class="line">    <span class="comment">#允许这个用户访问这个虚拟主机</span></div><div class="line">    rabbitmqctl set_permissions -p airflow airflow <span class="string">".*"</span> <span class="string">".*"</span> <span class="string">".*"</span></div><div class="line">    <span class="comment"># no usage</span></div><div class="line">    rabbitmq-plugins enable rabbitmq_management</div></pre></td></tr></table></figure>
+<h5 id="Supervisor管理进程"><a href="#Supervisor管理进程" class="headerlink" title="Supervisor管理进程"></a>Supervisor管理进程</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div></pre></td><td class="code"><pre><div class="line">sudo apt-get install supervisor</div><div class="line"> </div><div class="line"><span class="number">192.168</span><span class="number">.0</span><span class="number">.10</span>配置文件如下：</div><div class="line">[program:airflow_webserver]</div><div class="line">directory=/home/ubuntu/airflow/</div><div class="line">command=/usr/local/bin/airflow webserver</div><div class="line">autostart=true</div><div class="line">autorestart=true</div><div class="line">redirect_stderr=true</div><div class="line">environment=AIRFLOW_HOME=<span class="string">"/home/ubuntu/airflow"</span>,HOME=<span class="string">"/home/ubuntu/"</span></div><div class="line">user=ubuntu</div><div class="line"> </div><div class="line">stdout_logfile=/var/log/supervisor/airflow_webserver.out</div><div class="line">stdout_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stdout_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">stderr_logfile=/var/log/supervisor/airflow_webserver.err</div><div class="line">stderr_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stdout_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">[program:airflow_scheduler]</div><div class="line">directory=/home/ubuntu/airflow/</div><div class="line">command=/usr/local/bin/airflow scheduler</div><div class="line">autostart=true</div><div class="line">autorestart=true</div><div class="line">redirect_stderr=true</div><div class="line">environment=AIRFLOW_HOME=<span class="string">"/home/ubuntu/airflow"</span>,HOME=<span class="string">"/home/ubuntu/"</span></div><div class="line">user=ubuntu</div><div class="line"> </div><div class="line">stdout_logfile=/var/log/supervisor/airflow_scheduler.out</div><div class="line">stdout_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stdout_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">stderr_logfile=/var/log/supervisor/airflow_scheduler.err</div><div class="line">stderr_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stderr_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">[program:airflow_worker]</div><div class="line">directory=/home/ubuntu/airflow/</div><div class="line">command=/usr/local/bin/airflow worker</div><div class="line">autostart=true</div><div class="line">autorestart=true</div><div class="line">redirect_stderr=true</div><div class="line">environment=AIRFLOW_HOME=<span class="string">"/home/ubuntu/airflow"</span>,HOME=<span class="string">"/home/ubuntu/"</span></div><div class="line">user=ubuntu</div><div class="line"> </div><div class="line">stdout_logfile=/var/log/supervisor/airflow_worker.out</div><div class="line">stdout_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stdout_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">stderr_logfile=/var/log/supervisor/airflow_worker.err</div><div class="line">stderr_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stderr_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">[program:airflow_flower]</div><div class="line">directory=/home/ubuntu/airflow/</div><div class="line">command=/usr/local/bin/airflow flower</div><div class="line">autostart=true</div><div class="line">autorestart=true</div><div class="line">redirect_stderr=true</div><div class="line">environment=AIRFLOW_HOME=<span class="string">"/home/ubuntu/airflow"</span>,HOME=<span class="string">"/home/ubuntu/"</span></div><div class="line">user=ubuntu</div><div class="line"> </div><div class="line">stdout_logfile=/var/log/supervisor/airflow_flower.out</div><div class="line">stdout_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stdout_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">stderr_logfile=/var/log/supervisor/airflow_flower.err</div><div class="line">stderr_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stderr_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="number">192.168</span><span class="number">.0</span><span class="number">.11</span>配置文件如下：</div><div class="line">[program:airflow_worker]</div><div class="line">directory=/home/ubuntu/airflow/</div><div class="line">command=/usr/local/bin/airflow worker</div><div class="line">autostart=true</div><div class="line">autorestart=true</div><div class="line">redirect_stderr=true</div><div class="line">environment=AIRFLOW_HOME=<span class="string">"/home/ubuntu/airflow"</span>,HOME=<span class="string">"/home/ubuntu/"</span></div><div class="line">user=ubuntu</div><div class="line"> </div><div class="line">stdout_logfile=/var/log/supervisor/airflow_worker.out</div><div class="line">stdout_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stdout_logfile_backups=<span class="number">10</span></div><div class="line"> </div><div class="line">stderr_logfile=/var/log/supervisor/airflow_worker.err</div><div class="line">stderr_logfile_maxbytes=<span class="number">50</span>MB</div><div class="line">stderr_logfile_backups=<span class="number">10</span></div></pre></td></tr></table></figure>
+<h4 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h4><ol>
+<li><p>locale.Error: unsupported locale setting</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">https://stackoverflow.com/questions/<span class="number">14547631</span>/python-locale-error-unsupported-locale-setting</div><div class="line">export LC_ALL=<span class="string">"en_US.UTF-8"</span></div><div class="line">export LC_CTYPE=<span class="string">"en_US.UTF-8"</span></div><div class="line">sudo dpkg-reconfigure locales</div></pre></td></tr></table></figure>
+</li>
+<li><p>ImportError: No module named ‘MySQLdb’</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">sudo apt-get install libmysqlclient-dev -y</div><div class="line">sudo pip3 install mysqlclient</div></pre></td></tr></table></figure>
+</li>
+<li><p>airflow.exceptions.AirflowException: No module named ‘flask_bcrypt’</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pip3 install flask_bcrypt</div></pre></td></tr></table></figure>
+</li>
+<li><p>UnicodeDecodeError: ‘ascii’ codec can’t decode byte 0xe8 in position 3199: ordinal not in range(128)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">字符集问题</div><div class="line">/etc/default/locale </div><div class="line">LANG=<span class="string">"zh_CN.UTF-8"</span></div><div class="line">LANGUAGE=<span class="string">"zh_CN:zh"</span></div><div class="line">LC_ALL=<span class="string">"zh_CN.UTF-8"</span></div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><p><a href="https://medium.com/@dustinstansbury/understanding-apache-airflows-key-concepts-a96efed52b1a" target="_blank" rel="external">https://medium.com/@dustinstansbury/understanding-apache-airflows-key-concepts-a96efed52b1a</a><br><a href="https://blog.csdn.net/youzi_yun/article/details/90141362" target="_blank" rel="external">https://blog.csdn.net/youzi_yun/article/details/90141362</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Airflow/">Airflow</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2019/07/26/yw-airflow-install/" data-title="Airflow架构、安装部署 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2019/07/27/yw-airflow-operator/" title="Airflow变量和执行器">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Airflow变量和执行器</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2019/07/03/vue-echarts/"  title="Vue echarts可视化">
+ <strong>旧一篇:</strong><br/> 
+ <span>Vue echarts可视化
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Airflow架构、安装部署" data-thread-key="yw-airflow-install" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-airflow-install"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

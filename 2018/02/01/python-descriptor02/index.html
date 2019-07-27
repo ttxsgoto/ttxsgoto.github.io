@@ -1,0 +1,401 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Python Descriptor描述符02 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明
+使用描述符时，实例对象的属性访问会触发描述符的__get__方法
+使用描述符时，实例对象的属性赋值会触发描述符的__set__方法
+通过obj.__dict__[xxx]=yyy 赋值会跳过描述符
+没有__get__方法的覆盖描述符，给对象的属性赋值会触发__set__方法，读取属性时会直接从">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/02/01/python-descriptor02/" title="Python Descriptor描述符02" itemprop="url">Python Descriptor描述符02</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-02-01T14:30:30.000Z" itemprop="datePublished">2018-02-01</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#概念描述"><span class="toc-number">2.</span> <span class="toc-text">概念描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#描述符实例"><span class="toc-number">3.</span> <span class="toc-text">描述符实例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#描述符实例重构"><span class="toc-number">4.</span> <span class="toc-text">描述符实例重构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#覆盖型和非覆盖型描述符对比"><span class="toc-number">5.</span> <span class="toc-text">覆盖型和非覆盖型描述符对比</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#描述符用法"><span class="toc-number">6.</span> <span class="toc-text">描述符用法</span></a></li></ol>
+		</div>
+		
+		<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><ul>
+<li>使用描述符时，实例对象的属性访问会触发描述符的__get__方法</li>
+<li>使用描述符时，实例对象的属性赋值会触发描述符的__set__方法</li>
+<li>通过obj.__dict__[xxx]=yyy 赋值会跳过描述符</li>
+<li>没有__get__方法的覆盖描述符，给对象的属性赋值会触发__set__方法，读取属性时会直接从实例中返回新赋予的值，而不会返回描述符对象， 也就是说读取操作实例属性会遮盖描述符，直接从__dict__中获取</li>
+<li>非数据描述符中，如果设置了同名的实例属性，描述符会被遮盖，致使描述符无法处理那个实例的那个属性,即获取属性的值将直接通过__dict__中获取</li>
+<li>类属性赋值能覆盖描述符属性，如果想控制设置类属性的操作，需要把描述符依附在类的类上，即依附在元类上</li>
+<li>类中定义的函数属于绑定方法，因为用户定义的函数都有get方法，所以依附到类上，相当于描述符，为非覆盖性描述符</li>
+</ul>
+<h4 id="概念描述"><a href="#概念描述" class="headerlink" title="概念描述"></a>概念描述</h4><ul>
+<li>描述符类： 实现描述符协议的类</li>
+<li>托管类： 把描述符实例声明为类属性的类</li>
+<li>描述符实例： 描述符类的各个实例，声明为托管类的类属性</li>
+<li>托管实例：托管类的实例</li>
+<li>储存属性： 托管实例中存储自身托管属性的属性</li>
+<li>托管属性： 托管类中由描述符实例处理的公开属性，值存储在储存属性中， 也就是说，描述符实例和储存属性为托管属性建立了基础</li>
+</ul>
+<h4 id="描述符实例"><a href="#描述符实例" class="headerlink" title="描述符实例"></a>描述符实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Quantity</span>:</span></div><div class="line">    <span class="string">""" 描述符类 """</span></div><div class="line">    __counter = <span class="number">0</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        cls = self.__class__</div><div class="line">        prefix = cls.__name__</div><div class="line">        index = cls.__counter</div><div class="line">        self.storage_name = <span class="string">'_&#123;&#125;#&#123;&#125;'</span>.format(prefix, index)</div><div class="line">        cls.__counter += <span class="number">1</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></div><div class="line">        <span class="string">"""</span></div><div class="line">        获取对应的属性时, 调用该方法</div><div class="line">        :param instance: 描述符实例</div><div class="line">        :param owner: 托管类的引用(type),通过描述符从托管类中获取属性时用得到</div><div class="line">        :return:</div><div class="line">        """</div><div class="line">        <span class="keyword">if</span> instance <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            <span class="keyword">return</span> self</div><div class="line">        <span class="keyword">return</span> getattr(instance, self.storage_name)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        <span class="string">"""</span></div><div class="line">        :param instance: 描述符实例</div><div class="line">        :param value: 托管实例设置的值</div><div class="line">        :return:</div><div class="line">        """</div><div class="line">        <span class="keyword">if</span> value &gt; <span class="number">0</span>:</div><div class="line">            setattr(instance, self.storage_name, value)</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'value must be &gt; 0.'</span>)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">LineItem</span>:</span></div><div class="line">    <span class="string">""" 托管类 """</span></div><div class="line">    weight = Quantity() <span class="comment"># 描述符实例</span></div><div class="line">    price = Quantity()   <span class="comment"># 描述符实例</span></div><div class="line">    <span class="comment"># weight, price 为储存属性</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self,desc, weight, price)</span>:</span></div><div class="line">        self.desc = desc</div><div class="line">        self.weight = weight</div><div class="line">        self.price = price</div><div class="line">        <span class="comment"># self.weight, self.price 为托管属性</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">subtotal</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.weight * self.price</div><div class="line"> </div><div class="line"><span class="comment"># 描述符实例为引用类的类属性</span></div><div class="line"> </div><div class="line">line = LineItem(<span class="string">'test01'</span>, <span class="number">12</span>, <span class="number">12.3</span>) <span class="comment"># 托管实例</span></div><div class="line"> </div><div class="line">print(line.weight)  <span class="comment"># 实例对象的属性访问会触发描述符的__get__方法</span></div><div class="line"> </div><div class="line">print(line.subtotal())</div><div class="line"> </div><div class="line">print(LineItem.weight)</div></pre></td></tr></table></figure>
+<h4 id="描述符实例重构"><a href="#描述符实例重构" class="headerlink" title="描述符实例重构"></a>描述符实例重构</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> abc</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">AutoStorage</span>:</span></div><div class="line">    __counter = <span class="number">0</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        cls = self.__class__</div><div class="line">        prefix = cls.__name__</div><div class="line">        index = cls.__counter</div><div class="line">        self.storage_name = <span class="string">'_&#123;&#125;#&#123;&#125;'</span>.format(prefix, index)</div><div class="line">        cls.__counter += <span class="number">1</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></div><div class="line">        <span class="keyword">if</span> instance <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            <span class="keyword">return</span> self</div><div class="line">        <span class="keyword">return</span> getattr(instance, self.storage_name)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        setattr(instance, self.storage_name, value)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Validated</span><span class="params">(abc.ABC, AutoStorage)</span>:</span></div><div class="line">    <span class="string">""" 验证相关模块 """</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        <span class="string">""" 把验证操作委托给validate方法"""</span></div><div class="line">        value = self.validate(instance, value)</div><div class="line">        super(Validated, self).__set__(instance, value)</div><div class="line"> </div><div class="line"><span class="meta">    @abc.abstractmethod</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        <span class="string">""" 抽象方法 """</span></div><div class="line">        <span class="keyword">pass</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Quantity</span><span class="params">(Validated)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        <span class="keyword">if</span> value &lt;= <span class="number">0</span>:</div><div class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'value must be &gt; 0'</span>)</div><div class="line">        <span class="keyword">return</span> value</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">NonBlank</span><span class="params">(Validated)</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">validate</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        value = value.strip()</div><div class="line">        <span class="keyword">if</span> len(value) == <span class="number">0</span>:</div><div class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'value cannot be empty or blank'</span>)</div><div class="line">        <span class="keyword">return</span> value</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">LineItem</span>:</span></div><div class="line">    <span class="string">""" 托管类 """</span></div><div class="line">    weight = Quantity()  <span class="comment"># 描述符实例</span></div><div class="line">    price = Quantity()  <span class="comment"># 描述符实例</span></div><div class="line">    desc = NonBlank()  <span class="comment"># 描述符实例</span></div><div class="line"> </div><div class="line">    <span class="comment"># weight, price 为储存属性</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, desc, weight, price)</span>:</span></div><div class="line">        self.desc = desc</div><div class="line">        self.weight = weight</div><div class="line">        self.price = price</div><div class="line">        <span class="comment"># self.weight, self.price 为托管属性</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">subtotal</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> self.weight * self.price</div><div class="line"> </div><div class="line"> </div><div class="line">line = LineItem(<span class="string">'abc'</span>, <span class="number">12</span>, <span class="number">12.3</span>)</div><div class="line">print(line.subtotal())</div></pre></td></tr></table></figure>
+<h4 id="覆盖型和非覆盖型描述符对比"><a href="#覆盖型和非覆盖型描述符对比" class="headerlink" title="覆盖型和非覆盖型描述符对比"></a>覆盖型和非覆盖型描述符对比</h4><ul>
+<li><p>覆盖型描述符 实现了__set__方法的描述符,实现了set方法会覆盖对实例属性的赋值操作</p>
+</li>
+<li><p>非覆盖型描述符 没有实现__set__方法的描述符是非覆盖型描述符，如果设置了同名的实例属性，描述符会被遮盖，致使描述符无法处理那个实例的那个属性</p>
+</li>
+<li><p>类属性赋值能覆盖描述符属性，如果想控制设置类属性的操作，需要把描述符依附在类的类上，即依附在元类上</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">cls_name</span><span class="params">(obj_or_cls)</span>:</span></div><div class="line">    cls = type(obj_or_cls)</div><div class="line">    <span class="keyword">if</span> cls <span class="keyword">is</span> type:</div><div class="line">        cls = obj_or_cls</div><div class="line">    <span class="keyword">return</span> cls.__name__.split(<span class="string">'.'</span>)[<span class="number">-1</span>]</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">display</span><span class="params">(obj)</span>:</span></div><div class="line">    cls = type(obj)</div><div class="line">    <span class="keyword">if</span> cls <span class="keyword">is</span> type:</div><div class="line">        <span class="keyword">return</span> <span class="string">'&lt;class &#123;&#125;&gt;'</span>.format(obj.__name__)</div><div class="line">    <span class="keyword">elif</span> cls <span class="keyword">in</span> [type(<span class="keyword">None</span>), int]:</div><div class="line">        <span class="keyword">return</span> repr(obj)</div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        <span class="keyword">return</span> <span class="string">'&lt;&#123;&#125; object&gt;'</span>.format(cls_name(obj))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_args</span><span class="params">(name, *args)</span>:</span></div><div class="line">    pseudo_args = <span class="string">','</span>.join(display(x) <span class="keyword">for</span> x <span class="keyword">in</span> args)</div><div class="line">    print(<span class="string">'-&gt;&#123;&#125;.__&#123;&#125;__(&#123;&#125;)'</span>.format(cls_name(args[<span class="number">0</span>]), name, pseudo_args))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Overriding</span>:</span></div><div class="line">    <span class="string">""" 数据描述符 """</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></div><div class="line">        print_args(<span class="string">'get'</span>, self, instance, owner)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        print_args(<span class="string">'set'</span>, self, instance, value)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">OverridingNoGet</span>:</span></div><div class="line">    <span class="string">""" 没有 __get__方法的覆盖型描述符 """</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        print_args(<span class="string">'set'</span>, self, instance, value)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">NonOverriding</span>:</span></div><div class="line">    <span class="string">""" 非数据描述符"""</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></div><div class="line">        print_args(<span class="string">'get'</span>, self, instance, owner)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Managed</span>:</span></div><div class="line">    over = Overriding()</div><div class="line">    over_no_get = OverridingNoGet()</div><div class="line">    non_over = NonOverriding()</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">span</span><span class="params">(self)</span>:</span></div><div class="line">        print(<span class="string">'-&gt; Managed.spam(&#123;&#125;)'</span>.format(display(self)))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="comment">################覆盖型描述符##################</span></div><div class="line"><span class="string">"""获取和设置值 都是通过描述符的get和set方法完成"""</span></div><div class="line">obj = Managed()</div><div class="line">obj.over</div><div class="line"><span class="comment"># Overriding.__get__(&lt;Overriding object&gt;,&lt;Managed object&gt;,&lt;class Managed&gt;)</span></div><div class="line">Managed.over</div><div class="line"><span class="comment"># Overriding.__get__(&lt;Overriding object&gt;,None,&lt;class Managed&gt;)</span></div><div class="line"> </div><div class="line">obj.over = <span class="number">7</span></div><div class="line"><span class="comment"># Overriding.__set__(&lt;Overriding object&gt;,&lt;Managed object&gt;,7)</span></div><div class="line">obj.over</div><div class="line"><span class="comment"># Overriding.__get__(&lt;Overriding object&gt;,&lt;Managed object&gt;,&lt;class Managed&gt;)</span></div><div class="line"> </div><div class="line">obj.__dict__[<span class="string">'over'</span>] = <span class="number">8</span>  <span class="comment"># 跳过描述符,通过obj.__dict__赋值</span></div><div class="line">print(vars(obj))</div><div class="line"><span class="comment"># &#123;'over': 8&#125;</span></div><div class="line">print(obj.over)</div><div class="line"><span class="comment"># None</span></div><div class="line">obj.over  <span class="comment"># obj.over描述符仍会覆盖取值(obj.over)这个操作</span></div><div class="line"><span class="comment"># Overriding.__get__(&lt;Overriding object&gt;,&lt;Managed object&gt;,&lt;class Managed&gt;)</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="comment">##########没有__get__()方法的覆盖型描述符##########</span></div><div class="line"><span class="string">"""没有__get__方法的覆盖描述符,给对象的属性赋值会触发__set__方法,读取属性时会直接从实例中返回新赋予的值,而不会返回描述符对象,读取操作实例属性会遮盖描述符"""</span></div><div class="line">print(obj.over_no_get)</div><div class="line"><span class="comment"># &lt;__main__.O</span></div><div class="line"><span class="comment"># verridingNoGet object at 0x102973358&gt;</span></div><div class="line">print(Managed.over_no_get)</div><div class="line"><span class="comment"># &lt;__main__.OverridingNoGet object at 0x102973358&gt;</span></div><div class="line">obj.over_no_get = <span class="number">7</span></div><div class="line"><span class="comment"># OverridingNoGet.__set__(&lt;OverridingNoGet object&gt;,&lt;Managed object&gt;,7)</span></div><div class="line">print(obj.over_no_get)</div><div class="line"><span class="comment"># &lt;__main__.OverridingNoGet object at 0x101873358&gt;</span></div><div class="line">obj.__dict__[<span class="string">'over_no_get'</span>] = <span class="number">9</span></div><div class="line">print(obj.over_no_get)	<span class="comment"># 通过类属性取值,没有通过描述符,因为没有__get__方法</span></div><div class="line"><span class="comment"># 9</span></div><div class="line">obj.over_no_get = <span class="number">7</span></div><div class="line"><span class="comment"># OverridingNoGet.__set__(&lt;OverridingNoGet object&gt;,&lt;Managed object&gt;,7)</span></div><div class="line">print(obj.over_no_get)  <span class="comment"># 只要有同名的实例属性,描述符会被遮盖,默认的实例属性获取方法遮盖描述符</span></div><div class="line"><span class="comment"># 9</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="comment">########## 非覆盖型描述符 ##########</span></div><div class="line"><span class="string">"""</span></div><div class="line">非数据描述符中，如果设置了同名的实例属性，描述符会被遮盖，致使描述符无法处理那个实例的那个属性</div><div class="line">"""</div><div class="line"> </div><div class="line">obj1 = Managed()</div><div class="line">obj1.non_over</div><div class="line"><span class="comment"># NonOverriding.__get__(&lt;NonOverriding object&gt;,&lt;Managed object&gt;,&lt;class Managed&gt;)</span></div><div class="line">obj1.non_over = <span class="number">7</span></div><div class="line">print(obj1.non_over)	<span class="comment"># 实例属性赋值会遮盖描述符__get__方法</span></div><div class="line"><span class="comment"># 7</span></div><div class="line">Managed.non_over</div><div class="line"><span class="comment"># NonOverriding.__get__(&lt;NonOverriding object&gt;,None,&lt;class Managed&gt;)</span></div><div class="line"><span class="keyword">del</span> obj1.non_over</div><div class="line">obj1.non_over	<span class="comment"># 删除实例属性后,又从描述符__get__方法中获取</span></div><div class="line"><span class="comment"># NonOverriding.__get__(&lt;NonOverriding object&gt;,&lt;Managed object&gt;,&lt;class Managed&gt;)</span></div><div class="line"> </div><div class="line"><span class="comment">################################</span></div><div class="line"><span class="comment"># 在类中覆盖描述符</span></div><div class="line"><span class="comment">################################</span></div><div class="line">obj2 = Managed()</div><div class="line"> </div><div class="line"><span class="comment"># 覆盖类中的描述符属性</span></div><div class="line">Managed.over = <span class="number">1</span></div><div class="line">Managed.over_no_get = <span class="number">2</span></div><div class="line">Managed.non_over = <span class="number">3</span></div><div class="line"> </div><div class="line">print(obj2.over, obj2.over_no_get, obj2.non_over)</div><div class="line"><span class="comment"># 1 2 3</span></div></pre></td></tr></table></figure>
+<h4 id="描述符用法"><a href="#描述符用法" class="headerlink" title="描述符用法"></a>描述符用法</h4><ol>
+<li>使用特性以保持简单</li>
+<li>只读描述符必须有__set__方法，如果需要实现只读属性，<strong>get</strong>和<strong>set</strong>方法必须都实现，否则实例的同名属性会遮盖描述符，只读属性的__set__方法只需抛出AttributeError异常，并提供合适的错误信息</li>
+<li>用于验证的描述符可以只有__set__方法</li>
+<li>仅有<strong>get</strong>方法的描述符可以实现高效缓存，同名实例属性会遮盖描述符</li>
+<li>非特殊的方法可以被实例属性遮盖， 函数和方法都只实现了<strong>get</strong>方法，不会处理同名实例属性的赋值操作</li>
+</ol>
+<p>以上内容学习记录参照《流畅的python》 第20章 属性描述符</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Descriptor/">Descriptor</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/02/01/python-descriptor02/" data-title="Python Descriptor描述符02 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/02/05/django-define-auth/" title="Django 自定义认证字段">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Django 自定义认证字段</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/01/31/descriptor/"  title="Python Descriptor描述符01">
+ <strong>旧一篇:</strong><br/> 
+ <span>Python Descriptor描述符01
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Python Descriptor描述符02" data-thread-key="python-descriptor02" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/python-descriptor02"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

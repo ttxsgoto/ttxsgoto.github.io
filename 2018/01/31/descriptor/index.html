@@ -1,0 +1,383 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Python Descriptor描述符01 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="描述符说明- 只要是定义了__get__()、__set()__、__delete()__中任意一个方法的对象都叫描述符
+- 描述符是一个具有绑定行为的对象属性，其属性的访问被描述符协议方法覆写
+- 通常来说Python对象的属性控制默认是这样的：从对象的字典(__dict__)中
+  获取（get">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/01/31/descriptor/" title="Python Descriptor描述符01" itemprop="url">Python Descriptor描述符01</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2018-01-31T12:24:28.000Z" itemprop="datePublished">2018-01-31</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#描述符说明"><span class="toc-number">1.</span> <span class="toc-text">描述符说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#调用方法"><span class="toc-number">2.</span> <span class="toc-text">调用方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#描述符用途-使用场景"><span class="toc-number">3.</span> <span class="toc-text">描述符用途,使用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实例"><span class="toc-number">4.</span> <span class="toc-text">实例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#实例一"><span class="toc-number">4.1.</span> <span class="toc-text">实例一</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实例二"><span class="toc-number">4.2.</span> <span class="toc-text">实例二</span></a></li></ol></li></ol>
+		</div>
+		
+		<h3 id="描述符说明"><a href="#描述符说明" class="headerlink" title="描述符说明"></a>描述符说明</h3><pre><code>- 只要是定义了__get__()、__set()__、__delete()__中任意一个方法的对象都叫描述符
+- 描述符是一个具有绑定行为的对象属性，其属性的访问被描述符协议方法覆写
+- 通常来说Python对象的属性控制默认是这样的：从对象的字典(__dict__)中
+  获取（get），设置（set）,删除（delete），比如：对于实例a，a.x的查找
+  顺序为a.__dict__[&apos;x&apos;],然后是type(a).__dict__[&apos;x&apos;].如果还是没找
+  到就往上级(父类)中查找最后查找是否有__getattr__
+- 如果属性x是一个描述符，那么访问a.x时不再从字典__dict__中读取，而是调用
+  描述符的__get__()方法，对于设置和删除也是同样的原理
+- 同时含有__get__,__set__方法,为数据描述符对象;仅实现__get__方法,为非数据描述符对象;
+- 数据描述符优先于实例的字典，对于相同名字的会覆盖;实例的字典优先于非数据描述符,但不会覆盖;
+</code></pre><h3 id="调用方法"><a href="#调用方法" class="headerlink" title="调用方法"></a>调用方法</h3><pre><code>- 描述符作为属性访问时,是被自动调用
+- 类属性描述符对象,使用type.__getattribute__,把Class.x转换成Class.__dict__[&apos;x&apos;].__get__(None, Class)
+- 实例属性描述符对象,使用object.__getattribute__,把object.x转换为type(object).__dict__[&apos;x&apos;].__get__(object, type(object))
+</code></pre><h3 id="描述符用途-使用场景"><a href="#描述符用途-使用场景" class="headerlink" title="描述符用途,使用场景"></a>描述符用途,使用场景</h3><pre><code>- 当希望对某些类的属性进行特别的处理而不会对整体的其他属性有影响的话,可以使用修饰符
+- 只要一个类实现了__get__,__set__,__delete__方法的任意一种就是描述符
+- 描述符会&apos;劫持&apos;那些本是self.__dict__的操作
+- 把一个类的操作托付给另外一个类
+- 静态方法,类方法,parperty都是构建描述符的类
+</code></pre><h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><h4 id="实例一"><a href="#实例一" class="headerlink" title="实例一"></a>实例一</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 属性进行相应的处理而不会对整体有影响</span></div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Integer</span><span class="params">(object)</span>:</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, age)</span>:</span></div><div class="line">        self.age = age</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">'__get__-----'</span>, self, instance, owner</div><div class="line">        <span class="keyword">if</span> instance <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            <span class="keyword">return</span> self</div><div class="line">        <span class="comment"># return instance.__dict__[self.age]  # 获取dict中对应的属性值</span></div><div class="line">        <span class="keyword">return</span> self.age</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">'__set__-----'</span>, self, instance, value</div><div class="line">        <span class="keyword">if</span> value &lt; <span class="number">0</span> <span class="keyword">or</span> type(eval(str(value))) == float:</div><div class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'Age must int and not negative '</span>)</div><div class="line">        <span class="comment"># instance.__dict__[self.age] = value # 修改dict中对应的属性值</span></div><div class="line">        self.age = value</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">del</span> self.age</div><div class="line">        <span class="keyword">pass</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SexType</span><span class="params">(object)</span>:</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, sex)</span>:</span></div><div class="line">        self.sex = sex</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></div><div class="line">        <span class="keyword">if</span> instance <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            <span class="keyword">return</span> self</div><div class="line">        <span class="comment"># return instance.__dict__[self.sex]  # 获取dict中对应的属性值</span></div><div class="line">        <span class="keyword">return</span> self.sex</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></div><div class="line">        <span class="keyword">if</span> value <span class="keyword">not</span> <span class="keyword">in</span> [<span class="string">'M'</span>, <span class="string">'W'</span>]:</div><div class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'The value must be M/W '</span>)</div><div class="line">        <span class="comment"># instance.__dict__[self.sex] = value # 修改dict中对应的属性值</span></div><div class="line">        self.sex = value</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">del</span> self.sex</div><div class="line">        <span class="keyword">pass</span></div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></div><div class="line">    age = Integer(<span class="string">'age'</span>)</div><div class="line">    sex = SexType(<span class="string">'sex'</span>)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, sex, age)</span>:</span></div><div class="line">        self.name = name</div><div class="line">        self.sex = sex</div><div class="line">        self.age = age</div><div class="line"> </div><div class="line"><span class="meta">    @property</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">info</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> <span class="string">'Person info --name:&#123;&#125;,--sex:&#123;&#125;,--age:&#123;&#125;'</span>.format(self.name, self.sex, self.age)</div><div class="line"> </div><div class="line">A = Person(name=<span class="string">'ttxsgoto'</span>, sex=<span class="string">'W'</span>, age= <span class="number">15</span> )</div><div class="line"> </div><div class="line"><span class="keyword">print</span> A.__dict__</div><div class="line"><span class="keyword">print</span> Person.__dict__</div><div class="line"><span class="keyword">print</span> A.info</div><div class="line"> </div><div class="line"><span class="comment">########## 结果 ##########</span></div><div class="line"><span class="string">'''</span></div><div class="line">&#123;'name': 'ttxsgoto'&#125;</div><div class="line">&#123;'info': &lt;property object at 0x1028ad418&gt;, '__module__': '__main__', 'age': &lt;__main__.Integer object at 0x1028b30d0&gt;, 'sex': &lt;__main__.SexType object at 0x1028b3110&gt;, '__dict__': &lt;attribute '__dict__' of 'Person' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Person' objects&gt;, '__doc__': None, '__init__': &lt;function __init__ at 0x1028b2578&gt;&#125;</div><div class="line">__get__----- &lt;__main__.Integer object at 0x1028b30d0&gt; &lt;__main__.Person object at 0x1028b3150&gt; &lt;class '__main__.Person'&gt;</div><div class="line">Person info --name:ttxsgoto,--sex:W,--age:15</div><div class="line">'''</div></pre></td></tr></table></figure>
+<h4 id="实例二"><a href="#实例二" class="headerlink" title="实例二"></a>实例二</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 数据描述符和非数据描述符的区别</span></div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Access</span><span class="params">(object)</span>:</span></div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, var=None, name=<span class="string">'var'</span>)</span>:</span></div><div class="line">        self.var = var</div><div class="line">        self.name = name</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">'__get__----'</span>, self, instance, owner, self.name</div><div class="line">        <span class="keyword">return</span> self.var</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span>  <span class="comment"># 含有__set__方法为数据描述符</span></div><div class="line">        <span class="keyword">print</span> <span class="string">'__set__----'</span>, self, instance, value</div><div class="line">        self.var = value</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span><span class="params">(object)</span>:</span></div><div class="line">    x = Access(<span class="number">10</span>, <span class="string">'ttxsgoto'</span>)</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, x)</span>:</span></div><div class="line">        self.x = x</div><div class="line"> </div><div class="line">t = MyClass(<span class="number">100</span>)</div><div class="line"><span class="keyword">print</span> <span class="string">'----\n'</span>, t.x</div><div class="line"><span class="keyword">print</span> <span class="string">'====\n'</span>, t.__dict__</div><div class="line"><span class="keyword">print</span> <span class="string">'xxxx\n'</span>, MyClass.__dict__</div><div class="line"><span class="keyword">print</span> <span class="string">'yyyy\n'</span>, MyClass.x</div><div class="line"> </div><div class="line"><span class="comment">########### 数据描述符的输出 ###########</span></div><div class="line"><span class="string">'''</span></div><div class="line">__set__---- &lt;__main__.Access object at 0x10687c2d0&gt; &lt;__main__.MyClass object at 0x10687c610&gt; 100</div><div class="line">----</div><div class="line">__get__---- &lt;__main__.Access object at 0x10687c2d0&gt; &lt;__main__.MyClass object at 0x10687c610&gt; &lt;class '__main__.MyClass'&gt; ttxsgoto</div><div class="line">100</div><div class="line">====</div><div class="line">&#123;&#125;</div><div class="line">xxxx</div><div class="line">&#123;'__module__': '__main__', '__dict__': &lt;attribute '__dict__' of 'MyClass' objects&gt;, 'x': &lt;__main__.Access object at 0x10687c2d0&gt;, '__weakref__': &lt;attribute '__weakref__' of 'MyClass' objects&gt;, '__doc__': None, '__init__': &lt;function __init__ at 0x10687b320&gt;&#125;</div><div class="line">yyyy</div><div class="line">__get__---- &lt;__main__.Access object at 0x10687c2d0&gt; None &lt;class '__main__.MyClass'&gt; ttxsgoto</div><div class="line">100</div><div class="line">'''</div><div class="line"> </div><div class="line"><span class="comment">########### 非数据描述符的输出 ###########</span></div><div class="line"><span class="string">'''</span></div><div class="line">----</div><div class="line">100</div><div class="line">====</div><div class="line">&#123;'x': 100&#125;</div><div class="line">xxxx</div><div class="line">&#123;'__module__': '__main__', '__dict__': &lt;attribute '__dict__' of 'MyClass' objects&gt;, 'x': &lt;__main__.Access object at 0x1012502d0&gt;, '__weakref__': &lt;attribute '__weakref__' of 'MyClass' objects&gt;, '__doc__': None, '__init__': &lt;function __init__ at 0x10124f050&gt;&#125;</div><div class="line">yyyy</div><div class="line">__get__---- &lt;__main__.Access object at 0x1012502d0&gt; None &lt;class '__main__.MyClass'&gt; ttxsgoto</div><div class="line">10</div><div class="line">'''</div></pre></td></tr></table></figure>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Descriptor/">Descriptor</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/python/">python</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2018/01/31/descriptor/" data-title="Python Descriptor描述符01 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/02/01/python-descriptor02/" title="Python Descriptor描述符02">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Python Descriptor描述符02</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/01/30/python-dyn-attr-prop/"  title="Python 动态属性和特性">
+ <strong>旧一篇:</strong><br/> 
+ <span>Python 动态属性和特性
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Python Descriptor描述符01" data-thread-key="descriptor" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/descriptor"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

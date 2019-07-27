@@ -1,0 +1,385 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Vue echarts可视化 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="背景最近项目中需要用到图形可视化，制作一系列的报表功能，查询资料后使用echarts来实现功能，主要需要实现根据数据渲染多组数据来展现对比数据
+实现说明
+将图形封装为一个基础组件
+按照对应的数据格式，填充到option中
+多组数据通过for循环来完成
+
+效果图
+实例
+chart.vue组件
+1234">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/07/03/vue-echarts/" title="Vue echarts可视化" itemprop="url">Vue echarts可视化</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2019-07-03T12:00:47.000Z" itemprop="datePublished">2019-07-03</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现说明"><span class="toc-number">2.</span> <span class="toc-text">实现说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#效果图"><span class="toc-number">3.</span> <span class="toc-text">效果图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实例"><span class="toc-number">4.</span> <span class="toc-text">实例</span></a></li></ol>
+		</div>
+		
+		<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>最近项目中需要用到图形可视化，制作一系列的报表功能，查询资料后使用echarts来实现功能，主要需要实现根据数据渲染多组数据来展现对比数据</p>
+<h3 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h3><ul>
+<li>将图形封装为一个基础组件</li>
+<li>按照对应的数据格式，填充到option中</li>
+<li>多组数据通过for循环来完成</li>
+</ul>
+<h3 id="效果图"><a href="#效果图" class="headerlink" title="效果图"></a>效果图</h3><p><img src="https://ttxsgoto.github.io/img/vue/echarts/bar.png" alt=""><br><img src="https://ttxsgoto.github.io/img/vue/echarts/line.png" alt=""><br><img src="https://ttxsgoto.github.io/img/vue/echarts/pie.png" alt=""></p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ul>
+<li><p>chart.vue组件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div></pre></td><td class="code"><pre><div class="line">&lt;template&gt;</div><div class="line">  &lt;div :id=<span class="string">"id"</span> :style=<span class="string">"style"</span>&gt;&lt;/div&gt;</div><div class="line">&lt;/template&gt;</div><div class="line">&lt;script&gt;</div><div class="line">  import echarts from <span class="string">'echarts'</span></div><div class="line">  <span class="built_in">export</span> default &#123;</div><div class="line">    name: <span class="string">"Chart"</span>,</div><div class="line">    props: &#123;</div><div class="line">      id: &#123;</div><div class="line">        <span class="built_in">type</span>: String</div><div class="line">      &#125;,</div><div class="line">      width: &#123;</div><div class="line">        <span class="built_in">type</span>: String,</div><div class="line">        default: <span class="string">"100%"</span>,</div><div class="line">      &#125;,</div><div class="line">      height: &#123;</div><div class="line">        <span class="built_in">type</span>: String,</div><div class="line">        default: <span class="string">"300px"</span></div><div class="line">      &#125;,</div><div class="line">      option: &#123;</div><div class="line">        <span class="built_in">type</span>: Object,</div><div class="line">        required: <span class="literal">true</span>,</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">    computed: &#123;</div><div class="line">      <span class="function"><span class="title">style</span></span>() &#123;</div><div class="line">        <span class="built_in">return</span> &#123;</div><div class="line">          height: this.height,</div><div class="line">          width: this.width</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">    <span class="function"><span class="title">data</span></span>() &#123;</div><div class="line">        <span class="built_in">return</span> &#123;</div><div class="line">          chart: <span class="string">""</span></div><div class="line">        &#125;;</div><div class="line">    &#125;,</div><div class="line">    methods: &#123;</div><div class="line">      <span class="function"><span class="title">init</span></span>() &#123;</div><div class="line">        this.chart = echarts.init(document.getElementById(this.id));</div><div class="line">        // this.chart.showLoading();</div><div class="line">        this.chart.setOption(this.option);</div><div class="line">        // this.chart.hideLoading();</div><div class="line">        window.addEventListener(<span class="string">"resize"</span>, this.chart.resize);</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">    mounted: <span class="function"><span class="title">function</span></span> () &#123;</div><div class="line">      this.init();</div><div class="line">    &#125;,</div><div class="line">    watch: &#123;</div><div class="line">      option: &#123;</div><div class="line">        handler(newVal, oldVal) &#123;</div><div class="line">          <span class="keyword">if</span> (this.chart) &#123;</div><div class="line">            <span class="keyword">if</span> (newVal) &#123;</div><div class="line">              this.chart.setOption(newVal);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">              this.chart.setOption(oldVal);</div><div class="line">            &#125;</div><div class="line">          &#125; <span class="keyword">else</span> &#123;</div><div class="line">            this.init();</div><div class="line">          &#125;</div><div class="line">        &#125;,</div><div class="line">        deep: <span class="literal">true</span></div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>echarts.vue</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div></pre></td><td class="code"><pre><div class="line">&lt;style scoped lang=<span class="string">"less"</span>&gt;</div><div class="line">&lt;/style&gt;</div><div class="line"> </div><div class="line">&lt;template&gt;</div><div class="line">  &lt;div&gt;</div><div class="line">    &lt;h2&gt;Bar Num&lt;/h2&gt;</div><div class="line">      &lt;div v-for=<span class="string">"(item,index) in optionData"</span> :key=<span class="string">"item.series.name"</span>&gt;</div><div class="line">          &lt;Chart :id=<span class="string">"item.series.name"</span> :option=<span class="string">"item"</span> :width=<span class="string">"item._width"</span> :height=<span class="string">"item._height"</span>&gt;&lt;/Chart&gt;</div><div class="line">      &lt;/div&gt;</div><div class="line">    &lt;h2&gt;Line Total num &amp;&amp; Num&lt;/h2&gt;</div><div class="line">      &lt;div v-for=<span class="string">"(item,index) in optionAllData"</span> :key=<span class="string">"item.title.text"</span>&gt;</div><div class="line">          &lt;Chart :id=<span class="string">"item.title.text"</span> :option=<span class="string">"item"</span> :width=<span class="string">"item._width"</span> :height=<span class="string">"item._height"</span>&gt;&lt;/Chart&gt;</div><div class="line">      &lt;/div&gt;</div><div class="line">    &lt;h2&gt; Pie Num Chart&lt;/h2&gt;</div><div class="line">    &lt;Chart :id=<span class="string">"pieOption.title.text"</span> :option=<span class="string">"pieOption"</span> :width=<span class="string">"pieOption._width"</span> :height=<span class="string">"pieOption._height"</span>&gt;&lt;/Chart&gt;</div><div class="line">  &lt;/div&gt;</div><div class="line">&lt;/template&gt;</div><div class="line"> </div><div class="line">&lt;script&gt;</div><div class="line">import Chart from <span class="string">'./Chart.vue'</span></div><div class="line"> </div><div class="line"><span class="built_in">export</span> default &#123;</div><div class="line">  name: <span class="string">'echarts'</span>,</div><div class="line">  components: &#123;</div><div class="line">    Chart</div><div class="line">  &#125;,</div><div class="line">  <span class="function"><span class="title">data</span></span>() &#123;</div><div class="line">    <span class="built_in">return</span> &#123;</div><div class="line">      // 模拟后端返回的数据</div><div class="line">      dateTime: [<span class="string">"20190624"</span>, <span class="string">"20190625"</span>, <span class="string">"20190626"</span>, <span class="string">"20190627"</span>],</div><div class="line">      selectObject: &#123;</div><div class="line">        <span class="string">'TYPE01'</span>: [7, 5, 15, 10],</div><div class="line">        <span class="string">'TYPE02'</span>: [2, 5, 10, 8],</div><div class="line">      &#125;,</div><div class="line">      selectAllObject: &#123;</div><div class="line">        <span class="string">'TYPE03'</span>:&#123;</div><div class="line">          <span class="string">'total_num'</span>: [20, 20, 25, 30],</div><div class="line">          <span class="string">'error_num'</span>: [3, 5, 5, 10]</div><div class="line">        &#125;,</div><div class="line">        <span class="string">'TYPE04'</span>: &#123;</div><div class="line">          <span class="string">'total_num'</span>: [20, 20, 25, 30],</div><div class="line">          <span class="string">'error_num'</span>: [2, 5, 15, 8]</div><div class="line">        &#125;</div><div class="line">      &#125;,</div><div class="line">      optionData: [],</div><div class="line">      optionAllData: [],</div><div class="line"></div><div class="line">      // Pie数据</div><div class="line">      pieOption: &#123;</div><div class="line">        title : &#123;</div><div class="line">          text: <span class="string">'COLOUR TYPE'</span>,</div><div class="line">          // subtext: <span class="string">'-'</span>,</div><div class="line">          x:<span class="string">'center'</span></div><div class="line">        &#125;,</div><div class="line">        tooltip : &#123;</div><div class="line">            trigger: <span class="string">'item'</span>,</div><div class="line">            formatter: <span class="string">"&#123;a&#125; &lt;br/&gt;&#123;b&#125; : &#123;c&#125; (&#123;d&#125;%)"</span></div><div class="line">        &#125;,</div><div class="line">        legend: &#123;</div><div class="line">            orient: <span class="string">'vertical'</span>,</div><div class="line">            left: <span class="string">'left'</span>,</div><div class="line">            data: [<span class="string">'RED'</span>,<span class="string">'BLUE'</span>,<span class="string">'YELLOW'</span>,<span class="string">'GREEN'</span>]</div><div class="line">        &#125;,</div><div class="line">        // 保存为图片设置</div><div class="line">        toolbox: &#123;</div><div class="line">          show: <span class="literal">true</span>,</div><div class="line">          feature: &#123;</div><div class="line">            saveAsImage: &#123;</div><div class="line">              show:<span class="literal">true</span>,</div><div class="line">              title: <span class="string">'Save image'</span>,</div><div class="line">              excludeComponents :[<span class="string">'toolbox'</span>],</div><div class="line">              pixelRatio: 2</div><div class="line">            &#125;</div><div class="line">          &#125;</div><div class="line">        &#125;,</div><div class="line">        series : [&#123;</div><div class="line">            name: <span class="string">'COLOUR TYPE'</span>,</div><div class="line">            <span class="built_in">type</span>: <span class="string">'pie'</span>,</div><div class="line">            radius : <span class="string">'55%'</span>,</div><div class="line">            center: [<span class="string">'50%'</span>, <span class="string">'50%'</span>],</div><div class="line">            data:[</div><div class="line">                &#123;value:335, name:<span class="string">'RED'</span>&#125;,</div><div class="line">                &#123;value:310, name:<span class="string">'BLUE'</span>&#125;,</div><div class="line">                &#123;value:234, name:<span class="string">'YELLOW'</span>&#125;,</div><div class="line">                &#123;value:135, name:<span class="string">'GREEN'</span>&#125;,</div><div class="line">            ],</div><div class="line">            itemStyle: &#123;</div><div class="line">              emphasis: &#123;</div><div class="line">                shadowBlur: 10,</div><div class="line">                shadowOffsetX: 0,</div><div class="line">                shadowColor: <span class="string">'rgba(0, 0, 0, 0.5)'</span></div><div class="line">              &#125;</div><div class="line">            &#125;</div><div class="line">          &#125;],</div><div class="line">          _width: <span class="string">"50%"</span>,</div><div class="line">          _height: <span class="string">'300px'</span></div><div class="line">      &#125;,</div><div class="line">    &#125;</div><div class="line">  &#125;,</div><div class="line">  <span class="function"><span class="title">created</span></span>() &#123;</div><div class="line">    this.initData();</div><div class="line">    this.initAllData();</div><div class="line">  &#125;,</div><div class="line">  methods: &#123;</div><div class="line">    <span class="function"><span class="title">initData</span></span>() &#123;</div><div class="line">      <span class="built_in">let</span> item_list = Object.keys(this.selectObject);</div><div class="line">      item_list.forEach((key)=&gt;&#123;</div><div class="line">        this.optionData.push(</div><div class="line">          &#123;</div><div class="line">            title: &#123;</div><div class="line">              text: key</div><div class="line">            &#125;,</div><div class="line">            toolbox: &#123;</div><div class="line">              show: <span class="literal">true</span>,</div><div class="line">              feature: &#123;</div><div class="line">                saveAsImage: &#123;</div><div class="line">                  show:<span class="literal">true</span>,</div><div class="line">                  title: <span class="string">'Save image'</span>,</div><div class="line">                  excludeComponents :[<span class="string">'toolbox'</span>],</div><div class="line">                  pixelRatio: 2</div><div class="line">                &#125;</div><div class="line">              &#125;</div><div class="line">            &#125;,</div><div class="line">            tooltip: &#123;</div><div class="line">              trigger: <span class="string">'axis'</span>,</div><div class="line">              axisPointer: &#123;  // 坐标轴指示器，坐标轴触发有效</div><div class="line">                <span class="built_in">type</span>: <span class="string">'line'</span>, // 默认为直线，可选为：<span class="string">'line'</span> | <span class="string">'shadow'</span></div><div class="line">              &#125;</div><div class="line">            &#125;,</div><div class="line">            legend: &#123;</div><div class="line">              data: [key]</div><div class="line">            &#125;,</div><div class="line">            xAxis: [</div><div class="line">              &#123;</div><div class="line">                <span class="built_in">type</span>: <span class="string">'category'</span>,</div><div class="line">                data: this.dateTime,</div><div class="line">                axisTick: &#123;</div><div class="line">                  alignWithLable: <span class="literal">true</span></div><div class="line">                &#125;</div><div class="line">              &#125;,</div><div class="line">            ],</div><div class="line">            yAxis: [</div><div class="line">              &#123;</div><div class="line">                <span class="built_in">type</span>: <span class="string">"value"</span></div><div class="line">              &#125;</div><div class="line">            ],</div><div class="line">            series: &#123;</div><div class="line">              name: key,</div><div class="line">              <span class="built_in">type</span>: <span class="string">"bar"</span>, // bar, line</div><div class="line">              data: this.selectObject[key],</div><div class="line">              barWidth: <span class="string">'60%'</span></div><div class="line">            &#125;,</div><div class="line">            _width: <span class="string">"45%"</span>,</div><div class="line">            _height: <span class="string">'240px'</span></div><div class="line">          &#125;</div><div class="line">        )</div><div class="line">        &#125;)</div><div class="line">      &#125;,</div><div class="line">    <span class="function"><span class="title">initAllData</span></span>() &#123;</div><div class="line">      <span class="built_in">let</span> item_list = Object.keys(this.selectAllObject);</div><div class="line">      item_list.forEach((key)=&gt;&#123;</div><div class="line">        <span class="built_in">let</span> type_list = Object.keys(this.selectAllObject[key]);</div><div class="line">        this.optionAllData.push(</div><div class="line">          &#123;</div><div class="line">            title: &#123;</div><div class="line">              text: key</div><div class="line">            &#125;,</div><div class="line">            toolbox: &#123;</div><div class="line">              show: <span class="literal">true</span>,</div><div class="line">              feature: &#123;</div><div class="line">                saveAsImage: &#123;</div><div class="line">                  show:<span class="literal">true</span>,</div><div class="line">                  title: <span class="string">'Save image'</span>,</div><div class="line">                  excludeComponents :[<span class="string">'toolbox'</span>],</div><div class="line">                  pixelRatio: 2</div><div class="line">                &#125;</div><div class="line">              &#125;</div><div class="line">            &#125;,</div><div class="line">            tooltip: &#123;</div><div class="line">              trigger: <span class="string">'axis'</span>,</div><div class="line">              axisPointer: &#123;  // 坐标轴指示器，坐标轴触发有效</div><div class="line">                <span class="built_in">type</span>: <span class="string">'line'</span>, // 默认为直线，可选为：<span class="string">'line'</span> | <span class="string">'shadow'</span></div><div class="line">              &#125;</div><div class="line">            &#125;,</div><div class="line">            legend: &#123;</div><div class="line">              data: type_list,</div><div class="line">            &#125;,</div><div class="line">            xAxis: [</div><div class="line">              &#123;</div><div class="line">                <span class="built_in">type</span>: <span class="string">'category'</span>,</div><div class="line">                data: this.dateTime,</div><div class="line">                axisTick: &#123;</div><div class="line">                  alignWithLable: <span class="literal">true</span></div><div class="line">                &#125;</div><div class="line">              &#125;,</div><div class="line">            ],</div><div class="line">            yAxis: [</div><div class="line">              &#123;</div><div class="line">                <span class="built_in">type</span>: <span class="string">"value"</span></div><div class="line">              &#125;</div><div class="line">            ],</div><div class="line">            series: [</div><div class="line">              &#123;</div><div class="line">                name: type_list[0],</div><div class="line">                <span class="built_in">type</span>: <span class="string">"line"</span>, // bar, line</div><div class="line">                data: this.selectAllObject[key][type_list[0]],</div><div class="line">                barWidth: <span class="string">'60%'</span></div><div class="line">              &#125;,</div><div class="line">              &#123;</div><div class="line">                name: type_list[1],</div><div class="line">                <span class="built_in">type</span>: <span class="string">"line"</span>, // bar, line</div><div class="line">                data: this.selectAllObject[key][type_list[1]],</div><div class="line">                barWidth: <span class="string">'60%'</span></div><div class="line">              &#125;</div><div class="line">            ],</div><div class="line">            _width: <span class="string">"45%"</span>,</div><div class="line">            _height: <span class="string">'240px'</span></div><div class="line">          &#125;</div><div class="line">        )</div><div class="line">        &#125;)</div><div class="line">      &#125;,</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/vue/">vue</a><a href="/tags/echarts/">echarts</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Frontend/">Frontend</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2019/07/03/vue-echarts/" data-title="Vue echarts可视化 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2019/07/26/yw-airflow-install/" title="Airflow架构、安装部署">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Airflow架构、安装部署</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2019/06/30/vue-life-cycle-function/"  title="Vue 生命周期函数">
+ <strong>旧一篇:</strong><br/> 
+ <span>Vue 生命周期函数
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Vue echarts可视化" data-thread-key="vue-echarts" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/vue-echarts"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

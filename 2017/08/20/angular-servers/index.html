@@ -1,0 +1,441 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Angularjs Services常用服务 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Constant
+Value
+Factory
+Service
+Run
+Provider
+Decorator
+
+应用里大部分的业务逻辑和持久化数据都应该放在service里service可以用来永久保存应用的数据，并且这些数据可以在不同的controller之间使用
+Constant
+定义常量，从注册">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/20/angular-servers/" title="Angularjs Services常用服务" itemprop="url">Angularjs Services常用服务</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-08-20T12:22:02.000Z" itemprop="datePublished">2017-08-20</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Constant"><span class="toc-number">1.</span> <span class="toc-text">Constant</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Value"><span class="toc-number">2.</span> <span class="toc-text">Value</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Factory"><span class="toc-number">3.</span> <span class="toc-text">Factory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Service"><span class="toc-number">4.</span> <span class="toc-text">Service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Run"><span class="toc-number">5.</span> <span class="toc-text">Run</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Provider"><span class="toc-number">6.</span> <span class="toc-text">Provider</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#总结"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol>
+		</div>
+		
+		<ul>
+<li>Constant</li>
+<li>Value</li>
+<li>Factory</li>
+<li>Service</li>
+<li>Run</li>
+<li>Provider</li>
+<li>Decorator</li>
+</ul>
+<p>应用里大部分的业务逻辑和持久化数据都应该放在service里<br>service可以用来永久保存应用的数据，并且这些数据可以在不同的controller之间使用</p>
+<h4 id="Constant"><a href="#Constant" class="headerlink" title="Constant"></a>Constant</h4><ul>
+<li>定义常量，从注册后就不会在改变</li>
+<li>constant创建服务返回一个json对象,这个对象里可以有参数,可以有方法,一般constant创建的服务不会去修改它的内容</li>
+<li>可以在注入到任何方法中调用</li>
+<li>constant服务不能通过decorator进行装饰<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">'myApp'</span>, [])</div><div class="line">  .constant(<span class="string">'getData'</span>,&#123;</div><div class="line">        <span class="attr">url</span>:<span class="string">'http://localhost:5500/products'</span>,</div><div class="line">        <span class="attr">name</span>:<span class="string">'ttxs'</span>,</div><div class="line">        <span class="attr">age</span>:<span class="number">28</span>,</div><div class="line">        <span class="attr">getId</span>:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="number">1</span></div><div class="line">        &#125;</div><div class="line">    &#125;)</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="Value"><a href="#Value" class="headerlink" title="Value"></a>Value</h4><ul>
+<li>value创建服务返回一个json对象,这个对象里可以有参数,可以有方法,如果属性和方法需要被修改内容,就用value来创建服务</li>
+<li>可以注入到controller，directive</li>
+<li>value可以被装饰</li>
+</ul>
+<p>constant和value主要就是用于存放一些数据或方法以供使用,区别是constant一般是存放固定内容,value存放可能会被修改的内容</p>
+<h4 id="Factory"><a href="#Factory" class="headerlink" title="Factory"></a>Factory</h4><ul>
+<li>一个可注入的函数，调用factory时只是调用普通的function，所以factory可以返回任何东西，函数需要有返回值obj，而service可以不用返回</li>
+<li>Factory 一般就是创建一个对象，然后在对这个对象添加方法与数据，最后将些对象返回即可</li>
+<li>和constant,value的区别:factory服务是有一个处理过程,经过这个过程,才返回结果的</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">angular.module(<span class="string">'myApp'</span>, [])</div><div class="line">    .factory(<span class="string">'getData'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        <span class="keyword">var</span> myname = <span class="string">'ttxs'</span>;</div><div class="line">        <span class="keyword">var</span> age = <span class="number">28</span>;</div><div class="line">        <span class="keyword">var</span> id = <span class="number">1</span>;</div><div class="line">        <span class="keyword">return</span> &#123;</div><div class="line">            <span class="attr">name</span>: myname,</div><div class="line">            <span class="attr">age</span>: age,</div><div class="line">            <span class="attr">getId</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">                <span class="keyword">return</span> id</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<h4 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h4><ul>
+<li>可注入的构造器，它用在controller中通信或者共享数据,适合使用在功能控制比较多的service里面</li>
+<li>service里可以不返回东西，因为angularJS会调用new关键字来创建对象</li>
+<li>seivce定义的服务不能在.config中使用！只有provider定义的才可以</li>
+<li>这里的值都应该使用this定义</li>
+<li>自定义服务return 返回值必须为对象,不能为字符串,数字等<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> app = angular.module(<span class="string">'myApp'</span>, []);</div><div class="line">app.controller(<span class="string">'myController'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope, myService</span>) </span>&#123;</div><div class="line">    $scope.getPrivate = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        alert(myService.getPrivate());</div><div class="line">    &#125;;</div><div class="line">    $scope.getPUbluc = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        alert(myService.variable);</div><div class="line">    &#125;;</div><div class="line">&#125;);</div><div class="line"> </div><div class="line">app.controller(<span class="string">'myController2'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">$scope, myService</span>) </span>&#123;</div><div class="line">	<span class="comment">// do something</span></div><div class="line">&#125;);</div><div class="line"> </div><div class="line">app.service(<span class="string">'myService'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">     <span class="built_in">console</span>.log(<span class="string">'myService'</span>);</div><div class="line">    <span class="keyword">var</span> privateValue = <span class="string">"I am Private"</span>;</div><div class="line">    <span class="keyword">this</span>.variable = <span class="string">"This is public"</span>;</div><div class="line">    <span class="keyword">this</span>.getPrivate = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> privateValue;</div><div class="line">    &#125;;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="Run"><a href="#Run" class="headerlink" title="Run"></a>Run</h4><ul>
+<li>在注入启动之后执行某些操作，而这些操作需要在页面对用户可用之前执行，使用run方法；即在config方法之后controller方法之前调用</li>
+<li>使用场景：远程加载模板，需要在使用前加入缓存，或者在操作前判断用户是否登录，未登录需先跳转到登录页面</li>
+</ul>
+<h4 id="Provider"><a href="#Provider" class="headerlink" title="Provider"></a>Provider</h4><ul>
+<li>$provide服务负责告诉Angular如何创造一个新的可注入的东西：即服务;服务会被叫做供应商的东西来定义，你可以使用$provide来创建一个供应商。你需要使用$provide中的provider()方法来定义一个供应商，同时你也可以通过要求$provide被注入到一个应用的config函数中来获得$provide服务</li>
+<li>provider必须有一个$get方法，是所有封装函数都是由provider封装的</li>
+<li>provider是一个可配置的factory</li>
+</ul>
+<pre><code class="js"><span class="keyword">var</span> myApp = angular.module(<span class="string">'myApp'</span>,[],<span class="function"><span class="keyword">function</span>(<span class="params">$provide</span>)</span>{
+
+    <span class="comment">// 自定义服务</span>
+    $provide.provider(<span class="string">'CustomService'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
+
+        <span class="keyword">this</span>.$get = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
+            <span class="keyword">return</span> {
+                <span class="attr">message</span> : <span class="string">'CustomService Message'</span>
+            }
+        }
+    });
+
+    <span class="comment">// 自定义工厂,返回值为任意值</span>
+    $provide.factory(<span class="string">'CustomFactory'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
+        <span class="keyword">return</span> [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>];
+    });
+
+    <span class="comment">// 自定义服务, 返回值必须为对象,不能为字符串,数字等</span>
+    $provide.service(<span class="string">'CustomService2'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
+        <span class="keyword">return</span> [<span class="string">'xxx'</span>];
+        <span class="comment">// return 'abc';</span>
+    })
+</code></pre>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>1) 服务的实例被注入到控制器以后,都是一个引用对象,无论被注入多少个控制器中,实际都指向同一个对象,无论修改其中的哪一个,其它所有的服务都会被改变<br>2) constant服务不能通过decorator进行装饰<br>3) 固定的参数和方法,使用constant;可能被修改的参数和方法,使用value<br>4) 逻辑处理后得到的参数或方法,使用factory<br>5) Service 是用”new”关键字实例化的。因此，你应该给”this”添加属性，然后 service 返回”this”。你把 service 传进 controller 之后，在controller里 “this” 上的属性就可以通过 service 来使用<br>6) Providers 是唯一一种你可以传进 .config() 函数的 service。当你想要在 service 对象启用之前，先进行模块范围的配置，那就应该用 provider<br>7) Factory/service是第一个注入时才实例化，而provider不是，它是在config之前就已实例化</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Angularjs/">Angularjs</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Frontend/">Frontend</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/08/20/angular-servers/" data-title="Angularjs Services常用服务 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/08/22/angular-directive/" title="Angularjs Directive自定义指令">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Angularjs Directive自定义指令</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/08/11/Filters/"  title="DRF Filters">
+ <strong>旧一篇:</strong><br/> 
+ <span>DRF Filters
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Angularjs Services常用服务" data-thread-key="angular-servers" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/angular-servers"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

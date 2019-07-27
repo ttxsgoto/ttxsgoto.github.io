@@ -1,0 +1,388 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>运维 Mongo日常笔记 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="认证授权相关帐号是跟着库走的，所以在指定库里授权，必须也在指定库里验证(auth)，然后在切换到对应的库中
+认证登录说明超级用户：拥有最大权限，存储在admin数据库中，数据库用户：存储在单个数据库中，最能访问对应的数据库用户信息保存在db.system.users中
+开启认证方法
+
+启动添加： –">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/16/mongo/" title="运维 Mongo日常笔记" itemprop="url">运维 Mongo日常笔记</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-02-16T13:57:18.000Z" itemprop="datePublished">2017-02-16</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#认证授权相关"><span class="toc-number">1.</span> <span class="toc-text">认证授权相关</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#授权命令"><span class="toc-number">1.1.</span> <span class="toc-text">授权命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#登录验证"><span class="toc-number">1.2.</span> <span class="toc-text">登录验证</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#日常使用"><span class="toc-number">2.</span> <span class="toc-text">日常使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#常用命令"><span class="toc-number">2.1.</span> <span class="toc-text">常用命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#增删改查"><span class="toc-number">2.2.</span> <span class="toc-text">增删改查</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#备份相关"><span class="toc-number">2.3.</span> <span class="toc-text">备份相关</span></a></li></ol></li></ol>
+		</div>
+		
+		<h3 id="认证授权相关"><a href="#认证授权相关" class="headerlink" title="认证授权相关"></a>认证授权相关</h3><p>帐号是跟着库走的，所以在指定库里授权，必须也在指定库里验证(auth)，然后在切换到对应的库中</p>
+<p><strong>认证登录说明</strong><br>超级用户：拥有最大权限，存储在admin数据库中，<br>数据库用户：存储在单个数据库中，最能访问对应的数据库<br>用户信息保存在db.system.users中</p>
+<p><strong>开启认证方法</strong></p>
+<ul>
+<li>启动添加： –auth</li>
+<li>配置文件：security.authorization: enabled</li>
+</ul>
+<p><strong>用户和权限的特性</strong></p>
+<ol>
+<li>数据库是由超级用户来创建的，一个数据库可以包含多个用户，一个用户只能在一个数据库下，不同数据库中的用户可以同名</li>
+<li>如果在 admin 数据库中不存在用户，即使 mongod 启动时添加了 –auth 参数，此时不进行任何认证还是可以做任何操作</li>
+<li>在 admin 数据库创建的用户具有超级权限，可以对 MongoDB 系统内的任何数据库的数据对象进行操作</li>
+<li>特定数据库比如 test1 下的用户 test_user1，不能够访问其他数据库 test2，但是可以访问本数据库下其他用户创建的数据</li>
+<li>不同数据库中同名的用户不能够登录其他数据库。比如数据库 test1 和 test2 都有用户 test_user，以 test_user 登录 test1 后,不能够登录到 test2 进行数据库操作</li>
+</ol>
+<h4 id="授权命令"><a href="#授权命令" class="headerlink" title="授权命令"></a>授权命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">use xxx;						#进入某库，创建某库</div><div class="line">db.createUser(&#123;user: &quot;ttxsgoto&quot;,pwd:&quot;ttxsgoto&quot;,roles:[&#123;role:&quot;userAdminAnyDatabase&quot;,db:&quot;admin&quot;&#125;]&#125;)</div><div class="line">db.createUser(&#123;user: &quot;ttxsgoto&quot;,pwd:&quot;ttxsgoto&quot;,roles:[&#123;role:&quot;read&quot;,db:&quot;test&quot;&#125;]&#125;)	        #读</div><div class="line">db.createUser(&#123;user: &quot;ttxsgoto01&quot;,pwd:&quot;ttxsgoto01&quot;,roles:[&#123;role:&quot;readWrite&quot;,db:&quot;test&quot;&#125;]&#125;)	#读写</div><div class="line">db.createUser(&#123;user: &quot;ttxsgoto02&quot;,pwd:&quot;ttxsgoto02&quot;,roles:[&#123;role:&quot;root&quot;,db:&quot;test&quot;&#125;]&#125;)	        #超级root权限</div><div class="line">db.system.users.remove(&#123;user:&quot;ttxsgoto&quot;&#125;)	#删除用户</div><div class="line">db.changeUserPassword(&apos;ttxsgoto&apos;,&apos;test&apos;); 	#修改密码的方法</div></pre></td></tr></table></figure>
+<p><strong>具体权限说明</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Built-In Roles（内置角色）：</div><div class="line">    1. 数据库用户角色：read、readWrite;</div><div class="line">    2. 数据库管理角色：dbAdmin、dbOwner、userAdmin；</div><div class="line">    3. 集群管理角色：clusterAdmin、clusterManager、clusterMonitor、hostManager；</div><div class="line">    4. 备份恢复角色：backup、restore；</div><div class="line">    5. 所有数据库角色：readAnyDatabase、readWriteAnyDatabase、userAdminAnyDatabase、dbAdminAnyDatabase</div><div class="line">    6. 超级用户角色：root</div><div class="line">    7. 内部角色：__system</div><div class="line"></div><div class="line">具体角色：</div><div class="line">Read：允许用户读取指定数据库</div><div class="line">readWrite：允许用户读写指定数据库</div><div class="line">dbAdmin：允许用户在指定数据库中执行管理函数，如索引创建、删除，查看统计或访问system.profile</div><div class="line">userAdmin：允许用户向system.users集合写入，可以找指定数据库里创建、删除和管理用户</div><div class="line">clusterAdmin：只在admin数据库中可用，赋予用户所有分片和复制集相关函数的管理权限。</div><div class="line">readAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的读权限</div><div class="line">readWriteAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的读写权限</div><div class="line">userAdminAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的userAdmin权限</div><div class="line">dbAdminAnyDatabase：只在admin数据库中可用，赋予用户所有数据库的dbAdmin权限。</div><div class="line">root：只在admin数据库中可用。超级账号，超级权限</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># 在admin库中</div><div class="line">db.createUser(&#123;user: &quot;ttxsgoto02&quot;,pwd:&quot;ttxsgoto02&quot;,roles:[&#123;role:&quot;readWrite&quot;,db:&quot;test01&quot;&#125;,&#123;role:&quot;readWrite&quot;,db:&quot;test02&quot;&#125;]&#125;)	#在admin库下创建test01，test02库的账号</div><div class="line"></div><div class="line">在这种情况下，不能直接在对应的库中登录验证，而应该在对应的这个库中进行认证后，在切换到其他库中</div><div class="line">use admin</div><div class="line">db.auth(&apos;ttxsgoto02&apos;,&apos;ttxsgoto02&apos;)</div><div class="line">use test02；</div></pre></td></tr></table></figure>
+<h4 id="登录验证"><a href="#登录验证" class="headerlink" title="登录验证"></a>登录验证</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">方法一：</div><div class="line">mongo</div><div class="line">use admin</div><div class="line">db.auth(&quot;admin&quot;,&quot;abc&quot;)</div><div class="line">方法二：</div><div class="line">mongo -u admin -p admin --authenticationDatabase admin</div></pre></td></tr></table></figure>
+<h3 id="日常使用"><a href="#日常使用" class="headerlink" title="日常使用"></a>日常使用</h3><h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">mongo 127.0.0.1/admin -uadmin -p&apos;admin&apos;		#连接mongo数据库</div><div class="line">use admin;			#进入数据库</div><div class="line">show users;			#查看当前库下的用户</div><div class="line">show collections/tables;        #查看当前库中的collections</div><div class="line">db.getCollectionNames();		#得到当前db的所有集合</div><div class="line">db.auth(&apos;ttxsgoto&apos;,&apos;ttxsgoto&apos;)	#登录验证</div><div class="line">db.getName()			#查看当前使用的数据库</div><div class="line">db.stats()			#查看当前db状态</div><div class="line">db.getMongo();			#查看当前db连接机器的地址</div><div class="line">db.abc.find();	                #查看集合中的所有数据</div><div class="line">db 		                #查看当前所在的数据库</div><div class="line">db.system.users.find().pretty()	#在admin库中查看所有账号</div><div class="line">db.getMongo();			#查看当前db连接机器的地址</div><div class="line">db.repairDatabase()		#修复当前数据库</div><div class="line">db.getCollectionNames()		#得到当前db的所有集合</div><div class="line">db.printCollectionStats()	#显示当前db所有聚集索引的状态</div></pre></td></tr></table></figure>
+<h4 id="增删改查"><a href="#增删改查" class="headerlink" title="增删改查"></a>增删改查</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"># 插入集合</div><div class="line">content=&#123;name:&quot;xxxx&quot;,sex:&quot;m&quot;&#125;</div><div class="line">db.collections.insert(content)</div><div class="line">db.createCollection(&quot;collName&quot;, &#123;size: 20, capped: 5, max: 100&#125;)	#创建一个集合</div><div class="line">db.getCollection(&quot;account&quot;)		#得到集合名称</div><div class="line"># 查询：</div><div class="line">db.inventory.find();</div><div class="line">db.foo.find()		#对当前数据库中的foo集合进行数据查找，所有数据</div><div class="line">db.foo.find(&#123;a:1&#125;)	#对当前数据库中的foo集合中条件包含a=1的项进行查询</div><div class="line"># 删除：</div><div class="line">db.dropDatabase()	#删除当前使用的数据库</div></pre></td></tr></table></figure>
+<h4 id="备份相关"><a href="#备份相关" class="headerlink" title="备份相关"></a>备份相关</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">mongoimport(导入)/mongoexport(导出)：(将collection导出为json格式或csv格式)</div><div class="line">mongoexport -d test -c t1 -o t1.dat	#导出json格式</div><div class="line">-c	#指明导出的集合</div><div class="line">-d	#使用库</div><div class="line">mongoexport -d test -c t1 -csv -f num -o t1.dat	#导出csv格式</div><div class="line">-csv	#指明导出csv格式</div><div class="line">-f	#指明需要导出哪些列</div><div class="line">mongoimport -d test -c t1 -file t1.dat				#还原</div><div class="line">mongoimport -d test -c t1 -type csv --headerline -file t1.dat	#还原csv格式的数据</div><div class="line">--headerline	#指明不导入第一行，因为第一行为列名</div><div class="line">mongodump/mongorestore:（整库备份还原,库级别操作,先执行查询动作然后把所有查询结果写入到硬盘中，但在内存中的数据未写入磁盘中）</div><div class="line">mongodump -h x.x.x.x  --port  27017 -uroot -p xxx  -d test -o /bak/mongodump	#导出</div><div class="line">mongodump -h x.x.x.x  --port  27017 -uroot -p xxx	-o /bak/allmongobak	#导出所有</div><div class="line">-h ip</div><div class="line">--port port</div><div class="line">-u user</div><div class="line">-p password</div><div class="line">-d database</div><div class="line">-c collection</div><div class="line">-o outfile</div><div class="line">mongorestore -h IP  --port -u user -p password 	-d test  --drop	/bak/mongodump/*	#恢复</div><div class="line">--drop	#恢复前先删除所有记录</div><div class="line">--noIndexRestore	#不还原索引</div><div class="line">例子说明</div><div class="line"># 备份</div><div class="line">mongoexport -u root -p root --host=127.0.0.1:27017 --authenticationDatabase admin -d database -c collection -o collection.json</div><div class="line"></div><div class="line">mongodump -u root -p root --host=127.0.0.1:27017 --authenticationDatabase admin -d database -c collection -o 1202.dat</div><div class="line"># 还原</div><div class="line">mongorestore -u root -p root --authenticationDatabase admin -d database_20161202 --noIndexRestore --drop 1202.dat/collection</div><div class="line">mongoimport -u root -p root --host=127.0.0.1:27017 --authenticationDatabase admin -d database_20161202 -c collection  --file  collection.json</div></pre></td></tr></table></figure>
+<p><strong>库表级备份还原的区别:</strong><br>mongorestore和mongodump提供的是对mongo数据库的整个数据库的恢复和备份，而mongoimport和mongoexport则是提供更细粒度的collection级别的数据导入和导出。两者的粒度不同，mongoimport和mongoexport粒度更细，相对来说，更加灵活。其次，mongoimport和mongoexport只是将集合中的数据导出和导入，但是没有对数据库中的其它成分进行备份（比如索引），而mongorestore和mongodump则是对数据库中的所有成分（包括索引等其它）进行恢复和备份。然而，这也导致了mongorestore和mongodump导出的文件比较大耗时较长，而mongoimport和mongoexport导出的文件比较小，速度比较快，而且格式较为灵活。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Mongo/">Mongo</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/02/16/mongo/" data-title="运维 Mongo日常笔记 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/18/redis/" title="运维 Redis日常笔记">
+  <strong>新一篇:</strong><br/>
+  <span>
+  运维 Redis日常笔记</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/15/class/"  title="Python Class">
+ <strong>旧一篇:</strong><br/> 
+ <span>Python Class
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="运维 Mongo日常笔记" data-thread-key="mongo" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/mongo"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,393 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Docker 网络模式 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Docker网络实现原理Docker 中的网络接口默认都是虚拟的接口。虚拟接口的优势之一是转发效率较高。 Linux 通过在内核中进 行数据复制来实现虚拟接口之间的数据转发，发送接口的发送缓存中的数据包被直接复制到接收接口的接收缓存中。对于本地系统和容器内系统看来就像是一个正常的以太网卡，只是它不需">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/08/docker_network/" title="Docker 网络模式" itemprop="url">Docker 网络模式</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-02-08T14:05:33.000Z" itemprop="datePublished">2017-02-08</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker网络实现原理"><span class="toc-number">1.</span> <span class="toc-text">Docker网络实现原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#几种网络模式"><span class="toc-number">2.</span> <span class="toc-text">几种网络模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#nat"><span class="toc-number">2.1.</span> <span class="toc-text">nat</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#host"><span class="toc-number">2.2.</span> <span class="toc-text">host</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Other-container"><span class="toc-number">2.3.</span> <span class="toc-text">Other container</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#none"><span class="toc-number">2.4.</span> <span class="toc-text">none</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#网络相关的命令"><span class="toc-number">3.</span> <span class="toc-text">网络相关的命令</span></a></li></ol>
+		</div>
+		
+		<h3 id="Docker网络实现原理"><a href="#Docker网络实现原理" class="headerlink" title="Docker网络实现原理"></a>Docker网络实现原理</h3><p>Docker 中的网络接口默认都是虚拟的接口。虚拟接口的优势之一是转发效率较高。 Linux 通过在内核中进 行数据复制来实现虚拟接口之间的数据转发，发送接口的发送缓存中的数据包被直接复制到接收接口的接收缓存中。对于本地系统和容器内系统看来就像是一个正常的以太网卡，只是它不需要真正同外部网络设备通信，速度要快很多；Docker 容器网络利用此技术，它在本地主机和容器内分别创建一个虚拟接口，并让它们彼此连通 （这样的一对接口叫做 veth pair ）</p>
+<p>Docker 创建一个容器的时候，会执行如下操作：</p>
+<ul>
+<li>创建一对虚拟接口，分别放到本地主机和新容器中； </li>
+<li>本地主机一端桥接到默认的 docker0 或指定网桥上，并具有一个唯一的名字，如 vethf9； </li>
+<li>容器一端放到新容器中，并修改名字作为 eth0，这个接口只在容器的名字空间可见； </li>
+<li>从网桥可用地址段中获取一个空闲地址分配给容器的 eth0，并配置默认路由到桥接网卡 vethf9。 </li>
+</ul>
+<p>完成这些之后，容器就可以使用 eth0 虚拟网卡来连接其他容器和其他网络</p>
+<p>网络模式需要开启linux系统转发功能，查看linux系统中是否开启转发功能：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">#sysctl net.ipv4.ip_forward</div><div class="line">net.ipv4.ip_forward = 1</div><div class="line"># 设置：sysctl -w  net.ipv4.ip_forward=1</div></pre></td></tr></table></figure></p>
+<h3 id="几种网络模式"><a href="#几种网络模式" class="headerlink" title="几种网络模式"></a>几种网络模式</h3><h4 id="nat"><a href="#nat" class="headerlink" title="nat"></a>nat</h4><p>–net=bridge (默认的网桥)，Docker通过宿主机的网桥(docker0)来连通内部和宿主机的网络，实现了容器与宿主机和外界之间的网络通信<br><img src="https://ttxsgoto.github.io/img/docker_network/1.png" alt="nat"></p>
+<p>Bridge桥接模式的实现步骤主要如下：</p>
+<p>（1）Docker Daemon利用veth pair技术，在宿主机上创建两个虚拟网络接口设备，假设为veth0和veth1。而veth pair技术的特性可以保证无论哪一个veth接收到网络报文，都会将报文传输给另一方。</p>
+<p>（2）Docker Daemon将veth0附加到Docker Daemon创建的docker0网桥上。保证宿主机的网络报文可以发往veth0。</p>
+<p>（3）Docker Daemon将veth1添加到Docker Container所属的namespace下，并被改名为eth0。如此一来，保证宿主机的网络报文若发往veth0，则立即会被eth0接收，实现宿主机到Docker Container网络的联通性；同时，也保证Docker Container单独使用eth0，实现容器网络环境的隔离性。</p>
+<p>同时Docker采用NAT（Network Address Translation，网络地址转换）的方式(可自行查询实现原理)，让宿主机以外的世界可以主动将网络报文发送至容器内部。</p>
+<p>通过Bridger网桥模式实现：</p>
+<p>（1）容器拥有独立、隔离的网络栈</p>
+<p>（2）容器和宿主机以外的世界通过NAT建立通信</p>
+<h4 id="host"><a href="#host" class="headerlink" title="host"></a>host</h4><p>–net=host (告诉docker不要将容器网络放在隔离的名字容器中，即不要容器化容器内的网络，该模式下的Docker Container和host宿主机共享同一个网络namespace，即container和宿主机一样，使用宿主机的eth0)<br><img src="https://ttxsgoto.github.io/img/docker_network/2.png" alt="host"></p>
+<p>Docker Container的host网络模式在实现过程中，由于不需要额外的网桥以及虚拟网卡，故不会涉及docker0以及veth pair。父进程在创建子进程时，如果不使用CLONE_NEWNET这个参数标志，那么创建出的子进程会与父 进程共享同一个网络namespace。Docker就是采用了这个简单的原理，在创建进程启动容器的过程中，没有传入CLONE_NEWNET参数标 志，实现Docker Container与宿主机共享同一个网络环境，即实现host网络模式。</p>
+<p>Docker Container的网络模式中，host模式是bridge桥接模式很好的补充。采用host模式的Docker Container，可以直接使用宿主机的IP地址与外界进行通信，若宿主机的eth0是一个公有IP，那么容器也拥有这个公有IP。同时容器内服务的端口也可以使用宿主机的端口，无需额外进行NAT转换。当然，有这样的方便，肯定会损失部分其他的特性，最明显的是Docker Container网络环境隔离性的弱化，即容器不再拥有隔离、独立的网络栈。另外，使用host模式的Docker Container虽然可以让容器内部的服务和传统情况无差别、无改造的使用，但是由于网络隔离性的弱化，该容器会与宿主机共享竞争网络栈的使用；另外，容器内部将不再拥有所有的端口资源，原因是部分端口资源已经被宿主机本身的服务占用，还有部分端口已经用以bridge网络模式容器的端口映射。</p>
+<h4 id="Other-container"><a href="#Other-container" class="headerlink" title="Other container"></a>Other container</h4><p>–net=container:NAME_or_ID  (让docker将新建容器的进程放到一个已存在容器的网络栈中，新容器进程有自己的文件系统、进程列表和资源限制，但会和已存在的容器共享IP地址和端口等网络资源，两者进程可以直接通过lo 环回接口通信)<br><img src="https://ttxsgoto.github.io/img/docker_network/3.png" alt="other"></p>
+<p>上图右侧的Docker Container即采用了other container网络模式，它能使用的网络环境即为左侧Docker Container brdige桥接模式下的网络</p>
+<p>Docker Container的other container网络模式在实现过程中，不涉及网桥，同样也不需要创建虚拟网卡veth pair。</p>
+<p>完成other container网络模式的创建只需要两个步骤：</p>
+<p>(1) 查找other container（即需要被共享网络环境的容器）的网络namespace；</p>
+<p>(2) 将新创建的Docker Container（也是需要共享其他网络的容器）的namespace，使用other container的namespace<br>在这种模式下的Docker Container可以通过localhost来访问namespace下的其他容器，传输效率较高。虽然多个容器共享网络环境，但是多个容器形成的整体依然与宿主机以及其他容器形成网络隔离。另外，这种模式还节约了一定数量的网络资源。但是需要注意的是，它并没有改善容器与宿主机以外世界通信的情况。</p>
+<h4 id="none"><a href="#none" class="headerlink" title="none"></a>none</h4><p>–net=none   (让Docker将新容器放到隔离的网络栈中，但不进行网络配置，之后用户可以自己进行配置，容器内部只能使用loopback网络设备，不会再有其他的网络资源)</p>
+<h3 id="网络相关的命令"><a href="#网络相关的命令" class="headerlink" title="网络相关的命令"></a>网络相关的命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">-b BRIDGE or --bridge=BRIDGE --指定容器挂载的网桥</div><div class="line">--bip=CIDR --定制 docker0 的掩码</div><div class="line">-H SOCKET... or --host=SOCKET... --Docker 服务端接收命令的通道</div><div class="line">--icc=true|false --是否支持容器之间进行通信</div><div class="line">--ip-forward=true|false --容器之间的通信</div><div class="line">--iptables=true|false --禁止 Docker 添加 iptables 规则</div><div class="line">--mtu=BYTES --容器网络中的 MTU</div></pre></td></tr></table></figure>
+<p>上述网络模式理论主要来自链接：</p>
+<p><a href="http://www.infoq.com/cn/articles/docker-source-code-analysis-part7" target="_blank" rel="external">http://www.infoq.com/cn/articles/docker-source-code-analysis-part7</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Network/">Network</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Docker/">Docker</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/02/08/docker_network/" data-title="Docker 网络模式 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/09/docker-command/" title="Docker 常用命令">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Docker 常用命令</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/07/awk_uniq_sort/"  title="运维 Awk、Uniq、Sort基本用法">
+ <strong>旧一篇:</strong><br/> 
+ <span>运维 Awk、Uniq、Sort基本用法
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Docker 网络模式" data-thread-key="docker_network" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/docker_network"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

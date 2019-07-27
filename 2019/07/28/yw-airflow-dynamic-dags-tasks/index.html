@@ -1,0 +1,372 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Airflow动态生成Tasks和dags | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="动态生成task任务现在有这样的需求， 需要根据计算结果动态生成任务列表，来执行dags，查找资料后发现主要使用动态生成TaskInstance实例来完成具体说明如下：
+
+将计算得到值使用Variables变量保存
+  1airflow variables --set keyName value
+
+">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/07/28/yw-airflow-dynamic-dags-tasks/" title="Airflow动态生成Tasks和dags" itemprop="url">Airflow动态生成Tasks和dags</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2019-07-28T08:21:22.000Z" itemprop="datePublished">2019-07-28</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#动态生成task任务"><span class="toc-number">1.</span> <span class="toc-text">动态生成task任务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#动态生成Dags"><span class="toc-number">2.</span> <span class="toc-text">动态生成Dags</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#链接"><span class="toc-number">3.</span> <span class="toc-text">链接</span></a></li></ol>
+		</div>
+		
+		<h4 id="动态生成task任务"><a href="#动态生成task任务" class="headerlink" title="动态生成task任务"></a>动态生成task任务</h4><p>现在有这样的需求， 需要根据计算结果动态生成任务列表，来执行dags，查找资料后发现主要使用动态生成TaskInstance实例来完成<br>具体说明如下：</p>
+<ul>
+<li><p>将计算得到值使用Variables变量保存</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">airflow variables --set keyName value</div></pre></td></tr></table></figure>
+</li>
+<li><p>动态生成TaskInstance实例</p>
+</li>
+<li>将计算得到的列表遍历task任务</li>
+</ul>
+<p>实例如下<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># coding: utf8</span></div><div class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"><span class="keyword">import</span> airflow</div><div class="line"><span class="keyword">from</span> airflow.operators.python_operator <span class="keyword">import</span> PythonOperator</div><div class="line"><span class="keyword">import</span> os</div><div class="line"><span class="keyword">from</span> airflow.models <span class="keyword">import</span> Variable</div><div class="line"><span class="keyword">import</span> logging</div><div class="line"><span class="keyword">from</span> airflow <span class="keyword">import</span> configuration <span class="keyword">as</span> conf</div><div class="line"><span class="keyword">from</span> airflow.models <span class="keyword">import</span> DagBag, TaskInstance</div><div class="line"><span class="keyword">from</span> airflow <span class="keyword">import</span> DAG, settings</div><div class="line"><span class="keyword">from</span> airflow.operators.bash_operator <span class="keyword">import</span> BashOperator</div><div class="line"> </div><div class="line">main_dag_id = <span class="string">'DynamicWorkflow2'</span></div><div class="line"> </div><div class="line">args = &#123;</div><div class="line">    <span class="string">'owner'</span>: <span class="string">'airflow'</span>,</div><div class="line">    <span class="string">'start_date'</span>: airflow.utils.dates.days_ago(<span class="number">2</span>),</div><div class="line">    <span class="string">'provide_context'</span>: <span class="keyword">True</span></div><div class="line">&#125;</div><div class="line"> </div><div class="line">dag = DAG(</div><div class="line">    main_dag_id,</div><div class="line">    schedule_interval=<span class="keyword">None</span>,</div><div class="line">    default_args=args)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">start</span><span class="params">(*args, **kwargs)</span>:</span></div><div class="line">    dynamicValue = <span class="number">1</span></div><div class="line"> </div><div class="line">    variableValue = Variable.get(<span class="string">"DynamicWorkflow_Group1"</span>)</div><div class="line">    logging.info(<span class="string">"Current DynamicWorkflow_Group1 value is "</span> + str(variableValue))</div><div class="line"> </div><div class="line">    logging.info(<span class="string">"Setting the Airflow Variable DynamicWorkflow_Group1 to "</span> + str(dynamicValue))</div><div class="line">    os.system(<span class="string">'airflow variables --set DynamicWorkflow_Group1 '</span> + str(dynamicValue))</div><div class="line"> </div><div class="line">    variableValue = Variable.get(<span class="string">"DynamicWorkflow_Group1"</span>)</div><div class="line">    logging.info(<span class="string">"Current DynamicWorkflow_Group1 value is "</span> + str(variableValue))</div><div class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(dynamicValue):</div><div class="line">        resetTasksStatus(<span class="string">'firstGroup_'</span> + str(i))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">resetTasksStatus</span><span class="params">(task_id)</span>:</span></div><div class="line">    dag_folder = conf.get(<span class="string">'core'</span>, <span class="string">'DAGS_FOLDER'</span>)</div><div class="line">    dagbag = DagBag(dag_folder)</div><div class="line">    check_dag = dagbag.dags[main_dag_id]</div><div class="line">    session = settings.Session()</div><div class="line">    execution_date = datetime.now()</div><div class="line">    my_task = check_dag.get_task(task_id)</div><div class="line">    ti = TaskInstance(my_task, execution_date)</div><div class="line">    state = ti.current_state()</div><div class="line">    logging.info(<span class="string">"Current state of "</span> + task_id + <span class="string">" is "</span> + str(state))</div><div class="line">    ti.set_state(<span class="keyword">None</span>, session)</div><div class="line">    state = ti.current_state()</div><div class="line">    logging.info(<span class="string">"Updated state of "</span> + task_id + <span class="string">" is "</span> + str(state))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">bridge1</span><span class="params">(*args, **kwargs)</span>:</span></div><div class="line">    dynamicValue = <span class="number">2</span></div><div class="line"> </div><div class="line">    variableValue = Variable.get(<span class="string">"DynamicWorkflow_Group2"</span>)</div><div class="line">    logging.info(<span class="string">"Current DynamicWorkflow_Group2 value is "</span> + str(variableValue))</div><div class="line"> </div><div class="line">    logging.info(<span class="string">"Setting the Airflow Variable DynamicWorkflow_Group2 to "</span> + str(dynamicValue))</div><div class="line">    os.system(<span class="string">'airflow variables --set DynamicWorkflow_Group2 '</span> + str(dynamicValue))</div><div class="line"> </div><div class="line">    variableValue = Variable.get(<span class="string">"DynamicWorkflow_Group2"</span>)</div><div class="line">    logging.info(<span class="string">"Current DynamicWorkflow_Group2 value is "</span> + str(variableValue))</div><div class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(dynamicValue):</div><div class="line">        resetTasksStatus(<span class="string">'secondGroup_'</span> + str(i))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">bridge2</span><span class="params">(*args, **kwargs)</span>:</span></div><div class="line">    dynamicValue = <span class="number">3</span></div><div class="line"> </div><div class="line">    variableValue = Variable.get(<span class="string">"DynamicWorkflow_Group3"</span>)</div><div class="line">    logging.info(<span class="string">"Current DynamicWorkflow_Group3 value is "</span> + str(variableValue))</div><div class="line"> </div><div class="line">    logging.info(<span class="string">"Setting the Airflow Variable DynamicWorkflow_Group3 to "</span> + str(dynamicValue))</div><div class="line">    os.system(<span class="string">'airflow variables --set DynamicWorkflow_Group3 '</span> + str(dynamicValue))</div><div class="line"> </div><div class="line">    variableValue = Variable.get(<span class="string">"DynamicWorkflow_Group3"</span>)</div><div class="line">    logging.info(<span class="string">"Current DynamicWorkflow_Group3 value is "</span> + str(variableValue))</div><div class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(dynamicValue):</div><div class="line">        resetTasksStatus(<span class="string">'thirdGroup_'</span> + str(i))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">end</span><span class="params">(*args, **kwargs)</span>:</span></div><div class="line">    logging.info(<span class="string">"Ending"</span>)</div><div class="line"> </div><div class="line"> </div><div class="line">starting_task = PythonOperator(</div><div class="line">    task_id=<span class="string">'start'</span>,</div><div class="line">    dag=dag,</div><div class="line">    provide_context=<span class="keyword">True</span>,</div><div class="line">    python_callable=start,</div><div class="line">    op_args=[])</div><div class="line"> </div><div class="line">bridge1_task = PythonOperator(</div><div class="line">    task_id=<span class="string">'bridge1'</span>,</div><div class="line">    dag=dag,</div><div class="line">    provide_context=<span class="keyword">True</span>,</div><div class="line">    python_callable=bridge1,</div><div class="line">    op_args=[])</div><div class="line"> </div><div class="line">DynamicWorkflow_Group1 = Variable.get(<span class="string">"DynamicWorkflow_Group1"</span>)</div><div class="line">logging.info(<span class="string">"The current DynamicWorkflow_Group1 value is "</span> + str(DynamicWorkflow_Group1))</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">doSomeWork</span><span class="params">(name, index, *args, **kwargs)</span>:</span></div><div class="line">    os.system(<span class="string">'touch /home/user/airflow/'</span> + str(name) + str(index) + <span class="string">'.txt'</span>)</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="keyword">for</span> index <span class="keyword">in</span> range(int(DynamicWorkflow_Group1)):</div><div class="line">    dynamicTask = PythonOperator(</div><div class="line">        task_id=<span class="string">'firstGroup_'</span> + str(index),</div><div class="line">        dag=dag,</div><div class="line">        provide_context=<span class="keyword">True</span>,</div><div class="line">        python_callable=doSomeWork,</div><div class="line">        op_args=[<span class="string">'firstGroup'</span>, index],</div><div class="line">    )</div><div class="line"> </div><div class="line">    starting_task.set_downstream(dynamicTask)</div><div class="line">    dynamicTask.set_downstream(bridge1_task)</div><div class="line"> </div><div class="line">bridge2_task = PythonOperator(</div><div class="line">    task_id=<span class="string">'bridge2'</span>,</div><div class="line">    dag=dag,</div><div class="line">    provide_context=<span class="keyword">True</span>,</div><div class="line">    python_callable=bridge2,</div><div class="line">    op_args=[])</div><div class="line"> </div><div class="line">DynamicWorkflow_Group2 = Variable.get(<span class="string">"DynamicWorkflow_Group2"</span>)</div><div class="line">logging.info(<span class="string">"The current DynamicWorkflow value is "</span> + str(DynamicWorkflow_Group2))</div><div class="line"> </div><div class="line"><span class="keyword">for</span> index <span class="keyword">in</span> range(int(DynamicWorkflow_Group2)):</div><div class="line">    dynamicTask = PythonOperator(</div><div class="line">        task_id=<span class="string">'secondGroup_'</span> + str(index),</div><div class="line">        dag=dag,</div><div class="line">        provide_context=<span class="keyword">True</span>,</div><div class="line">        python_callable=doSomeWork,</div><div class="line">        op_args=[<span class="string">'secondGroup'</span>, index])</div><div class="line">    bridge1_task &gt;&gt; dynamicTask</div><div class="line">    dynamicTask &gt;&gt; bridge2_task</div><div class="line"> </div><div class="line">ending_task = PythonOperator(</div><div class="line">    task_id=<span class="string">'end'</span>,</div><div class="line">    dag=dag,</div><div class="line">    provide_context=<span class="keyword">True</span>,</div><div class="line">    python_callable=end,</div><div class="line">    op_args=[])</div><div class="line"> </div><div class="line">DynamicWorkflow_Group3 = Variable.get(<span class="string">"DynamicWorkflow_Group3"</span>)</div><div class="line">logging.info(<span class="string">"The current DynamicWorkflow value is "</span> + str(DynamicWorkflow_Group3))</div><div class="line"> </div><div class="line"><span class="keyword">for</span> index <span class="keyword">in</span> range(int(DynamicWorkflow_Group3)):</div><div class="line">    <span class="keyword">if</span> index &lt; (int(DynamicWorkflow_Group3) - <span class="number">1</span>):</div><div class="line">        dynamicTask = PythonOperator(</div><div class="line">            task_id=<span class="string">'thirdGroup_'</span> + str(index),</div><div class="line">            dag=dag,</div><div class="line">            provide_context=<span class="keyword">True</span>,</div><div class="line">            python_callable=doSomeWork,</div><div class="line">            op_args=[<span class="string">'thirdGroup'</span>, index])</div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        dynamicTask = BashOperator(</div><div class="line">            task_id=<span class="string">'thirdGroup_'</span> + str(index),</div><div class="line">            bash_command=<span class="string">'touch /home/user/airflow/thirdGroup_'</span> + str(index) + <span class="string">'.txt'</span>,</div><div class="line">            dag=dag)</div><div class="line"> </div><div class="line">    bridge2_task &gt;&gt; dynamicTask</div><div class="line">    dynamicTask &gt;&gt; ending_task</div><div class="line"> </div><div class="line">starting_task &gt;&gt; bridge1_task &gt;&gt; bridge2_task &gt;&gt; ending_task</div></pre></td></tr></table></figure></p>
+<p>执行前：<br><img src="https://ttxsgoto.github.io/img/airflow/airflow01.png" alt=""><br>执行后<br><img src="https://ttxsgoto.github.io/img/airflow/airflow02.png" alt=""></p>
+<h4 id="动态生成Dags"><a href="#动态生成Dags" class="headerlink" title="动态生成Dags"></a>动态生成Dags</h4><p>通过获取变量值，globals实现动态生成dags<br>实例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># coding: utf-8</span></div><div class="line"><span class="keyword">from</span> airflow.operators.bash_operator <span class="keyword">import</span> BashOperator</div><div class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</div><div class="line"><span class="keyword">from</span> airflow <span class="keyword">import</span> DAG</div><div class="line"><span class="keyword">from</span> airflow.operators.python_operator <span class="keyword">import</span> PythonOperator</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_dag</span><span class="params">(dag_id,</span></span></div><div class="line">               schedule,</div><div class="line">               dag_number,</div><div class="line">               default_args):</div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">hello_world_py</span><span class="params">(*args)</span>:</span></div><div class="line">        print(<span class="string">'Hello World'</span>)</div><div class="line">        print(<span class="string">'This is DAG: &#123;&#125;'</span>.format(str(dag_number)))</div><div class="line"> </div><div class="line">    dag = DAG(dag_id,</div><div class="line">              schedule_interval=schedule,</div><div class="line">              default_args=default_args)</div><div class="line"> </div><div class="line">    <span class="keyword">with</span> dag:</div><div class="line">        t1 = PythonOperator(</div><div class="line">            task_id=<span class="string">'hello_world'</span>,</div><div class="line">            python_callable=hello_world_py,</div><div class="line">            dag_number=dag_number)</div><div class="line">        t2 = BashOperator(</div><div class="line">            task_id=<span class="string">'current_date'</span>,</div><div class="line">            bash_command=<span class="string">'date'</span></div><div class="line">        )</div><div class="line">        t1 &gt;&gt; t2</div><div class="line"> </div><div class="line">    <span class="keyword">return</span> dag</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_api_data</span><span class="params">()</span>:</span></div><div class="line">    data = [<span class="string">'test01'</span>, <span class="string">'test02'</span>, <span class="string">'test03'</span>]</div><div class="line">    <span class="keyword">return</span> data</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_dags</span><span class="params">(data=None)</span>:</span></div><div class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> range(len(data)):</div><div class="line">        dag_id = <span class="string">'dynamic_day_&#123;&#125;'</span>.format(data[n])</div><div class="line">        default_args = &#123;<span class="string">'owner'</span>: <span class="string">'airflow'</span>,</div><div class="line">                        <span class="string">'start_date'</span>: datetime(<span class="number">2019</span>, <span class="number">6</span>, <span class="number">1</span>)&#125;</div><div class="line">        schedule = <span class="keyword">None</span></div><div class="line">        dag_number = n</div><div class="line">        globals()[dag_id] = create_dag(dag_id, schedule, dag_number, default_args)</div><div class="line"> </div><div class="line"> </div><div class="line">data = get_api_data()</div><div class="line">create_dags(data)</div></pre></td></tr></table></figure></p>
+<p><img src="https://ttxsgoto.github.io/img/airflow/airflow03.png" alt=""></p>
+<h4 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h4><p><a href="https://www.linkedin.com/pulse/dynamic-workflows-airflow-kyle-bridenstine/" target="_blank" rel="external">https://www.linkedin.com/pulse/dynamic-workflows-airflow-kyle-bridenstine/</a><br><a href="https://xbuba.com/questions/41517798" target="_blank" rel="external">https://xbuba.com/questions/41517798</a><br><a href="https://www.astronomer.io/guides/dynamically-generating-dags/" target="_blank" rel="external">https://www.astronomer.io/guides/dynamically-generating-dags/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Airflow/">Airflow</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2019/07/28/yw-airflow-dynamic-dags-tasks/" data-title="Airflow动态生成Tasks和dags | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2019/07/27/yw-airflow-operator/"  title="Airflow变量和执行器">
+ <strong>旧一篇:</strong><br/> 
+ <span>Airflow变量和执行器
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Airflow动态生成Tasks和dags" data-thread-key="yw-airflow-dynamic-dags-tasks" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-airflow-dynamic-dags-tasks"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

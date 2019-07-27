@@ -1,0 +1,395 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Django Signals信号 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明Django 提供一个“信号分发器”，允许解耦的应用在框架的其它地方发生操作时会被通知到。简单来说，信号允许特定的sender通知一组receiver某些操作已经发生;这在多处代码和同一事件有关联的情况下很有用
+预定义信号
+在模型 save()方法调用之前或之后发送
+  12django.db.">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/09/27/django-signals/" title="Django Signals信号" itemprop="url">Django Signals信号</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-09-27T14:41:10.000Z" itemprop="datePublished">2017-09-27</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#预定义信号"><span class="toc-number">2.</span> <span class="toc-text">预定义信号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定义和发送信号"><span class="toc-number">3.</span> <span class="toc-text">定义和发送信号</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#定义信号"><span class="toc-number">3.1.</span> <span class="toc-text">定义信号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#发送信号"><span class="toc-number">3.2.</span> <span class="toc-text">发送信号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Receiver-函数"><span class="toc-number">3.3.</span> <span class="toc-text">Receiver 函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#绑定receivers到signal"><span class="toc-number">3.4.</span> <span class="toc-text">绑定receivers到signal</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#断开信号"><span class="toc-number">3.5.</span> <span class="toc-text">断开信号</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#自定义signal"><span class="toc-number">4.</span> <span class="toc-text">自定义signal</span></a></li></ol>
+		</div>
+		
+		<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>Django 提供一个“信号分发器”，允许解耦的应用在框架的其它地方发生操作时会被通知到。简单来说，信号允许特定的sender通知一组receiver某些操作已经发生;这在多处代码和同一事件有关联的情况下很有用</p>
+<h3 id="预定义信号"><a href="#预定义信号" class="headerlink" title="预定义信号"></a>预定义信号</h3><ul>
+<li><p>在模型 save()方法调用之前或之后发送</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">django.db.models.signals.pre_save </div><div class="line">django.db.models.signals.post_save</div></pre></td></tr></table></figure>
+</li>
+<li><p>在模型delete()方法或查询集的delete() 方法调用之前或之后发送</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">django.db.models.signals.pre_delete</div><div class="line">django.db.models.signals.post_delete</div></pre></td></tr></table></figure>
+</li>
+<li><p>模型上的 ManyToManyField 修改时发送</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">django.db.models.signals.m2m_changed</div></pre></td></tr></table></figure>
+</li>
+<li><p>Django建立或关闭HTTP 请求时发送</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">django.core.signals.request_started</div><div class="line">django.core.signals.request_finished</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="定义和发送信号"><a href="#定义和发送信号" class="headerlink" title="定义和发送信号"></a>定义和发送信号</h3><h4 id="定义信号"><a href="#定义信号" class="headerlink" title="定义信号"></a>定义信号</h4><p>所有信号都是 django.dispatch.Signal 的实例。providing_args是一个列表，由信号将提供给监听者的参数名称组成。理论上是这样，但是实际上并没有任何检查来保证向监听者提供了这些参数。<br> <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"> <span class="keyword">from</span> django.dispatch <span class="keyword">import</span> Signal</div><div class="line"> s_email_sended = Signal(providing_args=[</div><div class="line">    <span class="string">'email_tpl'</span>, <span class="string">'email_subject'</span>, <span class="string">'email_content'</span>, <span class="string">'email_cate'</span>, <span class="string">'sender'</span>, <span class="string">'position'</span>,</div><div class="line">    <span class="string">'candidate'</span>, <span class="string">'candidate_email'</span>, <span class="string">'interviewer'</span>, <span class="string">'interview_email'</span></div><div class="line">])</div><div class="line"> </div><div class="line"><span class="comment"># s_email_sended实例信号，向接受者提供了列表中的参数，最终接受者得到的参数还是需要看send()发送过来的参数</span></div></pre></td></tr></table></figure></p>
+<h4 id="发送信号"><a href="#发送信号" class="headerlink" title="发送信号"></a>发送信号</h4><p> Django中有两种方法用于发送信号:</p>
+<ul>
+<li>Signal.send(sender, **kwargs)</li>
+<li>Signal.send_robust(sender, **kwargs)</li>
+</ul>
+<p>send()  不会捕获任何由receiver 产生的异常。它会简单地让错误往上传递。所以在错误产生的情况，不是所有receiver 都会获得通知.</p>
+<p>send_robust()捕获所有继承自Python Exception类的异常，并且确保所有receiver 都能得到信号的通知。如果发生错误，错误实例会在产生错误的receiver 的二元组中返回.</p>
+<p>调用 Signal.send()或者Signal.send_robust()来发送信号。你必须提供sender 参数（大多数情况下它是一个类），并且可以提供尽可能多的关键字参数。<br> <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">s_email_sended.send(</div><div class="line">           sender=staff,</div><div class="line">           candidate=review.resume_forward.candidate,</div><div class="line">           candidate_email=review.resume_forward.candidate.email,</div><div class="line">           email_subject=subject,</div><div class="line">           email_content=message,</div><div class="line">           email_cate=FlowEmailSendedLog.EMAIL_CATE_INTERVIEWER</div><div class="line">       )</div></pre></td></tr></table></figure></p>
+<h4 id="Receiver-函数"><a href="#Receiver-函数" class="headerlink" title="Receiver 函数"></a>Receiver 函数</h4><p>我们需要定义接收器函数，回调函数。接受器可以是Python函数或者方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">my_callback</span><span class="params">(sender, **kwargs)</span>:</span></div><div class="line">    print(<span class="string">"Request finished!"</span>)</div><div class="line"><span class="comment"># 注意函数接受一个sender参数，以及通配符关键字参数(**kwargs)；所有信号处理器都必须接受这些参数</span></div></pre></td></tr></table></figure></p>
+<h4 id="绑定receivers到signal"><a href="#绑定receivers到signal" class="headerlink" title="绑定receivers到signal"></a>绑定receivers到signal</h4><p>1.使用receiver() 装饰器来自动连接<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.core.signals <span class="keyword">import</span> request_finished</div><div class="line"><span class="keyword">from</span> django.dispatch <span class="keyword">import</span> receiver</div><div class="line"> </div><div class="line"><span class="meta">@receiver(request_finished)</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">my_callback</span><span class="params">(sender, **kwargs)</span>:</span></div><div class="line">    print(<span class="string">"Request finished!"</span>)</div><div class="line"><span class="comment"># 现在，我们的my_callback函数会在每次请求结束时调用</span></div></pre></td></tr></table></figure></p>
+<p>2.手动方式<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> django.core.signals <span class="keyword">import</span> request_finished</div><div class="line">request_finished.connect(my_callback)</div></pre></td></tr></table></figure></p>
+<h4 id="断开信号"><a href="#断开信号" class="headerlink" title="断开信号"></a>断开信号</h4><p>  Signal.disconnect([receiver=None, sender=None, weak=True, dispatch_uid=None])</p>
+<p>  调用Signal.disconnect()来断开信号的接收器。 Signal.connect()中描述了所有参数。如果接收器成功断开，返回 True ，否则返回False。</p>
+<p>receiver 参数表示要断开的已注册receiver。如果使用dispatch_uid 标识receiver，它可以为None</p>
+<h3 id="自定义signal"><a href="#自定义signal" class="headerlink" title="自定义signal"></a>自定义signal</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 定义信号，定义的信号应该在信号发送过来的字段</span></div><div class="line">s_email_sended = Signal(providing_args=[</div><div class="line">    <span class="string">'email_tpl'</span>, <span class="string">'email_subject'</span>, <span class="string">'email_content'</span>, <span class="string">'email_cate'</span>, <span class="string">'sender'</span>, <span class="string">'position'</span>,</div><div class="line">    <span class="string">'candidate'</span>, <span class="string">'candidate_email'</span>, <span class="string">'interviewer'</span>, <span class="string">'interview_email'</span></div><div class="line">])</div><div class="line"> </div><div class="line"><span class="keyword">from</span> django.dispatch <span class="keyword">import</span> Signal</div><div class="line"><span class="keyword">from</span> django.dispatch <span class="keyword">import</span> receiver</div><div class="line"> </div><div class="line"><span class="comment"># 发送信号</span></div><div class="line">s_email_sended.send(</div><div class="line">            sender=staff,</div><div class="line">            candidate=candidate,</div><div class="line">            candidate_email=candidate.email,</div><div class="line">            email_subject=subject,</div><div class="line">            email_content=message,</div><div class="line">            email_cate=EmailSendedLog.EMAIL_CATE_TYPE</div><div class="line">        )</div><div class="line"> </div><div class="line"><span class="comment"># 接收信号</span></div><div class="line"><span class="meta">@receiver(s_email_sended)</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_email_send_log</span><span class="params">(**kwargs)</span>:</span></div><div class="line">    <span class="keyword">for</span> field <span class="keyword">in</span> (<span class="string">'sender'</span>, <span class="string">'email_subject'</span>, <span class="string">'email_content'</span>, <span class="string">'email_cate'</span>):</div><div class="line">        <span class="keyword">if</span> <span class="keyword">not</span> kwargs.get(field):</div><div class="line">            logs.error(<span class="string">"&#123;&#125; can't be null: email_sender/email_subject/email_content/email_cate"</span>.format(field))</div><div class="line">            <span class="keyword">return</span></div><div class="line"> </div><div class="line">    kwargs.pop(<span class="string">'signal'</span>)</div><div class="line">    EmailSendedLog.objects.create(**kwargs)</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Signals/">Signals</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Django/">Django</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2017/09/27/django-signals/" data-title="Django Signals信号 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/11/13/django-logging/" title="Django Logging">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Django Logging</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/09/16/angular-apply-watch/"  title="Angularjs $apply和$watch方法">
+ <strong>旧一篇:</strong><br/> 
+ <span>Angularjs $apply和$watch方法
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Django Signals信号" data-thread-key="django-signals" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/django-signals"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
