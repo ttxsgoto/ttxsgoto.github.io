@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2019-07-27T06:25:38.000Z</updated>
+  <updated>2019-07-27T06:44:05.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://ttxsgoto.github.io/2019/07/28/yw-airflow-dynamic-dags-tasks/"/>
     <id>https://ttxsgoto.github.io/2019/07/28/yw-airflow-dynamic-dags-tasks/</id>
     <published>2019-07-28T08:21:22.000Z</published>
-    <updated>2019-07-27T06:25:38.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="动态生成task任务"><a href="#动态生成task任务" class="headerlink" title="动态生成task任务"></a>动态生成task任务</h4><p>现在有这样的需求， 需要根据计算结果动态生成任务列表，来执行dags，查找资料后发现主要使用动态生成TaskInstance实例来完成<br>具体说明如下：</p>
 <ul>
@@ -56,7 +56,7 @@
     <link href="https://ttxsgoto.github.io/2019/07/27/yw-airflow-operator/"/>
     <id>https://ttxsgoto.github.io/2019/07/27/yw-airflow-operator/</id>
     <published>2019-07-27T08:15:08.000Z</published>
-    <updated>2019-07-27T06:25:38.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h4><p>最近在调研Airflow demo相关的问题和解决方案， 主要问题有：</p>
 <ul>
@@ -91,7 +91,7 @@
     <link href="https://ttxsgoto.github.io/2019/07/26/yw-airflow-install/"/>
     <id>https://ttxsgoto.github.io/2019/07/26/yw-airflow-install/</id>
     <published>2019-07-26T07:50:35.000Z</published>
-    <updated>2019-07-27T06:25:38.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>Airflow是一个工作流分配管理系统，通过有向非循环图的方式管理任务流程，设置任务依赖关系和时间调度。Airflow独立于我们要运行的任务，只需要把任务的名字和运行方式提供给Airflow作为一个task就可以， 以代码的方式来定义任务执行流程，可操作性强。</p>
 <h4 id="Airflow架构"><a href="#Airflow架构" class="headerlink" title="Airflow架构"></a>Airflow架构</h4><p>Airflow 是建立在元数据库上的队列系统。数据库存储队列任务的状态，调度器使用这些状态来确定如何将其它任务添加到队列的优先级。此功能由四个主要组件编排</p>
@@ -156,7 +156,7 @@
     <link href="https://ttxsgoto.github.io/2019/07/03/vue-echarts/"/>
     <id>https://ttxsgoto.github.io/2019/07/03/vue-echarts/</id>
     <published>2019-07-03T12:00:47.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>最近项目中需要用到图形可视化，制作一系列的报表功能，查询资料后使用echarts来实现功能，主要需要实现根据数据渲染多组数据来展现对比数据</p>
 <h3 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h3><ul>
@@ -195,7 +195,7 @@
     <link href="https://ttxsgoto.github.io/2019/06/30/vue-life-cycle-function/"/>
     <id>https://ttxsgoto.github.io/2019/06/30/vue-life-cycle-function/</id>
     <published>2019-06-30T11:29:15.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<p>记录vue 生命周期函数的学习</p>
 <h3 id="生命周期图示"><a href="#生命周期图示" class="headerlink" title="生命周期图示"></a>生命周期图示</h3><p><img src="https://cn.vuejs.org/images/lifecycle.png" alt=""></p>
@@ -221,7 +221,7 @@
     <link href="https://ttxsgoto.github.io/2019/06/29/yw-systemd/"/>
     <id>https://ttxsgoto.github.io/2019/06/29/yw-systemd/</id>
     <published>2019-06-29T03:07:07.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>Systemd 是 Linux 系统工具，用来启动守护进程，已成为大多数发行版的标准配置；主要用于服务管理和自定义服务的管理，方便运维工作管理。</p>
 <h4 id="systemctl"><a href="#systemctl" class="headerlink" title="systemctl"></a>systemctl</h4><p>systemctl是 Systemd 的主命令，用于管理系统<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"># 重启系统</div><div class="line">$ sudo systemctl reboot</div><div class="line"> </div><div class="line"># 关闭系统，切断电源</div><div class="line">$ sudo systemctl poweroff</div><div class="line"> </div><div class="line"># CPU停止工作</div><div class="line">$ sudo systemctl halt</div><div class="line"> </div><div class="line"># 暂停系统</div><div class="line">$ sudo systemctl suspend</div><div class="line"> </div><div class="line"># 让系统进入冬眠状态</div><div class="line">$ sudo systemctl hibernate</div><div class="line"> </div><div class="line"># 让系统进入交互式休眠状态</div><div class="line">$ sudo systemctl hybrid-sleep</div><div class="line"> </div><div class="line"># 启动进入救援状态（单用户状态）</div><div class="line">$ sudo systemctl rescue</div></pre></td></tr></table></figure></p>
@@ -270,7 +270,7 @@
     <link href="https://ttxsgoto.github.io/2019/01/10/yw-sersync/"/>
     <id>https://ttxsgoto.github.io/2019/01/10/yw-sersync/</id>
     <published>2019-01-10T13:58:34.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>需要将某台服务器目录实时同步到另外一台服务器上的某个目录下，其实本来可以通过远程目录挂载的方式完成， 但是现在的需求是某两台服务器的目录实时同步到另外一台的同一目录中，这时就不能使用远程目录挂载方式完成了， 这里使用sersync+rsync来完成需求</p>
 <h4 id="Sersync特点"><a href="#Sersync特点" class="headerlink" title="Sersync特点"></a>Sersync特点</h4><ul>
@@ -303,7 +303,7 @@
     <link href="https://ttxsgoto.github.io/2019/01/07/yw-apollo/"/>
     <id>https://ttxsgoto.github.io/2019/01/07/yw-apollo/</id>
     <published>2019-01-07T12:59:45.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>之前文章中说过发布流程(<a href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/">Jenkins+Gitlab+Harbor构建持续集成</a>),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能“一刀切”使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发</p>
 <h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
@@ -348,7 +348,7 @@
     <link href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/"/>
     <id>https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/</id>
     <published>2019-01-04T12:41:44.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作</p>
 <h4 id="组件说明"><a href="#组件说明" class="headerlink" title="组件说明"></a>组件说明</h4><h5 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h5><p>jenkins是基于Java开发的一种持续集成工具，用于监控持续重复的工作，旨在提供一个开放易用的软件平台，使软件的持续集成变成可能<br>特点：</p>
@@ -403,7 +403,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-count/"/>
     <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-count/</id>
     <published>2018-12-28T14:48:50.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="count-实现方式"><a href="#count-实现方式" class="headerlink" title="count(*) 实现方式"></a>count(*) 实现方式</h4><p>不同的引擎，实现方式不同</p>
 <ul>
@@ -445,7 +445,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-order-by/"/>
     <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-order-by/</id>
     <published>2018-12-28T14:46:51.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="全字段排序"><a href="#全字段排序" class="headerlink" title="全字段排序"></a>全字段排序</h4><p>mysql会给每个线程分配一块内存用于排序，称为sort_buffer</p>
 <p>sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该值，则需要用磁盘临时文件辅助排序</p>
@@ -475,7 +475,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-addindex-to-string/"/>
     <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-addindex-to-string/</id>
     <published>2018-12-28T12:41:50.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h4><p>前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数</p>
 <p>在建立索引时需要关注的是区分度，区分度越高越好</p>
@@ -510,7 +510,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/"/>
     <id>https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/</id>
     <published>2018-12-27T14:44:05.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="锁分类"><a href="#锁分类" class="headerlink" title="锁分类"></a>锁分类</h4><ul>
 <li>全局锁</li>
@@ -580,7 +580,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/"/>
     <id>https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/</id>
     <published>2018-12-26T13:42:58.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h4><p>事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持</p>
 <h4 id="事务的特性"><a href="#事务的特性" class="headerlink" title="事务的特性"></a>事务的特性</h4><ul>
@@ -650,7 +650,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/25/yw-mysql-redo-binlog/"/>
     <id>https://ttxsgoto.github.io/2018/12/25/yw-mysql-redo-binlog/</id>
     <published>2018-12-25T11:43:38.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<p>WAL(Write-Ahead-Logging),先写日志，再写磁盘</p>
 <ul>
@@ -709,7 +709,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/21/yw-mysql-select-index/"/>
     <id>https://ttxsgoto.github.io/2018/12/21/yw-mysql-select-index/</id>
     <published>2018-12-21T03:14:08.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="优化器选择索引逻辑"><a href="#优化器选择索引逻辑" class="headerlink" title="优化器选择索引逻辑"></a>优化器选择索引逻辑</h4><ul>
 <li>扫描行数</li>
@@ -754,7 +754,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/20/yw-mysql-unique-index/"/>
     <id>https://ttxsgoto.github.io/2018/12/20/yw-mysql-unique-index/</id>
     <published>2018-12-20T12:11:46.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="查询操作"><a href="#查询操作" class="headerlink" title="查询操作"></a>查询操作</h4><ul>
 <li>查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止</li>
@@ -806,7 +806,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/03/yw-mysql-question/"/>
     <id>https://ttxsgoto.github.io/2018/12/03/yw-mysql-question/</id>
     <published>2018-12-03T12:22:02.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h4><p>在同一个sql语句中，先select同一个表的某些值，然后再update这个表</p>
 <p>如执行如下sql语句：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">update logistic_statistic set fluid_id=<span class="string">'cca03b6a372045f2891fef62d9524652'</span> where id <span class="keyword">in</span> (</div><div class="line">  select id <span class="keyword">from</span> logistic_statistic where company= <span class="string">'新能源有限公司'</span>);</div></pre></td></tr></table></figure></p>
@@ -834,7 +834,7 @@
     <link href="https://ttxsgoto.github.io/2018/10/24/python-django-celery/"/>
     <id>https://ttxsgoto.github.io/2018/10/24/python-django-celery/</id>
     <published>2018-10-24T14:38:48.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>需求为工作流审批，到达某状态后，超过一段时间没有审批，则流程自动审批到下一个状态</p>
 <h4 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h4><p>想到使用计划任务来自动流转流程，因为项目本身是Django，这里使用djcelery来完成</p>
@@ -869,7 +869,7 @@
     <link href="https://ttxsgoto.github.io/2018/09/28/redis-advance/"/>
     <id>https://ttxsgoto.github.io/2018/09/28/redis-advance/</id>
     <published>2018-09-28T13:14:53.000Z</published>
-    <updated>2019-07-04T23:07:24.000Z</updated>
+    <updated>2019-07-27T06:44:05.000Z</updated>
     
     <content type="html"><![CDATA[<p>Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发</p>
 <h4 id="使用redis目的"><a href="#使用redis目的" class="headerlink" title="使用redis目的"></a>使用redis目的</h4><ul>
