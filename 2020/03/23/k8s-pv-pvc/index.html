@@ -1,0 +1,421 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Kubernetes 存储PV&amp;PVC | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="存储类型
+empryDir 
+hostPath
+PV &amp;amp;&amp;amp; PVC
+
+emptyDirpod删除，存储卷也删除， 只在节点node本地使用， pod删除存储卷也删除12345678910111213141516171819202122apiVersion: v1kind: Podme">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/03/23/k8s-pv-pvc/" title="Kubernetes 存储PV&amp;PVC" itemprop="url">Kubernetes 存储PV&amp;PVC</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-03-23T09:59:02.000Z" itemprop="datePublished">2020-03-23</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#存储类型"><span class="toc-number">1.</span> <span class="toc-text">存储类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#emptyDir"><span class="toc-number">2.</span> <span class="toc-text">emptyDir</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hostPath"><span class="toc-number">3.</span> <span class="toc-text">hostPath</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NFS存储"><span class="toc-number">4.</span> <span class="toc-text">NFS存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PV-amp-amp-PVC"><span class="toc-number">5.</span> <span class="toc-text">PV && PVC</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#PV"><span class="toc-number">5.1.</span> <span class="toc-text">PV</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#访问模式"><span class="toc-number">5.2.</span> <span class="toc-text">访问模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#存储类别-Class"><span class="toc-number">5.3.</span> <span class="toc-text">存储类别(Class)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#回收策略-Reclaim-Policy"><span class="toc-number">5.4.</span> <span class="toc-text">回收策略(Reclaim Policy)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PV生命周期的各个阶段"><span class="toc-number">5.5.</span> <span class="toc-text">PV生命周期的各个阶段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PVC"><span class="toc-number">5.6.</span> <span class="toc-text">PVC</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PV和PVC的生命周期"><span class="toc-number">6.</span> <span class="toc-text">PV和PVC的生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StorageClass"><span class="toc-number">7.</span> <span class="toc-text">StorageClass</span></a></li></ol>
+		</div>
+		
+		<h3 id="存储类型"><a href="#存储类型" class="headerlink" title="存储类型"></a>存储类型</h3><ul>
+<li>empryDir </li>
+<li>hostPath</li>
+<li>PV &amp;&amp; PVC</li>
+</ul>
+<h3 id="emptyDir"><a href="#emptyDir" class="headerlink" title="emptyDir"></a>emptyDir</h3><p>pod删除，存储卷也删除， 只在节点node本地使用， pod删除存储卷也删除<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-demo</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">    app: myapp</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">    ports:</div><div class="line">    - name: http</div><div class="line">      containerPort: <span class="number">80</span></div><div class="line">    - name: https</div><div class="line">      containerPort: <span class="number">443</span></div><div class="line">    volumeMounts:</div><div class="line">    - name: html</div><div class="line">      mountPath: /data/web/html/</div><div class="line">  volumes:</div><div class="line">  - name: html</div><div class="line">    emptyDir: &#123;&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="hostPath"><a href="#hostPath" class="headerlink" title="hostPath"></a>hostPath</h3><p>pod数据存储在宿主机上</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">apiVersion: V1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-vol-hostpath</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernets/myapp:v1</div><div class="line">    volumeMounts:</div><div class="line">    - name: html</div><div class="line">      mountPath: /user/share/nginx/html/</div><div class="line">  volumes:</div><div class="line">  - name: html</div><div class="line">    hostPath:</div><div class="line">      path: /data/pod/volume1   <span class="comment"># node上的目录</span></div><div class="line">      type: DirectoryOrCreate</div></pre></td></tr></table></figure>
+<p>kubectl explain pods.spec.volumes </p>
+<h3 id="NFS存储"><a href="#NFS存储" class="headerlink" title="NFS存储"></a>NFS存储</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">server:</div><div class="line">sudo apt-get install nfs-kernel-server</div><div class="line">vim /etc/exports</div><div class="line">/data/volume  <span class="number">192.168</span><span class="number">.238</span><span class="number">.0</span>/<span class="number">24</span>(rw,no_root_squash)</div><div class="line">sudo /etc/init.d/nfs-kernel-server restart</div><div class="line">showmount -e    <span class="comment">#查看</span></div><div class="line"> </div><div class="line">client:</div><div class="line">sudo apt-get install nfs-kernel-server</div><div class="line">mount -t nfs <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span>:/data/volume  /data/</div><div class="line"> </div><div class="line"> </div><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-vol-nfs</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">    volumeMounts:</div><div class="line">    - name: html</div><div class="line">      mountPath: /usr/share/nginx/html/</div><div class="line">  volumes:</div><div class="line">  - name: html</div><div class="line">    nfs:</div><div class="line">      path: /data/volume</div><div class="line">      server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div></pre></td></tr></table></figure>
+<h3 id="PV-amp-amp-PVC"><a href="#PV-amp-amp-PVC" class="headerlink" title="PV &amp;&amp; PVC"></a>PV &amp;&amp; PVC</h3><h4 id="PV"><a href="#PV" class="headerlink" title="PV"></a>PV</h4><p>PV是对底层网络存储的抽象，将共享存储定义为“资源”，node可以消费这种资源</p>
+<p>PV作为存储资源，主要包括存储能力、访问模式、存储类型、回收策略、后端存储类型等关键信息的设置</p>
+<h4 id="访问模式"><a href="#访问模式" class="headerlink" title="访问模式"></a>访问模式</h4><ul>
+<li>ReadWriteOnce(RWO): 读写权限，并且只能被当个node挂载</li>
+<li>ReadOnlyMany(ROX): 只读权限，允许被多个Node挂载</li>
+<li>ReadWriteMany(RWX): 读写权限，允许被多个Node挂载</li>
+</ul>
+<h4 id="存储类别-Class"><a href="#存储类别-Class" class="headerlink" title="存储类别(Class)"></a>存储类别(Class)</h4><p>PV可以设定其存储的类别， 通过storageClassName参数指定一个StorageClass资源对象的名称</p>
+<h4 id="回收策略-Reclaim-Policy"><a href="#回收策略-Reclaim-Policy" class="headerlink" title="回收策略(Reclaim Policy)"></a>回收策略(Reclaim Policy)</h4><ul>
+<li>Retain, 保留，保留数据，需要手工处理</li>
+<li>回收空间， 简单清除文件的操作(rm -rf /volume/*)</li>
+<li>删除， 与PV相连的后端存储完成Volume的删除操作</li>
+</ul>
+<p>目前只有NFS和HostPath两种类型的存储支持Recycle策略， AWS EBS/GCE PD/ Azure Disk和Cinder Volumes支持Delete策略</p>
+<h4 id="PV生命周期的各个阶段"><a href="#PV生命周期的各个阶段" class="headerlink" title="PV生命周期的各个阶段"></a>PV生命周期的各个阶段</h4><ul>
+<li>Available 可用状态， 还没有和某个PVC绑定</li>
+<li>Bound 已和某个PVC绑定</li>
+<li>Released 绑定的PVC已经删除，资源已释放，但没有被集群回收</li>
+<li>Failed 自动资源回收失败</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get pv</span></div><div class="line">apiVersion: v1</div><div class="line">kind: PersistentVolume</div><div class="line">metadata:</div><div class="line">  name: pv001</div><div class="line">  labels:</div><div class="line">    name: pv001</div><div class="line">spec:</div><div class="line">  nfs:</div><div class="line">    path: /data/volumes</div><div class="line">    server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div><div class="line">  accessModes: [<span class="string">"ReadWriteMany"</span>, <span class="string">"ReadWriteOnce"</span>]</div><div class="line">  capacity:</div><div class="line">    storage: <span class="number">10</span>Gi</div></pre></td></tr></table></figure>
+<h4 id="PVC"><a href="#PVC" class="headerlink" title="PVC"></a>PVC</h4><p>用户对存储资源的一个“申请”，pvc可以消费pv资源</p>
+<p>主要包括存储空间请求、访问模式、pv选择条件和存储类别等信息的设置</p>
+<ul>
+<li>资源请求(Resources) 描述</li>
+<li>访问模式(Access Modes) </li>
+<li>存储卷模式(Volume Modes)， pvc也可以设置存储卷模式，用于描述希望使用的pv存储卷模式，包括文件系统和块设备</li>
+<li>PV选择条件(Selector), 通过对Label Selector的设置，可使PVC对于系统中已存在的各种PV进行筛选</li>
+<li>存储类别(Class) PVC在定义时可以设定需要的后端存储的类别(通过storageClassName字段指定)，以减少对后端存储特性的详细信息依赖</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get pvc</span></div><div class="line">apiVersion: v1</div><div class="line">kind: PersistentVolumeClaim</div><div class="line">metadata:</div><div class="line">  name: mypvc</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  accessModes: [<span class="string">"ReadWriteMany"</span>]</div><div class="line">  resources:</div><div class="line">    requests:</div><div class="line">      storage: <span class="number">6</span>Gi</div></pre></td></tr></table></figure>
+<p>注意：</p>
+<ul>
+<li>PVC 和PV都受限于Namespace, pvc在选择pv时受到Namespace的限制</li>
+<li>selector和class都进行设置时， 系统将选择两个条件同时满足的pv来匹配</li>
+</ul>
+<h3 id="PV和PVC的生命周期"><a href="#PV和PVC的生命周期" class="headerlink" title="PV和PVC的生命周期"></a>PV和PVC的生命周期</h3><ul>
+<li>资源供应</li>
+<li>资源绑定</li>
+<li>资源使用</li>
+<li>资源释放</li>
+<li>资源回收</li>
+</ul>
+<h3 id="StorageClass"><a href="#StorageClass" class="headerlink" title="StorageClass"></a>StorageClass</h3><p>动态生成PV</p>
+<p>用于标记存储资源的特性和性能<br>StorageClass定义了主要包括名称、后端存储的提供者(provisioner)和后端存储相关的参数配置</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/pv/">pv</a><a href="/tags/pvc/">pvc</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Kubernetes/">Kubernetes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2020/03/23/k8s-pv-pvc/" data-title="Kubernetes 存储PV&amp;PVC | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/03/27/k8s-statefulset/" title="Kubernetes StatefulSet">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Kubernetes StatefulSet</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/03/23/k8s-service/"  title="Kubernetes Service">
+ <strong>旧一篇:</strong><br/> 
+ <span>Kubernetes Service
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Kubernetes 存储PV&amp;PVC" data-thread-key="k8s-pv-pvc" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/k8s-pv-pvc"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

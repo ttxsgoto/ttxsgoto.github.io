@@ -1,0 +1,384 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Kubernetes StatefulSet | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="StatefulSet用于有状态应用，如(Mysql,redis, Etcd等)，通过某种方式，记录这些状态，然后在pod被重新创建时，能够为新Pod恢复这些状态
+Headless Service无头服务 clusterIP: None
+Headless Service不需要分配一个VIP，而是可以">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/03/27/k8s-statefulset/" title="Kubernetes StatefulSet" itemprop="url">Kubernetes StatefulSet</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-03-27T08:28:36.000Z" itemprop="datePublished">2020-03-27</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#StatefulSet"><span class="toc-number">1.</span> <span class="toc-text">StatefulSet</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Headless-Service"><span class="toc-number">2.</span> <span class="toc-text">Headless Service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#volumeClaimTemplates"><span class="toc-number">3.</span> <span class="toc-text">volumeClaimTemplates</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#流程说明"><span class="toc-number">4.</span> <span class="toc-text">流程说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实例"><span class="toc-number">5.</span> <span class="toc-text">实例</span></a></li></ol>
+		</div>
+		
+		<h4 id="StatefulSet"><a href="#StatefulSet" class="headerlink" title="StatefulSet"></a>StatefulSet</h4><p>用于有状态应用，如(Mysql,redis, Etcd等)，通过某种方式，记录这些状态，然后在pod被重新创建时，能够为新Pod恢复这些状态</p>
+<h4 id="Headless-Service"><a href="#Headless-Service" class="headerlink" title="Headless Service"></a>Headless Service</h4><p>无头服务 clusterIP: None</p>
+<p>Headless Service不需要分配一个VIP，而是可以直接以DNS记录的方式解析出被代理Pod的地址<br>解析规则：</p>
+<ul>
+<li>namespace: default</li>
+<li>service: foo</li>
+<li>pod: A-0</li>
+</ul>
+<p>域名： a-0.foo.default.svc.cluster.local , 通过DNS服务，查找域名foo.default.svc.cluster.local对应的所有SRV记录，获得一个StatefulSet中所有pod名称</p>
+<p>每个pod解析到对应的ip，解析名称规格为：<br>pod_name.service_name.ns_name.cluster.local</p>
+<h4 id="volumeClaimTemplates"><a href="#volumeClaimTemplates" class="headerlink" title="volumeClaimTemplates"></a>volumeClaimTemplates</h4><p>需要绑定PVC，自动创建PVC，但需要事先创建好PV</p>
+<p>volumeClaimTemplates 自动完成的功能：</p>
+<ul>
+<li>pod名称空间自动创建pvc</li>
+<li>pod自动定义volume</li>
+<li>删除pod时 对应的pvc和pv不会被删除</li>
+</ul>
+<h4 id="流程说明"><a href="#流程说明" class="headerlink" title="流程说明"></a>流程说明</h4><ul>
+<li>StatefulSet的控制器直接管理pod，而为了区分这些实例，通过pod的名字里事先约定的编号</li>
+<li>通过Headless Service为这些有编号的pod在dns服务器中生成带有同样编号的DNS记录，只要statefulSet能够保证这些pod名字里面的编号不变，那么service中的dns记录也不会变</li>
+<li>StatefulSet还为每个pod分配并创建了一个同样编号的PVC,这样保证了每个Pod都拥有一个独立的Volume，即使Pod被删除，对应的PV和PVC依然会保留，这样即使重新创建，也可以找到同样编号的PVC，挂载这个PVC对应的Volume，从而获取到以前保存在Volume中的数据</li>
+</ul>
+<ul>
+<li>StatefulSet 这个资源对象针对的就是有状态的应用，比如 MySQL、Redis、Memcached </li>
+<li>StatefulSet可以控制pod的启动顺序，还可以为每个pod的状态设置唯一标识(在pod名字后面加0，1，2)，这样对于部署、删除、滚动更新等操作都是有序的</li>
+<li>支持有序滚动更新 kubectl scale sts myapp –replicas=5</li>
+<li>sts.spec.updateStrategy.rollingUpdate.partition : N 表示表示大于等于N的pod会被更新</li>
+</ul>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get sts     # 查看statefulset</span></div><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp-svc</div><div class="line">  labels:</div><div class="line">    app: myapp-svc</div><div class="line">spec:</div><div class="line">  ports:</div><div class="line">  - port: <span class="number">80</span></div><div class="line">    name: web</div><div class="line">  clusterIP: <span class="keyword">None</span>   <span class="comment"># Headless Service</span></div><div class="line">  selector:</div><div class="line">    app: myapp-pod</div><div class="line">---</div><div class="line">apiVersion: apps/v1</div><div class="line">kind: StatefulSet</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">spec:</div><div class="line">  serviceName: myapp-svc    <span class="comment"># 使用Serice名称为myapp-svc来保证pod的可解析身份</span></div><div class="line">  replicas: <span class="number">2</span></div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: myapp-pod</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: myapp-pod</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: myapp</div><div class="line">        image: ikubernetes/myapp:v1</div><div class="line">        ports:</div><div class="line">        - containerPort: <span class="number">80</span></div><div class="line">          name: web</div><div class="line">        volumeMounts:</div><div class="line">        - name: myappdata</div><div class="line">          mountPath: /usr/share/nginx/html</div><div class="line">  volumeClaimTemplates: </div><div class="line">  - metadata:</div><div class="line">      name: myappdata</div><div class="line">    spec:</div><div class="line">      accessModes: [<span class="string">"ReadWriteOnce"</span>]</div><div class="line">      resources:</div><div class="line">        requests:</div><div class="line">          storage: <span class="number">2</span>Gi</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/statefulset/">statefulset</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Kubernetes/">Kubernetes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2020/03/27/k8s-statefulset/" data-title="Kubernetes StatefulSet | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2020/03/23/k8s-pv-pvc/"  title="Kubernetes 存储PV&amp;PVC">
+ <strong>旧一篇:</strong><br/> 
+ <span>Kubernetes 存储PV&amp;PVC
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Kubernetes StatefulSet" data-thread-key="k8s-statefulset" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/k8s-statefulset"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

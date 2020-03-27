@@ -89,6 +89,169 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2020/03/27/k8s-statefulset/" title="Kubernetes StatefulSet" itemprop="url">
+      
+        Kubernetes StatefulSet
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >StatefulSet用于有状态应用，如(Mysql,redis, Etcd等)，通过某种方式，记录这些状态，然后在pod被重新创建时，能够为新Pod恢复这些状态
+Headless Service无头服务 clusterIP: None
+Headless Service不需要分配</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2020-03-27T08:28:36.000Z" itemprop="datePublished">2020-03-27</time>
+      
+          <a href="/2020/03/27/k8s-statefulset/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2020/03/23/k8s-pv-pvc/" title="Kubernetes 存储PV&amp;PVC" itemprop="url">
+      
+        Kubernetes 存储PV&amp;PVC
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >存储类型
+empryDir 
+hostPath
+PV &amp;amp;&amp;amp; PVC
+
+emptyDirpod删除，存储卷也删除， 只在节点node本地使用， pod删除存储卷也删除12345678910111213141516171819202122apiVersion: v1k</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2020-03-23T09:59:02.000Z" itemprop="datePublished">2020-03-23</time>
+      
+          <a href="/2020/03/23/k8s-pv-pvc/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2020/03/23/k8s-service/" title="Kubernetes Service" itemprop="url">
+      
+        Kubernetes Service
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >Service功能
+通过Service为一组具有相同功能的容器应用提供统一的入口地址，并将请求负载分发到后端的各个容器应用上
+Pod的创建和销毁都会实时更新service的Endpoint数据，所以可以动态地对Service的后端Pod进行查询
+集群外的客户端无法通过pod的ip</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2020-03-23T08:30:52.000Z" itemprop="datePublished">2020-03-23</time>
+      
+          <a href="/2020/03/23/k8s-service/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2020/03/20/k8s-pods/" title="Kubernetes Pods" itemprop="url">
+      
+        Kubernetes Pods
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >容器内获取pod信息
+环境变量，将pod信息注入为环境变量
+123456789env：  - name: POD_NAME    valueFrom:      fieldRef:        fieldPath: metadata.name  - name: POD_NAME</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2020-03-20T09:40:23.000Z" itemprop="datePublished">2020-03-20</time>
+      
+          <a href="/2020/03/20/k8s-pods/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2020/03/20/k8s-cluster-install/" title="Kubernetes 集群部署" itemprop="url">
+      
+        Kubernetes 集群部署
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >Environment
+192.168.2.100 (master, ubuntu 16.04)
+192.168.2.99 (node1, ubuntu 16.04)
+192.168.2.101(node2, ubuntu 16.04) 
+
+Install Docker12345</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2020-03-20T08:42:34.000Z" itemprop="datePublished">2020-03-20</time>
+      
+          <a href="/2020/03/20/k8s-cluster-install/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2020/03/20/k8s-core-component/" title="Kubernetes 核心组件" itemprop="url">
+      
+        Kubernetes 核心组件
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >API Server原理解析各类资源对象(Pod,RC,Service)的CURD和watch等HTTP REST接口，成为集群内各个功能模块之间数据交互和通信的中心枢纽，是整个系统的数据总线和数据中心
+
+api server 通过一个名为kube-apiserver的进程提供服</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2020-03-20T08:19:12.000Z" itemprop="datePublished">2020-03-20</time>
+      
+          <a href="/2020/03/20/k8s-core-component/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2019/07/28/yw-airflow-dynamic-dags-tasks/" title="Airflow动态生成Tasks和dags" itemprop="url">
       
         Airflow动态生成Tasks和dags
@@ -200,166 +363,9 @@ chart.</p>
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2019/06/30/vue-life-cycle-function/" title="Vue 生命周期函数" itemprop="url">
-      
-        Vue 生命周期函数
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >记录vue 生命周期函数的学习
-生命周期图示
-实例1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253// 生命周期函数：就是vue实例在</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2019-06-30T11:29:15.000Z" itemprop="datePublished">2019-06-30</time>
-      
-          <a href="/2019/06/30/vue-life-cycle-function/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2019/06/29/yw-systemd/" title="Systemd服务" itemprop="url">
-      
-        Systemd服务
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >说明Systemd 是 Linux 系统工具，用来启动守护进程，已成为大多数发行版的标准配置；主要用于服务管理和自定义服务的管理，方便运维工作管理。
-systemctlsystemctl是 Systemd 的主命令，用于管理系统12345678910111213141516171</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2019-06-29T03:07:07.000Z" itemprop="datePublished">2019-06-29</time>
-      
-          <a href="/2019/06/29/yw-systemd/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2019/01/10/yw-sersync/" title="Sersync+Rsync文件同步" itemprop="url">
-      
-        Sersync+Rsync文件同步
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >背景需要将某台服务器目录实时同步到另外一台服务器上的某个目录下，其实本来可以通过远程目录挂载的方式完成， 但是现在的需求是某两台服务器的目录实时同步到另外一台的同一目录中，这时就不能使用远程目录挂载方式完成了， 这里使用sersync+rsync来完成需求
-Sersync特点
-c</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2019-01-10T13:58:34.000Z" itemprop="datePublished">2019-01-10</time>
-      
-          <a href="/2019/01/10/yw-sersync/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2019/01/07/yw-apollo/" title="Apollo配置中心" itemprop="url">
-      
-        Apollo配置中心
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >背景之前文章中说过发布流程(Jenkins+Gitlab+Harbor构建持续集成),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能“一刀切”使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发
-特点
-</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2019-01-07T12:59:45.000Z" itemprop="datePublished">2019-01-07</time>
-      
-          <a href="/2019/01/07/yw-apollo/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2019/01/04/yw-jenkins-ci/" title="Jenkins+Gitlab+Harbor构建持续集成" itemprop="url">
-      
-        Jenkins+Gitlab+Harbor构建持续集成
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >背景最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作
-组件说明Jenkinsjenkins是基于Ja</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2019-01-04T12:41:44.000Z" itemprop="datePublished">2019-01-04</time>
-      
-          <a href="/2019/01/04/yw-jenkins-ci/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/12/28/yw-mysql-count/" title="Count计数变慢" itemprop="url">
-      
-        Count计数变慢
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >count(*) 实现方式不同的引擎，实现方式不同
-
-Myisam把一个表的总行存在磁盘上，执行时直接返回这个数
-Innodb，需要把数据一行行的从引擎中读出来，然后累积计数，遍历全表
-
-不同的count用法count()为聚合函数，对于返回的结果集，一行行判断，如果count函</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-12-28T14:48:50.000Z" itemprop="datePublished">2018-12-28</time>
-      
-          <a href="/2018/12/28/yw-mysql-count/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
   </nav>
 
 </div>
@@ -404,6 +410,8 @@ Innodb，需要把数据一行行的从引擎中读出来，然后累积计数�
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
 			<li><a href="/categories/Frontend/" title="Frontend">Frontend<sup>6</sup></a></li>
+		
+			<li><a href="/categories/Kubernetes/" title="Kubernetes">Kubernetes<sup>6</sup></a></li>
 		
 			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
 		

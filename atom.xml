@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2019-07-27T06:44:05.000Z</updated>
+  <updated>2020-03-27T08:41:42.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -16,11 +16,540 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Kubernetes StatefulSet</title>
+    <link href="https://ttxsgoto.github.io/2020/03/27/k8s-statefulset/"/>
+    <id>https://ttxsgoto.github.io/2020/03/27/k8s-statefulset/</id>
+    <published>2020-03-27T08:28:36.000Z</published>
+    <updated>2020-03-27T08:41:42.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="StatefulSet"><a href="#StatefulSet" class="headerlink" title="StatefulSet"></a>StatefulSet</h4><p>用于有状态应用，如(Mysql,redis, Etcd等)，通过某种方式，记录这些状态，然后在pod被重新创建时，能够为新Pod恢复这些状态</p>
+<h4 id="Headless-Service"><a href="#Headless-Service" class="headerlink" title="Headless Service"></a>Headless Service</h4><p>无头服务 clusterIP: None</p>
+<p>Headless Service不需要分配一个VIP，而是可以直接以DNS记录的方式解析出被代理Pod的地址<br>解析规则：</p>
+<ul>
+<li>namespace: default</li>
+<li>service: foo</li>
+<li>pod: A-0</li>
+</ul>
+<p>域名： a-0.foo.default.svc.cluster.local , 通过DNS服务，查找域名foo.default.svc.cluster.local对应的所有SRV记录，获得一个StatefulSet中所有pod名称</p>
+<p>每个pod解析到对应的ip，解析名称规格为：<br>pod_name.service_name.ns_name.cluster.local</p>
+<h4 id="volumeClaimTemplates"><a href="#volumeClaimTemplates" class="headerlink" title="volumeClaimTemplates"></a>volumeClaimTemplates</h4><p>需要绑定PVC，自动创建PVC，但需要事先创建好PV</p>
+<p>volumeClaimTemplates 自动完成的功能：</p>
+<ul>
+<li>pod名称空间自动创建pvc</li>
+<li>pod自动定义volume</li>
+<li>删除pod时 对应的pvc和pv不会被删除</li>
+</ul>
+<h4 id="流程说明"><a href="#流程说明" class="headerlink" title="流程说明"></a>流程说明</h4><ul>
+<li>StatefulSet的控制器直接管理pod，而为了区分这些实例，通过pod的名字里事先约定的编号</li>
+<li>通过Headless Service为这些有编号的pod在dns服务器中生成带有同样编号的DNS记录，只要statefulSet能够保证这些pod名字里面的编号不变，那么service中的dns记录也不会变</li>
+<li>StatefulSet还为每个pod分配并创建了一个同样编号的PVC,这样保证了每个Pod都拥有一个独立的Volume，即使Pod被删除，对应的PV和PVC依然会保留，这样即使重新创建，也可以找到同样编号的PVC，挂载这个PVC对应的Volume，从而获取到以前保存在Volume中的数据</li>
+</ul>
+<ul>
+<li>StatefulSet 这个资源对象针对的就是有状态的应用，比如 MySQL、Redis、Memcached </li>
+<li>StatefulSet可以控制pod的启动顺序，还可以为每个pod的状态设置唯一标识(在pod名字后面加0，1，2)，这样对于部署、删除、滚动更新等操作都是有序的</li>
+<li>支持有序滚动更新 kubectl scale sts myapp –replicas=5</li>
+<li>sts.spec.updateStrategy.rollingUpdate.partition : N 表示表示大于等于N的pod会被更新</li>
+</ul>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get sts     # 查看statefulset</span></div><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp-svc</div><div class="line">  labels:</div><div class="line">    app: myapp-svc</div><div class="line">spec:</div><div class="line">  ports:</div><div class="line">  - port: <span class="number">80</span></div><div class="line">    name: web</div><div class="line">  clusterIP: <span class="keyword">None</span>   <span class="comment"># Headless Service</span></div><div class="line">  selector:</div><div class="line">    app: myapp-pod</div><div class="line">---</div><div class="line">apiVersion: apps/v1</div><div class="line">kind: StatefulSet</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">spec:</div><div class="line">  serviceName: myapp-svc    <span class="comment"># 使用Serice名称为myapp-svc来保证pod的可解析身份</span></div><div class="line">  replicas: <span class="number">2</span></div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: myapp-pod</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: myapp-pod</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: myapp</div><div class="line">        image: ikubernetes/myapp:v1</div><div class="line">        ports:</div><div class="line">        - containerPort: <span class="number">80</span></div><div class="line">          name: web</div><div class="line">        volumeMounts:</div><div class="line">        - name: myappdata</div><div class="line">          mountPath: /usr/share/nginx/html</div><div class="line">  volumeClaimTemplates: </div><div class="line">  - metadata:</div><div class="line">      name: myappdata</div><div class="line">    spec:</div><div class="line">      accessModes: [<span class="string">"ReadWriteOnce"</span>]</div><div class="line">      resources:</div><div class="line">        requests:</div><div class="line">          storage: <span class="number">2</span>Gi</div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;StatefulSet&quot;&gt;&lt;a href=&quot;#StatefulSet&quot; class=&quot;headerlink&quot; title=&quot;StatefulSet&quot;&gt;&lt;/a&gt;StatefulSet&lt;/h4&gt;&lt;p&gt;用于有状态应用，如(Mysql,redis, Etcd等)，通过某种
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="statefulset" scheme="https://ttxsgoto.github.io/tags/statefulset/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kubernetes 存储PV&amp;PVC</title>
+    <link href="https://ttxsgoto.github.io/2020/03/23/k8s-pv-pvc/"/>
+    <id>https://ttxsgoto.github.io/2020/03/23/k8s-pv-pvc/</id>
+    <published>2020-03-23T09:59:02.000Z</published>
+    <updated>2020-03-27T08:26:57.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="存储类型"><a href="#存储类型" class="headerlink" title="存储类型"></a>存储类型</h3><ul>
+<li>empryDir </li>
+<li>hostPath</li>
+<li>PV &amp;&amp; PVC</li>
+</ul>
+<h3 id="emptyDir"><a href="#emptyDir" class="headerlink" title="emptyDir"></a>emptyDir</h3><p>pod删除，存储卷也删除， 只在节点node本地使用， pod删除存储卷也删除<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-demo</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">    app: myapp</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">    ports:</div><div class="line">    - name: http</div><div class="line">      containerPort: <span class="number">80</span></div><div class="line">    - name: https</div><div class="line">      containerPort: <span class="number">443</span></div><div class="line">    volumeMounts:</div><div class="line">    - name: html</div><div class="line">      mountPath: /data/web/html/</div><div class="line">  volumes:</div><div class="line">  - name: html</div><div class="line">    emptyDir: &#123;&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="hostPath"><a href="#hostPath" class="headerlink" title="hostPath"></a>hostPath</h3><p>pod数据存储在宿主机上</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">apiVersion: V1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-vol-hostpath</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernets/myapp:v1</div><div class="line">    volumeMounts:</div><div class="line">    - name: html</div><div class="line">      mountPath: /user/share/nginx/html/</div><div class="line">  volumes:</div><div class="line">  - name: html</div><div class="line">    hostPath:</div><div class="line">      path: /data/pod/volume1   <span class="comment"># node上的目录</span></div><div class="line">      type: DirectoryOrCreate</div></pre></td></tr></table></figure>
+<p>kubectl explain pods.spec.volumes </p>
+<h3 id="NFS存储"><a href="#NFS存储" class="headerlink" title="NFS存储"></a>NFS存储</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">server:</div><div class="line">sudo apt-get install nfs-kernel-server</div><div class="line">vim /etc/exports</div><div class="line">/data/volume  <span class="number">192.168</span><span class="number">.238</span><span class="number">.0</span>/<span class="number">24</span>(rw,no_root_squash)</div><div class="line">sudo /etc/init.d/nfs-kernel-server restart</div><div class="line">showmount -e    <span class="comment">#查看</span></div><div class="line"> </div><div class="line">client:</div><div class="line">sudo apt-get install nfs-kernel-server</div><div class="line">mount -t nfs <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span>:/data/volume  /data/</div><div class="line"> </div><div class="line"> </div><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-vol-nfs</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">    volumeMounts:</div><div class="line">    - name: html</div><div class="line">      mountPath: /usr/share/nginx/html/</div><div class="line">  volumes:</div><div class="line">  - name: html</div><div class="line">    nfs:</div><div class="line">      path: /data/volume</div><div class="line">      server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div></pre></td></tr></table></figure>
+<h3 id="PV-amp-amp-PVC"><a href="#PV-amp-amp-PVC" class="headerlink" title="PV &amp;&amp; PVC"></a>PV &amp;&amp; PVC</h3><h4 id="PV"><a href="#PV" class="headerlink" title="PV"></a>PV</h4><p>PV是对底层网络存储的抽象，将共享存储定义为“资源”，node可以消费这种资源</p>
+<p>PV作为存储资源，主要包括存储能力、访问模式、存储类型、回收策略、后端存储类型等关键信息的设置</p>
+<h4 id="访问模式"><a href="#访问模式" class="headerlink" title="访问模式"></a>访问模式</h4><ul>
+<li>ReadWriteOnce(RWO): 读写权限，并且只能被当个node挂载</li>
+<li>ReadOnlyMany(ROX): 只读权限，允许被多个Node挂载</li>
+<li>ReadWriteMany(RWX): 读写权限，允许被多个Node挂载</li>
+</ul>
+<h4 id="存储类别-Class"><a href="#存储类别-Class" class="headerlink" title="存储类别(Class)"></a>存储类别(Class)</h4><p>PV可以设定其存储的类别， 通过storageClassName参数指定一个StorageClass资源对象的名称</p>
+<h4 id="回收策略-Reclaim-Policy"><a href="#回收策略-Reclaim-Policy" class="headerlink" title="回收策略(Reclaim Policy)"></a>回收策略(Reclaim Policy)</h4><ul>
+<li>Retain, 保留，保留数据，需要手工处理</li>
+<li>回收空间， 简单清除文件的操作(rm -rf /volume/*)</li>
+<li>删除， 与PV相连的后端存储完成Volume的删除操作</li>
+</ul>
+<p>目前只有NFS和HostPath两种类型的存储支持Recycle策略， AWS EBS/GCE PD/ Azure Disk和Cinder Volumes支持Delete策略</p>
+<h4 id="PV生命周期的各个阶段"><a href="#PV生命周期的各个阶段" class="headerlink" title="PV生命周期的各个阶段"></a>PV生命周期的各个阶段</h4><ul>
+<li>Available 可用状态， 还没有和某个PVC绑定</li>
+<li>Bound 已和某个PVC绑定</li>
+<li>Released 绑定的PVC已经删除，资源已释放，但没有被集群回收</li>
+<li>Failed 自动资源回收失败</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get pv</span></div><div class="line">apiVersion: v1</div><div class="line">kind: PersistentVolume</div><div class="line">metadata:</div><div class="line">  name: pv001</div><div class="line">  labels:</div><div class="line">    name: pv001</div><div class="line">spec:</div><div class="line">  nfs:</div><div class="line">    path: /data/volumes</div><div class="line">    server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div><div class="line">  accessModes: [<span class="string">"ReadWriteMany"</span>, <span class="string">"ReadWriteOnce"</span>]</div><div class="line">  capacity:</div><div class="line">    storage: <span class="number">10</span>Gi</div></pre></td></tr></table></figure>
+<h4 id="PVC"><a href="#PVC" class="headerlink" title="PVC"></a>PVC</h4><p>用户对存储资源的一个“申请”，pvc可以消费pv资源</p>
+<p>主要包括存储空间请求、访问模式、pv选择条件和存储类别等信息的设置</p>
+<ul>
+<li>资源请求(Resources) 描述</li>
+<li>访问模式(Access Modes) </li>
+<li>存储卷模式(Volume Modes)， pvc也可以设置存储卷模式，用于描述希望使用的pv存储卷模式，包括文件系统和块设备</li>
+<li>PV选择条件(Selector), 通过对Label Selector的设置，可使PVC对于系统中已存在的各种PV进行筛选</li>
+<li>存储类别(Class) PVC在定义时可以设定需要的后端存储的类别(通过storageClassName字段指定)，以减少对后端存储特性的详细信息依赖</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get pvc</span></div><div class="line">apiVersion: v1</div><div class="line">kind: PersistentVolumeClaim</div><div class="line">metadata:</div><div class="line">  name: mypvc</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  accessModes: [<span class="string">"ReadWriteMany"</span>]</div><div class="line">  resources:</div><div class="line">    requests:</div><div class="line">      storage: <span class="number">6</span>Gi</div></pre></td></tr></table></figure>
+<p>注意：</p>
+<ul>
+<li>PVC 和PV都受限于Namespace, pvc在选择pv时受到Namespace的限制</li>
+<li>selector和class都进行设置时， 系统将选择两个条件同时满足的pv来匹配</li>
+</ul>
+<h3 id="PV和PVC的生命周期"><a href="#PV和PVC的生命周期" class="headerlink" title="PV和PVC的生命周期"></a>PV和PVC的生命周期</h3><ul>
+<li>资源供应</li>
+<li>资源绑定</li>
+<li>资源使用</li>
+<li>资源释放</li>
+<li>资源回收</li>
+</ul>
+<h3 id="StorageClass"><a href="#StorageClass" class="headerlink" title="StorageClass"></a>StorageClass</h3><p>动态生成PV</p>
+<p>用于标记存储资源的特性和性能<br>StorageClass定义了主要包括名称、后端存储的提供者(provisioner)和后端存储相关的参数配置</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;存储类型&quot;&gt;&lt;a href=&quot;#存储类型&quot; class=&quot;headerlink&quot; title=&quot;存储类型&quot;&gt;&lt;/a&gt;存储类型&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;empryDir &lt;/li&gt;
+&lt;li&gt;hostPath&lt;/li&gt;
+&lt;li&gt;PV &amp;amp;&amp;amp; PVC&lt;/
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="pv" scheme="https://ttxsgoto.github.io/tags/pv/"/>
+    
+      <category term="pvc" scheme="https://ttxsgoto.github.io/tags/pvc/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kubernetes Service</title>
+    <link href="https://ttxsgoto.github.io/2020/03/23/k8s-service/"/>
+    <id>https://ttxsgoto.github.io/2020/03/23/k8s-service/</id>
+    <published>2020-03-23T08:30:52.000Z</published>
+    <updated>2020-03-23T09:58:37.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="Service功能"><a href="#Service功能" class="headerlink" title="Service功能"></a>Service功能</h3><ul>
+<li>通过Service为一组具有相同功能的容器应用提供统一的入口地址，并将请求负载分发到后端的各个容器应用上</li>
+<li>Pod的创建和销毁都会实时更新service的Endpoint数据，所以可以动态地对Service的后端Pod进行查询</li>
+<li>集群外的客户端无法通过pod的ip或者service的虚拟ip和虚拟端口访问，可以通过pod或service的端口号映射到宿主机，将service类型设置为NodePort类型，对service的访问将负载分发到后端的多个pod上</li>
+</ul>
+<h3 id="Service和Pod的关系"><a href="#Service和Pod的关系" class="headerlink" title="Service和Pod的关系"></a>Service和Pod的关系</h3><ul>
+<li>通过label-selector相关联</li>
+<li>通过Service实现Pod负载均衡(TCP、UDT 4层负载)</li>
+</ul>
+<h3 id="Service类型"><a href="#Service类型" class="headerlink" title="Service类型"></a>Service类型</h3><ul>
+<li>ClusterIP 集群内使用</li>
+<li><p>NodePort 对外暴露应用</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Client -&gt; NodeIP:NodePort -&gt; ClusterIP:ServicePort -&gt; PodIP:containerPort</div></pre></td></tr></table></figure>
+</li>
+<li><p>LoadBalancer 用于映射到云服务商提供的LoadBalancer地址</p>
+</li>
+</ul>
+<p>kubernets对应的网络：</p>
+<ul>
+<li>node network</li>
+<li>pod network</li>
+<li>cluster network</li>
+<li>virtual IP</li>
+</ul>
+<h4 id="ClusterIP"><a href="#ClusterIP" class="headerlink" title="ClusterIP"></a>ClusterIP</h4><p>默认，分配一个稳定的IP地址VIP，只能在集群内部访问(同一个namespace内的pod)</p>
+<h4 id="NodePort"><a href="#NodePort" class="headerlink" title="NodePort"></a>NodePort</h4><p>在每个节点上启用一个端口来暴露服务，可以在集群外部访问，也会分配一个稳定内部集群IP地址 NodeIP:NodePort<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  selector:     <span class="comment"># 定义pods对应的标签</span></div><div class="line">    app: myapp</div><div class="line">  clusterIP: <span class="number">10.99</span><span class="number">.99</span><span class="number">.99</span></div><div class="line">  type: NodePort</div><div class="line">  ports:</div><div class="line">  - port: <span class="number">80</span>        <span class="comment"># 外部访问端口</span></div><div class="line">    targetPort: <span class="number">80</span>  <span class="comment"># pod内部端口</span></div><div class="line">    nodePort: <span class="number">30080</span> <span class="comment"># nodeport端口， 对外端口</span></div></pre></td></tr></table></figure></p>
+<p>访问 curl <a href="http://10.68.2.238:30080/index.html" target="_blank" rel="external">http://10.68.2.238:30080/index.html</a></p>
+<h4 id="LoadBalancer"><a href="#LoadBalancer" class="headerlink" title="LoadBalancer"></a>LoadBalancer</h4><p>和NodePort类似，在每个节点上启用一个端口来暴露服务，另外，kubernetes会请求底层云平台上的负载均衡器，将每个Node(nodeip:nodeport)作为后端添加进去</p>
+<h3 id="Ingress七层代理"><a href="#Ingress七层代理" class="headerlink" title="Ingress七层代理"></a>Ingress七层代理</h3><ul>
+<li>将不同的URL的访问请求转发到后端不同的Service，以实现HTTP层的业务路由机制</li>
+<li>kubernetes使用一个Ingress策略定义和一个具体的Ingress Controller，两者结合并实现了一个完整的Ingress负载均衡器</li>
+<li>使用Ingress进行负载分发时，Ingress Controller基于Ingress规则将客户端请求直接转发到Service对应的后端Endpoint(Pod)上，这样会跳过Kube-proxy的转发功能，kube-proxy不再起作用</li>
+</ul>
+<h4 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">https://github.com/kubernetes/ingress-nginx</div><div class="line"> </div><div class="line">kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/mandatory.yaml</div><div class="line">kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/baremetal/service-nodeport.yaml</div><div class="line"># 指定固定访问端口</div></pre></td></tr></table></figure>
+<h4 id="Ingress策略配置技巧"><a href="#Ingress策略配置技巧" class="headerlink" title="Ingress策略配置技巧"></a>Ingress策略配置技巧</h4><p>Ingress Controller将以Pod的形式运行，监控API Server的ingress接口后端的backend services，如果Service发生变化，则Ingress Controller应自动更新其转发规则</p>
+<ul>
+<li>转发到单个后端服务上，请求将转发到后端的唯一Service上，这种情况下Ingress无须定义任何rule</li>
+<li><p>同一域名下，不同的url路径转发到不同的服务上</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- mywebsite.com/web 转发到 web-service:80 上</div><div class="line">- mywebset.com/api 转发到api-service:80 上</div></pre></td></tr></table></figure>
+</li>
+<li><p>不同的域名(虚拟主机名)被转发到不同的服务上，这种配置常用于一个网站通过不同的域名或者虚拟主机名提供不同服务的场景，如foo.bar.com域名由service1提供服务，bar.foo.com域名由service2提供服务</p>
+</li>
+<li>不使用域名的转发规则 </li>
+</ul>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  selector:</div><div class="line">    app: myapp</div><div class="line">  ports:</div><div class="line">  - name: http</div><div class="line">    targetPort: <span class="number">80</span></div><div class="line">    port: <span class="number">80</span></div><div class="line">---</div><div class="line">apiVersion: extensions/v1beta1</div><div class="line">kind: Ingress</div><div class="line">metadata:</div><div class="line">  name: ingree-myapp</div><div class="line">  namespace: default</div><div class="line">  annotations:</div><div class="line">    kubernetes.io/ingress.<span class="keyword">class</span>: <span class="string">"nginx"</span>    <span class="comment"># 说明和controller相对于的是nginx规则</span></div><div class="line">spec:</div><div class="line">  rules:</div><div class="line">  - host: myapp.ttxsgoto.com    <span class="comment"># </span></div><div class="line">    http:</div><div class="line">      paths:</div><div class="line">      - path:</div><div class="line">        backend:    <span class="comment"># 对应后端的地址</span></div><div class="line">          serviceName: myapp    <span class="comment">#  指定service的名称相匹配</span></div><div class="line">          servicePort: <span class="number">80</span></div><div class="line">---</div><div class="line">apiVersion: apps/v1</div><div class="line">kind: Deployment</div><div class="line">metadata:</div><div class="line">  name: myapp-deploy</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  replicas: <span class="number">3</span></div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: myapp</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: myapp</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: myapp</div><div class="line">        image: ikubernetes/myapp:v2</div><div class="line">        ports:</div><div class="line">        - name: http</div><div class="line">          containerPort: <span class="number">80</span></div></pre></td></tr></table></figure>
+<h3 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h3><p>k8s通过服务发现机制能够很容易获得service对应IP和Port</p>
+<h4 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h4><p>当 Pod 运行在 Node 上，kubelet 会为每个活跃的 Service 添加一组环境变量，格式就是{SVCNAME}_SERVICE_HOST和{SVCNAME**_SERVICE_PORT的变量，但注意 Service 的名称需大写，横线被转换成下划\线</p>
+<p><strong>缺点</strong>: 依赖的服务必须在 Pod 启动之前就存在，不然是不会出现在环境变量中的</p>
+<h4 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h4><p>DNS服务监视Kubernetes API,为每个Service创建dns记录用于域名解析<br>资源记录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">kubectl get pods -n kube-system| grep dns  # 查看dns pod</div><div class="line">  </div><div class="line">kubectl get svc --all-namespaces   # 查看所有名称空间的服务</div><div class="line"> </div><div class="line">SVC_NAME.NS_NAME.DOMAIN.LTD</div><div class="line">svc.cluster.local</div><div class="line">redis.default.svc.cluster.local</div><div class="line">所有需要使用域名访问的规则SVC_NAME.NS_NAME.svc.cluster.local </div><div class="line">如: myapp.default.svc.cluster.local 使用dns的方式可以访问k8s集群里面任何想要访问的service资源</div></pre></td></tr></table></figure></p>
+<h3 id="Headless-Service-clusterIP-None"><a href="#Headless-Service-clusterIP-None" class="headerlink" title="Headless Service(clusterIP: None)"></a>Headless Service(clusterIP: None)</h3><p>Headless Service不需要分配一个VIP，而是可以直接以DNS记录的方式解析出被代理Pod的地址, 主要用途 StatefulSet<br>解析规则：</p>
+<ul>
+<li>namespace: default</li>
+<li>service: foo</li>
+<li>pod: A-0</li>
+</ul>
+<p>域名： a-0.foo.default.svc.cluster.local , 通过DNS服务，查找域名foo.default.svc.cluster.local对应的所有SRV记录，获得一个StatefulSet中所有pod名称</p>
+<p>每个pod解析到对应的ip，解析名称规格为：<br>pod_name.service_name.ns_name.cluster.local</p>
+<p>不为service设置ClusterIP(入口IP地址)，仅通过label Selector将后端的Pod列表返回给调用的客户端<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  selector:     <span class="comment"># 定义pods对应的标签</span></div><div class="line">    app: myapp</div><div class="line">  clusterIP: <span class="keyword">None</span></div><div class="line">  type: NodePort</div><div class="line">  ports:</div><div class="line">  - port: <span class="number">80</span>        <span class="comment"># 外部访问端口</span></div><div class="line">    targetPort: <span class="number">80</span>  <span class="comment"># pod内部端口</span></div><div class="line">    nodePort: <span class="number">30080</span> <span class="comment"># nodeport端口， 对外端口</span></div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;Service功能&quot;&gt;&lt;a href=&quot;#Service功能&quot; class=&quot;headerlink&quot; title=&quot;Service功能&quot;&gt;&lt;/a&gt;Service功能&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;通过Service为一组具有相同功能的容器应用提供统一的入口地址，并将请
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="service" scheme="https://ttxsgoto.github.io/tags/service/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kubernetes Pods</title>
+    <link href="https://ttxsgoto.github.io/2020/03/20/k8s-pods/"/>
+    <id>https://ttxsgoto.github.io/2020/03/20/k8s-pods/</id>
+    <published>2020-03-20T09:40:23.000Z</published>
+    <updated>2020-03-27T08:29:42.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="容器内获取pod信息"><a href="#容器内获取pod信息" class="headerlink" title="容器内获取pod信息"></a>容器内获取pod信息</h3><ul>
+<li><p>环境变量，将pod信息注入为环境变量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">env：</div><div class="line">  - name: POD_NAME</div><div class="line">    valueFrom:</div><div class="line">      fieldRef:</div><div class="line">        fieldPath: metadata.name</div><div class="line">  - name: POD_NAMESPACE</div><div class="line">    valueFrom:</div><div class="line">      fieldRef:</div><div class="line">        fieldPath: metadata.namespace</div></pre></td></tr></table></figure>
+</li>
+<li><p>Volume挂载方式,类似于环境变量，只是将数据保存为文件并挂载到内部</p>
+</li>
+</ul>
+<h3 id="Pod生命周期和重启策略"><a href="#Pod生命周期和重启策略" class="headerlink" title="Pod生命周期和重启策略"></a>Pod生命周期和重启策略</h3><h4 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h4><ul>
+<li>Pending 已创建pod，但还其中容器一个容器镜像还没有创建</li>
+<li>Running Pod内所有容器都创建，且至少有一个容器处于运行状态</li>
+<li>Successed Pod中所有容器均成功执行并退出，且不会再重启</li>
+<li>Failed Pod内所有容器都已退出，单至少有一个容器退出为失败状态</li>
+<li>Unknown 无法获取该Pod的状态</li>
+</ul>
+<h4 id="重启策略"><a href="#重启策略" class="headerlink" title="重启策略"></a>重启策略</h4><ul>
+<li>Always 默认，当容器失效时，kubelet自动重启该容器</li>
+<li>OnFailure 容器终止运行且退出码不为0，kubelet自动重启该容器</li>
+<li>Never 无论容器运行状态如何，kubelet都不会重启容器</li>
+</ul>
+<p>kubelet重启失效容器的时间间隔以sync-frequency乘以2n，如1，2，4，8倍，最长延时5min，并在成功重启后10min后重置该时间</p>
+<p>每种控制器对pod的重启策略要去如下：</p>
+<ul>
+<li>RC和DaemonSet 必须设置为always，需要保证该容器持续运行</li>
+<li>Job OnFailure或者Never，确保容器执行完成后不再重启</li>
+<li>kubelet 在pod失效时自动重启，不论将RestartPolicy设置为什么值，都不会对pod进行健康检查</li>
+</ul>
+<h3 id="健康检查和服务可用性检查"><a href="#健康检查和服务可用性检查" class="headerlink" title="健康检查和服务可用性检查"></a>健康检查和服务可用性检查</h3><h4 id="LivenessProbe探针"><a href="#LivenessProbe探针" class="headerlink" title="LivenessProbe探针"></a>LivenessProbe探针</h4><p>判断容器是否存活，如果探针探测到容器不健康，则会kill掉容器。如果不包含该探针，则该容器的LivenessProbe探针返回值永远是Success</p>
+<h4 id="ReadinessProbe探针"><a href="#ReadinessProbe探针" class="headerlink" title="ReadinessProbe探针"></a>ReadinessProbe探针</h4><p>判断容器服务是否可用(Ready状态)，达到Ready状态的Pod才可以接收请求</p>
+<ul>
+<li>ExecAction 执行命令</li>
+<li>TCPSocketAction socket的ip和端口检查</li>
+<li>HTTPGetAction 调用http get方法状态码大于等于200且小于400，正常  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- initialDelaySeconds 启动容器后进行首次检查的等待时间，单位为s</div><div class="line">- timeoutSeconds 健康检查发送请求后等待响应的超时时间，单位为s</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><h4 id="NodeSelector"><a href="#NodeSelector" class="headerlink" title="NodeSelector"></a>NodeSelector</h4><p>通过node标签和pod的nodeselector属性匹配来定向调到到某个node节点上</p>
+<h4 id="NodeAffinity亲和性调度"><a href="#NodeAffinity亲和性调度" class="headerlink" title="NodeAffinity亲和性调度"></a>NodeAffinity亲和性调度</h4><p>硬亲和requiredDuringSchedulingIgnoredDuringExecution 必须满足指定的规则才可以调度pod到node上<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-nodeaffinity</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">   app: myapp-nodeselector</div><div class="line">   tier: frontend</div><div class="line">  annotations:</div><div class="line">    created-by: <span class="string">"ttxsgoto"</span></div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">  affinity:</div><div class="line">    nodeAffinity:</div><div class="line">      requiredDuringSchedulingIgnoredDuringExecution:	<span class="comment"># 硬亲和性</span></div><div class="line">        nodeSelectorTerms:</div><div class="line">        - matchExpressions:</div><div class="line">          - key: zone</div><div class="line">            operator: In</div><div class="line">            values:</div><div class="line">            - foo</div><div class="line">            - bar</div></pre></td></tr></table></figure></p>
+<p>软亲和preferredDuringSchedulingIgnoredDuringExecution 强调优先满足指定规则，则尝试调到pod到node，但如果没有满足条件，也调度到node，不强制限制<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-nodeaffinity2</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">   app: myapp-nodeselector</div><div class="line">   tier: frontend</div><div class="line">  annotations:</div><div class="line">    created-by: <span class="string">"ttxsgoto"</span></div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">  affinity:</div><div class="line">    nodeAffinity:</div><div class="line">      preferredDuringSchedulingIgnoredDuringExecution:	<span class="comment"># 软亲和性</span></div><div class="line">      - preference:</div><div class="line">          matchExpressions:</div><div class="line">          - key: zone</div><div class="line">            operator: In</div><div class="line">            values:</div><div class="line">            - foo</div><div class="line">            - bar</div><div class="line">        weight: 60</div></pre></td></tr></table></figure></p>
+<p><strong>说明</strong></p>
+<ol>
+<li>如果同时定义了nodeSelector和nodeAffinty，那么必须满足两个条件，pod才能运行在指定的node上</li>
+<li>如果nodeAffinity指定了多个nodeSelectorTerms，那么其中一个能够匹配成功即可</li>
+<li>如果nodeSelectorTerms中有多个matchExpressions，则一个节点必须满足所有的matchExpressions才能运行该Pod</li>
+</ol>
+<h4 id="PodAffinity亲和性调度"><a href="#PodAffinity亲和性调度" class="headerlink" title="PodAffinity亲和性调度"></a>PodAffinity亲和性调度</h4><p>根据在节点上正在运行的pod的标签来判断调度，要求对节点和Pod两个条件进行匹配， 第一个pod启动，其他的pod也在该node启动</p>
+<p>requiredDuringSchedulingIgnoredDuringExecution  必须满足指定的规则才可以调度pod到node上<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-first</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">   app: myapp-nodeselector</div><div class="line">   tier: frontend</div><div class="line">  annotations:</div><div class="line">    created-by: <span class="string">"ttxsgoto"</span></div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">---</div><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-second</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">   app: myapp-db</div><div class="line">   tier: db</div><div class="line">  annotations:</div><div class="line">    created-by: <span class="string">"ttxsgoto"</span></div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: busybox</div><div class="line">    image: busybox:latest</div><div class="line">    imagePullPolicy: IfNotPresent</div><div class="line">    <span class="built_in">command</span>: [<span class="string">"sh"</span>, <span class="string">"-c"</span>, <span class="string">"sleep 3600"</span>]</div><div class="line">  affinity:</div><div class="line">    podAffinity:</div><div class="line">      requiredDuringSchedulingIgnoredDuringExecution:</div><div class="line">      - labelSelector:</div><div class="line">          matchExpressions:</div><div class="line">          - &#123;key: app, operator: In, values: [<span class="string">"myapp-nodeselector"</span>]&#125;</div><div class="line">        topologyKey: kubernetes.io/hostname</div></pre></td></tr></table></figure></p>
+<p>反亲和性<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-first</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">   app: myapp-nodeselector</div><div class="line">   tier: frontend</div><div class="line">  annotations:</div><div class="line">    created-by: <span class="string">"ttxsgoto"</span></div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: myapp</div><div class="line">    image: ikubernetes/myapp:v1</div><div class="line">---</div><div class="line">apiVersion: v1</div><div class="line">kind: Pod</div><div class="line">metadata:</div><div class="line">  name: pod-second</div><div class="line">  namespace: default</div><div class="line">  labels:</div><div class="line">   app: myapp-db</div><div class="line">   tier: db</div><div class="line">  annotations:</div><div class="line">    created-by: <span class="string">"ttxsgoto"</span></div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: busybox</div><div class="line">    image: busybox:latest</div><div class="line">    imagePullPolicy: IfNotPresent</div><div class="line">    <span class="built_in">command</span>: [<span class="string">"sh"</span>, <span class="string">"-c"</span>, <span class="string">"sleep 3600"</span>]</div><div class="line">  affinity:</div><div class="line">    podAntiAffinity:</div><div class="line">      requiredDuringSchedulingIgnoredDuringExecution:</div><div class="line">      - labelSelector:</div><div class="line">          matchExpressions:</div><div class="line">          - &#123;key: app, operator: In, values: [<span class="string">"myapp-nodeselector"</span>]&#125;</div><div class="line">        topologyKey: kubernetes.io/hostname</div></pre></td></tr></table></figure></p>
+<h4 id="Taints-and-Tolerations-污点和容忍"><a href="#Taints-and-Tolerations-污点和容忍" class="headerlink" title="Taints and Tolerations 污点和容忍"></a>Taints and Tolerations 污点和容忍</h4><p>让Node拒绝Pod的运行，让Pod避开那些不合适的Node，除非pod明确声明能够容忍这些污点，否则无法在这些node上运行</p>
+<ul>
+<li>NoSchedule 仅影响调度过程，对已启动的Pod对象不产生影响，明确声明可以容忍这个taint，否则就不会调度到该node上</li>
+<li>PreferNoSchedule 既影响调度过程，也影响现有的Pod对象，意思为优先，没有对应的node可以运行，也可以调度到node， 可以为NoSchedule的软限制</li>
+<li>NoExecute 即影响调度过程，也影响现在的pod对象，Pod已经在该节点运行，则会被驱逐，如果没有在该节点上运行，则不会再被调度到该节点上</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 设置Node上 Taint信息</span></div><div class="line">kubectl taint nodes node1 key=value:NoSchedule</div><div class="line"> </div><div class="line"><span class="comment"># pod中声明Toleration</span></div><div class="line">tolerations:</div><div class="line">- key: <span class="string">"key"</span></div><div class="line">  operator: <span class="string">"Equal"</span></div><div class="line">  value: <span class="string">"value1"</span></div><div class="line">  effect: <span class="string">"NoSchedule"</span></div><div class="line">或者</div><div class="line">tolerations:</div><div class="line">- key: <span class="string">"key"</span></div><div class="line">  operator: <span class="string">"Exists"</span></div><div class="line">  effect: <span class="string">"NoSchedule"</span> </div><div class="line"> </div><div class="line">说明：</div><div class="line">- 如果不指定operator，默认为Equal</div><div class="line">- 空的key配合Exists操作符能够匹配所有的键和值</div><div class="line">- 空的effect匹配所有的effect</div></pre></td></tr></table></figure>
+<h3 id="Pod调度"><a href="#Pod调度" class="headerlink" title="Pod调度"></a>Pod调度</h3><ul>
+<li>RC &amp; Deployment</li>
+<li>DaemonSet</li>
+<li>Job</li>
+<li>Cronjob</li>
+</ul>
+<h4 id="RC-amp-Deployment"><a href="#RC-amp-Deployment" class="headerlink" title="RC &amp; Deployment"></a>RC &amp; Deployment</h4><p>自动部署一个容器的多个副本，以及持续监控副本的数量，在集群内始终维持指定的副本数量<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line"><span class="comment">#apiVersion: apps/v1beta1</span></div><div class="line">kind: Deployment</div><div class="line">metadata:</div><div class="line">  name: nginx-deployment</div><div class="line">spec:</div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: nginx</div><div class="line">  replicas: 3</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: nginx</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: nginx</div><div class="line">        image: nginx:1.7.9</div><div class="line">        ports:</div><div class="line">        - containerPort: 80</div></pre></td></tr></table></figure></p>
+<h4 id="DaemonSet"><a href="#DaemonSet" class="headerlink" title="DaemonSet"></a>DaemonSet</h4><ul>
+<li>在每个node上都调度一个pod，适用于监控系统，数据采集等资源的采集</li>
+<li>新加入的node也同样会自动运行一个pod</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure>
+<h4 id="Job"><a href="#Job" class="headerlink" title="Job"></a>Job</h4><p>批处理调度,仅执行一次的任务，保证处理任务的一个或者多个pod成功结束<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">apiVersion: batch/v1</div><div class="line">kind: Job</div><div class="line">metadata:</div><div class="line">  name: k8s-job</div><div class="line">spec:</div><div class="line">  template:</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: python</div><div class="line">        image: python:3.8-alpine</div><div class="line">        <span class="built_in">command</span>: [<span class="string">"python"</span>, <span class="string">"-c"</span>, <span class="string">"import socket; print(socket.gethostbyname(socket.gethostname()))"</span>]</div><div class="line">      restartPolicy: Never</div><div class="line">  backoffLimit: 4</div></pre></td></tr></table></figure></p>
+<h4 id="Cronjob"><a href="#Cronjob" class="headerlink" title="Cronjob"></a>Cronjob</h4><ul>
+<li>在给定时间点只运行一次</li>
+<li>周期性地给定时间点运行</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">apiVersion: batch/v1beta1</div><div class="line">kind: CronJob</div><div class="line">metadata:</div><div class="line">  name: k8s-cronjob</div><div class="line">spec:</div><div class="line">  schedule: <span class="string">"*/1 * * * *"</span></div><div class="line">  jobTemplate:</div><div class="line">    spec:</div><div class="line">      template:</div><div class="line">        spec:</div><div class="line">          containers:</div><div class="line">          - name: python</div><div class="line">            image: python:3.8-alpine</div><div class="line">            <span class="built_in">command</span>: [<span class="string">"python"</span>, <span class="string">"-c"</span>, <span class="string">"import socket; print(socket.gethostbyname(socket.gethostname()))"</span>]</div><div class="line">          restartPolicy: OnFailure</div></pre></td></tr></table></figure>
+<h3 id="Init-Container-初始化容器"><a href="#Init-Container-初始化容器" class="headerlink" title="Init Container 初始化容器"></a>Init Container 初始化容器</h3><p>应用场景</p>
+<ul>
+<li>等待其他关联组件正确运行</li>
+<li>基于环境变量或者配置模板生成配置文件</li>
+<li>从远程数据库中获取本地所需配置，或者自身注册到某个中央数据库中</li>
+<li>下载相关依赖包，或者对系统进行一些预配置</li>
+</ul>
+<p>init Container和应用容器的区别：</p>
+<ul>
+<li>先于应用容器执行，如果设置多个init container，按顺序运行，并且当前一个init container运行成功后，在运行下一个，所有都运行成功后，才会运行应用容器</li>
+<li>在init container的定义中也可以设置资源限制，volume的使用</li>
+<li>如果多个init container都定义了资源请求，则取最大的值作为所有init container的资源请求值/资源限制值</li>
+<li>调度算法将基于pod的有效资源请求值/资源限制值进行计算</li>
+<li>init container不能设置readinessProbe探针</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">initContainers:</div><div class="line">- name: install</div><div class="line">  image: busybox</div><div class="line">  command:</div><div class="line">  - &quot;sh&quot;</div><div class="line">  - &quot;-c&quot;</div><div class="line">  - &quot;ls&quot;</div></pre></td></tr></table></figure>
+<h3 id="Pod升级和回滚"><a href="#Pod升级和回滚" class="headerlink" title="Pod升级和回滚"></a>Pod升级和回滚</h3><h4 id="Deployment-升级和回滚"><a href="#Deployment-升级和回滚" class="headerlink" title="Deployment 升级和回滚"></a>Deployment 升级和回滚</h4><ul>
+<li>deployment升级镜像</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">kubectl set image deployment/nginx-deployment nginx=nginx:1.9.1</div><div class="line">或者</div><div class="line">kubectl edit deployment/nginx-deployment</div><div class="line">  </div><div class="line"># 查看升级状态</div><div class="line">kubectl rollout status deployment/nginx-deployment</div><div class="line"># 查看rs状态</div><div class="line">kubectl get rs</div></pre></td></tr></table></figure>
+<p>更新策略说明：</p>
+<ul>
+<li>在deployment的定义中，可以通过spec.strategy指定pod更新策略，重建(Recreate)和滚动更新(RollingUpdate),默认为RollingUpdate</li>
+<li>spec.strategy.rollingUpdate.maxUnavilable 指定deployment在更新过程中不可用状态的Pod数量的上限</li>
+<li>spec.strategy.rollingUpdate.maxSurge 指定在deployment更新pod的过程中pod总数超过pod期望副本数部分的最大值</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"># 查看deployment部署记录</div><div class="line">kubectl rollout history deployment/nginx-deployment</div><div class="line"> </div><div class="line"># 回滚到上一个部署版本</div><div class="line">kubectl rollout undo deployment/nginx-deployment</div><div class="line">或者</div><div class="line">kubectl rollout undo deployment/nginx-deployment --to-revision=2 # 回滚到之前稳定版本</div></pre></td></tr></table></figure>
+<h4 id="暂停和恢复Deployment部署"><a href="#暂停和恢复Deployment部署" class="headerlink" title="暂停和恢复Deployment部署"></a>暂停和恢复Deployment部署</h4><p>复杂的deployment配置修改，可以先暂停deployment的更新操作，然后进行配置修改，在恢复deployment，一次性触发完整的更新操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># 暂停deployment更新操作</div><div class="line">kubectl rollout pause deployment/nginx-deployment</div><div class="line"># 修改更新操作</div><div class="line"># 恢复deployment更新</div><div class="line">kubectl rollout resume deploy nginx-deployment</div></pre></td></tr></table></figure></p>
+<h3 id="Pod的扩缩容"><a href="#Pod的扩缩容" class="headerlink" title="Pod的扩缩容"></a>Pod的扩缩容</h3><h4 id="手动扩缩容机制"><a href="#手动扩缩容机制" class="headerlink" title="手动扩缩容机制"></a>手动扩缩容机制</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">kubectl scale deployment nginx-deployment --replicas=5</div></pre></td></tr></table></figure>
+<h3 id="ConfigMap"><a href="#ConfigMap" class="headerlink" title="ConfigMap"></a>ConfigMap</h3><h4 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h4><ul>
+<li>通过环境变量获取configmp的内容</li>
+<li>通过volume挂载的方式将configmap中的内容挂载为容器内部的文件或目录</li>
+<li>设置容器启动命令的启动参数(引用环境变量)</li>
+</ul>
+<h4 id="定义方式"><a href="#定义方式" class="headerlink" title="定义方式"></a>定义方式</h4><ul>
+<li><p>yaml配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: ConfigMap</div><div class="line">metadata:</div><div class="line">  name: cm-demo</div><div class="line">data:</div><div class="line">  loglevel: info</div><div class="line">  datadir: /data/www</div></pre></td></tr></table></figure>
+</li>
+<li><p>通过命令行方式创建</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># 直接指定k-v</div><div class="line">kubectl create configmap NAME --from-literal=key=value</div><div class="line"># 通过目录/文件创建</div><div class="line">kubectl create config NAME --from-file=config-dir or config-file</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h4><ul>
+<li><p>环境变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">env:</div><div class="line">- name: LOGLEVEL</div><div class="line">  valueFrom:</div><div class="line">    configMapRef</div><div class="line">      name: cm-demo</div><div class="line">      key: loglevel</div><div class="line">或者</div><div class="line">envFrom:</div><div class="line">  - configMapRef</div><div class="line">    name: cm-demo # 根据cm-demo中的kv自动生成环境变量</div></pre></td></tr></table></figure>
+</li>
+<li><p>volumeMount使用ConfigMap</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">volumeMounts:</div><div class="line">- name: configpath</div><div class="line">  mountPath: /data/config</div><div class="line"></div><div class="line">volumes:</div><div class="line">- name: configpath</div><div class="line">  configMap:</div><div class="line">    # 如果不指定items，则每个item都会生成一个文件名为key的文件</div><div class="line">    name: cm-demo</div><div class="line">    items:</div><div class="line">    - key: serverxml</div><div class="line">      path: server.xml</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="ConfigMap的限制条件"><a href="#ConfigMap的限制条件" class="headerlink" title="ConfigMap的限制条件"></a>ConfigMap的限制条件</h4><ul>
+<li>configmap必须在pod之前创建</li>
+<li>configmap在相同的namespace中的pod使用</li>
+<li>configmap中的配额管理还未实现</li>
+<li>通过–manifest-url或者–config创建的静态pod无法使用configmap</li>
+<li>configmap挂载操作，在容器中只能挂载为目录，不能为文件</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;容器内获取pod信息&quot;&gt;&lt;a href=&quot;#容器内获取pod信息&quot; class=&quot;headerlink&quot; title=&quot;容器内获取pod信息&quot;&gt;&lt;/a&gt;容器内获取pod信息&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;环境变量，将pod信息注入为环境变量&lt;/p&gt;
+&lt;figur
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="pods" scheme="https://ttxsgoto.github.io/tags/pods/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kubernetes 集群部署</title>
+    <link href="https://ttxsgoto.github.io/2020/03/20/k8s-cluster-install/"/>
+    <id>https://ttxsgoto.github.io/2020/03/20/k8s-cluster-install/</id>
+    <published>2020-03-20T08:42:34.000Z</published>
+    <updated>2020-03-20T09:39:08.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="Environment"><a href="#Environment" class="headerlink" title="Environment"></a>Environment</h4><ul>
+<li>192.168.2.100 (master, ubuntu 16.04)</li>
+<li>192.168.2.99 (node1, ubuntu 16.04)</li>
+<li>192.168.2.101(node2, ubuntu 16.04) </li>
+</ul>
+<h4 id="Install-Docker"><a href="#Install-Docker" class="headerlink" title="Install Docker"></a>Install Docker</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># master, node1, node2</span></div><div class="line">apt-get install apt-transport-https ca-certificates curl software-properties-common -y</div><div class="line"> </div><div class="line">curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -</div><div class="line"> </div><div class="line">add-apt-repository <span class="string">"deb [arch=amd64] https://download.docker.com/linux/ubuntu <span class="variable">$(lsb_release -cs)</span> stable"</span></div><div class="line"> </div><div class="line">apt-get update -y</div><div class="line">apt-get install docker-ce -y</div></pre></td></tr></table></figure>
+<h4 id="Install-Kubernetes"><a href="#Install-Kubernetes" class="headerlink" title="Install Kubernetes"></a>Install Kubernetes</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># master, node1, node2</span></div><div class="line">curl <span class="_">-s</span> https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -</div><div class="line"> </div><div class="line"><span class="built_in">echo</span> <span class="string">'deb http://apt.kubernetes.io/ kubernetes-xenial main'</span> | sudo tee /etc/apt/sources.list.d/kubernetes.list</div><div class="line"> </div><div class="line">apt-get update -y</div><div class="line">apt-get install kubelet kubeadm kubectl -y</div></pre></td></tr></table></figure>
+<h4 id="Kubernetes-Cluster"><a href="#Kubernetes-Cluster" class="headerlink" title="Kubernetes Cluster"></a>Kubernetes Cluster</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># master</span></div><div class="line">kubeadm init \</div><div class="line">  --apiserver-advertise-address=192.168.2.100 \</div><div class="line">  --kubernetes-version v1.17.3 \</div><div class="line">  --service-cidr=10.96.0.0/12 \</div><div class="line">  --pod-network-cidr=10.244.0.0/16  --v=6</div><div class="line">  </div><div class="line"><span class="comment"># Install Pod network（CNI）</span></div><div class="line">kubectl apply <span class="_">-f</span> https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</div><div class="line">  </div><div class="line">mkdir -p <span class="variable">$HOME</span>/.kube</div><div class="line">sudo cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</div><div class="line">sudo chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</div><div class="line"> </div><div class="line"><span class="comment"># node1, node2</span></div><div class="line">kubeadm join 192.168.2.100:6443 --token iccmkm.qu60zi1gjdtrqo41 \</div><div class="line">    --discovery-token-ca-cert-hash sha256:fffd09fe6d8818acc5fd42ce679661f550a3890e1d97e2f6a6609efa435005ac</div><div class="line">  </div><div class="line"><span class="comment">#查看添加进集群的token命令</span></div><div class="line">kubeadm token create --print-join-command</div><div class="line"> </div><div class="line"><span class="comment"># Install Dashboard</span></div><div class="line">kubectl apply <span class="_">-f</span> https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml</div><div class="line"> </div><div class="line">默认Dashboard只能集群内部访问，修改Service为NodePort类型，暴露到外部：</div><div class="line"><span class="comment">##### begin #####</span></div><div class="line">kind: Service</div><div class="line">apiVersion: v1</div><div class="line">metadata:</div><div class="line">  labels:</div><div class="line">    k8s-app: kubernetes-dashboard</div><div class="line">  name: kubernetes-dashboard</div><div class="line">  namespace: kubernetes-dashboard</div><div class="line">spec:</div><div class="line">  <span class="built_in">type</span>: NodePort</div><div class="line">  ports:</div><div class="line">    - port: 443</div><div class="line">      targetPort: 8443</div><div class="line">      nodePort: 30443</div><div class="line">  selector:</div><div class="line">    k8s-app: kubernetes-dashboard</div><div class="line"> <span class="comment">##### end #####</span></div><div class="line"><span class="comment"># 创建service account并绑定默认cluster-admin管理员集群角色：</span></div><div class="line">kubectl create serviceaccount dashboard-admin -n kube-system</div><div class="line">kubectl create clusterrolebinding dashboard-admin --clusterrole=cluster-admin --serviceaccount=kube-system:dashboard-admin</div><div class="line">kubectl describe secrets -n kube-system $(kubectl -n kube-system get secret | awk <span class="string">'/dashboard-admin/&#123;print $1&#125;'</span>)</div><div class="line"><span class="comment"># 使用输出的token登录Dashboard</span></div><div class="line">  </div><div class="line">kubectl create serviceaccount k8s-admin -n kube-system</div><div class="line">kubectl create clusterrolebinding k8s-admin --clusterrole=cluster-admin --serviceaccount=kube-system:k8s-admin</div><div class="line">kubectl describe secrets -n kube-system $(kubectl -n kube-system get secret | awk <span class="string">'/k8s-admin/&#123;print $1&#125;'</span>)</div><div class="line"> </div><div class="line"><span class="comment"># check cluster status</span></div><div class="line">kubectl get nodes</div><div class="line">NAME                         STATUS   ROLES    AGE   VERSION</div><div class="line">node1  			      Ready    &lt;none&gt;   22h   v1.17.4</div><div class="line">master                        Ready    master   22h   v1.17.4</div><div class="line">node2                         Ready    &lt;none&gt;   22h   v1.17.4</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;Environment&quot;&gt;&lt;a href=&quot;#Environment&quot; class=&quot;headerlink&quot; title=&quot;Environment&quot;&gt;&lt;/a&gt;Environment&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;192.168.2.100 (master, ubunt
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="k8s" scheme="https://ttxsgoto.github.io/tags/k8s/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kubernetes 核心组件</title>
+    <link href="https://ttxsgoto.github.io/2020/03/20/k8s-core-component/"/>
+    <id>https://ttxsgoto.github.io/2020/03/20/k8s-core-component/</id>
+    <published>2020-03-20T08:19:12.000Z</published>
+    <updated>2020-03-20T08:41:45.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="API-Server原理解析"><a href="#API-Server原理解析" class="headerlink" title="API Server原理解析"></a>API Server原理解析</h3><p>各类资源对象(Pod,RC,Service)的CURD和watch等HTTP REST接口，成为集群内各个功能模块之间数据交互和通信的中心枢纽，是整个系统的数据总线和数据中心</p>
+<ul>
+<li>api server 通过一个名为kube-apiserver的进程提供服务，运行在master上，默认情况下，该进程在本机的8080端口或(6443端口)提供rest服务</li>
+<li>通过kubectl和api server交互</li>
+<li>提供认证、授权、访问控制、api注册和发现等机制</li>
+<li>启动代理来访问 kubectl proxy –port=8080</li>
+<li>每个Node的kubelet每隔一段时间，调用api server的api接口报告自身状态，更新到etcd中</li>
+<li>kube-controller-manager的Node Controller模块和api server交互，实时监控Node信息</li>
+<li>kube-scheduler通过api server的watch接口监听到新建pod副本的信息后，在调度成功后将pod绑定到目标节点上</li>
+</ul>
+<p>Proxy API 接口: 在Kubernetes集群外访问某个pod容器的服务(http服务)时，可以用proxy api实现</p>
+<h3 id="Controller-Manager"><a href="#Controller-Manager" class="headerlink" title="Controller Manager"></a>Controller Manager</h3><p>Controller尝试将状态调整为期望的状态， Controller Manager是k8s中各种操作系统的管理者，是集群内部的管理控制中心，是k8s自动化功能的核心<br>包含8种Controller：</p>
+<ul>
+<li>Replication Controller</li>
+<li>Node Controller</li>
+<li>ResourceQuota Controller</li>
+<li>Namespace Controller</li>
+<li>ServiceAccount Controller</li>
+<li>Token Controller</li>
+<li>Service Controller</li>
+<li>Endpoint Controller</li>
+</ul>
+<p>Controller Manager是这些Controller的核心管理者</p>
+<h4 id="Replication-Controller-副本控制器"><a href="#Replication-Controller-副本控制器" class="headerlink" title="Replication Controller 副本控制器"></a>Replication Controller 副本控制器</h4><p>确保在任何时候集群中某个RC关联的Pod副本数量都保持预设值，需要将pod重启策略设置为always(RestartPolicy=Always),Replication Controller才会管理该pod的操作</p>
+<p>功能总结：</p>
+<ul>
+<li>确保当前集群中有且仅有N个pod实例，N是在RC中定义的Pod副本数量</li>
+<li>通过调整RC的spec.replicas属性值来实现系统的扩容和缩容</li>
+<li>通过改变RC中的Pod模板(主要是镜像版本)来实现系统的滚动升级</li>
+</ul>
+<h4 id="Node-Controller"><a href="#Node-Controller" class="headerlink" title="Node Controller"></a>Node Controller</h4><p>Node Controller通过api server实时获取Node的相关信息，实现管理和监控集群中的各个node的相关控制功能</p>
+<h4 id="RecourceQuota-Controller-资源配额管理"><a href="#RecourceQuota-Controller-资源配额管理" class="headerlink" title="RecourceQuota Controller 资源配额管理"></a>RecourceQuota Controller 资源配额管理</h4><p>确保指定的资源对象在任何时候都不会超量占用系统物理资源</p>
+<ul>
+<li>容器级别，可以对CPU和Memory进行限制</li>
+<li>pod级别，可以对一个pod内所有容器的可用资源进行限制</li>
+<li>Namespace级别，为namespace(多租户)级别的资源限制  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- pod数量</div><div class="line">- Replication Controller数量</div><div class="line">- Service数量</div><div class="line">- ResourceQuota数量</div><div class="line">- Secret数量</div><div class="line">- 可持有的PV数量</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="Namespace-Controller"><a href="#Namespace-Controller" class="headerlink" title="Namespace Controller"></a>Namespace Controller</h4><p>通过api server 可以创建新的Namespace，并将其保存到etcd中，Namespace Controller定时通过api server读取这些Namespace的信息</p>
+<h4 id="Service-Controller-amp-amp-Endpoint-Controller"><a href="#Service-Controller-amp-amp-Endpoint-Controller" class="headerlink" title="Service Controller &amp;&amp; Endpoint Controller"></a>Service Controller &amp;&amp; Endpoint Controller</h4><p>Endpoints表示一个Service对应的所有pod副本的访问地址，Endpoints Controller负责生成和维护所有Endpoints对象的控制器</p>
+<p>Service Controller是和外部的接口控制器</p>
+<ul>
+<li>ServiceAccount Controller</li>
+<li>Token Controller</li>
+</ul>
+<h3 id="Scheduler原理"><a href="#Scheduler原理" class="headerlink" title="Scheduler原理"></a>Scheduler原理</h3><p>将待调度的Pod(api新创建的Pod、Controller Manager为补足副本而创建的Pod等)按照特定的调度算法和策略绑定(binding)到集群中某个合适的node上，并将绑定信息写入etcd中</p>
+<ul>
+<li>待调度Pod列表</li>
+<li>可用Node列表</li>
+<li>调度算法和策略</li>
+</ul>
+<p>目标节点上的kubelet通过API server监听到的scheduler产生的pod绑定事件，然后获取对应的pod清单，下载image和启动容器</p>
+<p>默认的调度流程如下：</p>
+<ol>
+<li>预选调度过程，即遍历所有目标node，筛选符合要求的候选节点</li>
+<li>确定最优节点，采用优选策略计算出每个候选节点的积分，积分最高者胜出</li>
+</ol>
+<h4 id="调度算法"><a href="#调度算法" class="headerlink" title="调度算法"></a>调度算法</h4><ul>
+<li>NoDiskConflict     默认</li>
+<li>PodFitsResources    默认</li>
+<li>PodSelectorMatches    默认</li>
+<li>PodFitsHost    默认</li>
+<li>CheckNodeLabelPresence</li>
+<li>CheckServiceAffinity</li>
+<li>PodFitsPorts    默认</li>
+</ul>
+<h4 id="NoDiskConflict"><a href="#NoDiskConflict" class="headerlink" title="NoDiskConflict"></a>NoDiskConflict</h4><p>判断备选的Pod的gcePersistentDisk或AWSElasticBlockStore和备选的节点中已存在的Pod是否存在冲突</p>
+<h4 id="PodFitsResources"><a href="#PodFitsResources" class="headerlink" title="PodFitsResources"></a>PodFitsResources</h4><p>判断备选节点的资源是否满足备选Pod的需求</p>
+<ol>
+<li>计算备用pod和节点中已存在的pod容器所需资源(cpu 和内存)的总和</li>
+<li>获得备选节点的状态信息，其中包含节点的资源信息</li>
+<li>如果备选pod和节点中已存在pod的所有容器的需求资源总和，超出了备选节点拥有的资源，返回false，否则返回true</li>
+</ol>
+<h4 id="PodSelectorMatches"><a href="#PodSelectorMatches" class="headerlink" title="PodSelectorMatches"></a>PodSelectorMatches</h4><p>判断备选节点是否包含备选pod的标签选择器指定的标签</p>
+<ol>
+<li>如果pod没有指定spec.nodeSelector标签选择器,则返回true</li>
+<li>获取备选节点的标签信息，判断节点是否包含备选pod的标签选择器(spec.nodeSelector)所指定的标签，如果包含返回true，否则返回false</li>
+</ol>
+<h4 id="PodFitsHost"><a href="#PodFitsHost" class="headerlink" title="PodFitsHost"></a>PodFitsHost</h4><p>判断备选pod的spec.nodeName域所指定的节点名称和备选节点的名称是否一致，如果一致返回true，否则返回false</p>
+<h4 id="CheckNodeLabelPresence"><a href="#CheckNodeLabelPresence" class="headerlink" title="CheckNodeLabelPresence"></a>CheckNodeLabelPresence</h4><p>配置文件中指定了该策略，则scheduler会通过RegisterCustomFitPredicate方法注册该策略</p>
+<ol>
+<li>读取备选节点的标签列表信息</li>
+<li>如果策略配置的标签列表存在于备选节点的标签列表中，且策略配置的presence值为false，则返回false，否则返回true，如果策略配置的标签列表不存在于备选节点的标签列表中，且策略配置的presence值为true，返回false，否则返回true</li>
+</ol>
+<h4 id="CheckServiceAffinity"><a href="#CheckServiceAffinity" class="headerlink" title="CheckServiceAffinity"></a>CheckServiceAffinity</h4><p>该策略用于判断备选节点是否包含策略指定的标签，或包含和备选Pod在相同Service和Namespace下的Pod所在节点的标签列表，如果存在，则返回true，否则返回false</p>
+<h4 id="PodFitsPorts"><a href="#PodFitsPorts" class="headerlink" title="PodFitsPorts"></a>PodFitsPorts</h4><p>判断备选pod所用的端口列表中的端口是否在备选节点中已被占用，如果被占用，则返回false，否则返回true</p>
+<h3 id="Kubelet运行机制解析"><a href="#Kubelet运行机制解析" class="headerlink" title="Kubelet运行机制解析"></a>Kubelet运行机制解析</h3><p>每个node上都会启动一个kubelet服务进程，该进程用于处理master下发到本节点的任务，管理pod和pod中的容器，同时通过api定期向master节点汇报节点资源使用情况，并通过cAdvisor监控容器和节点资源</p>
+<h4 id="容器健康检查"><a href="#容器健康检查" class="headerlink" title="容器健康检查"></a>容器健康检查</h4><ul>
+<li>LivenessProbe探针 判断容器健康并反馈给kubelet，如果没有则返回值为success</li>
+<li>ReadlinessProbe探针 判断容器是否启动完成，且准备接收请求</li>
+</ul>
+<h4 id="cAdvisor资源监控"><a href="#cAdvisor资源监控" class="headerlink" title="cAdvisor资源监控"></a>cAdvisor资源监控</h4><p>kubelet通过cAdvisor获取其所在节点和容器的数据，cAdvisor自动查找所有在其所在node上的容器，自动采取cpu、内存、文件系统和网络使用的统计信息</p>
+<h3 id="Kube-proxy运行机制解析"><a href="#Kube-proxy运行机制解析" class="headerlink" title="Kube-proxy运行机制解析"></a>Kube-proxy运行机制解析</h3><p>在Kubernetes集群中的每个node上都会运行一个kube-proxy服务进程，功能将到某个service的访问请求转发到后端的多个pod实例上</p>
+<p>Service的Cluster IP和Nodeport是kube-proxy服务通过IPtables的NAT转换实现，kube-proxy在运行过程中动态创建与Service相关的iptables规则，这些规则实现了将访问服务的请求负载分发到后端pod的功能</p>
+<p>核心思想： 通过api server的watch接口实时跟踪service和endpoint的变更信息，并更新对应的iptables规则，client的请求流量则通过iptables的NAT机制”直接路由”到目标pod</p>
+<p>IPVS 专门用于高性能负载均衡，并使用更高效的数据结构(hash表)，允许几乎无限的规模扩张，因此被kube-proxy采纳为第三代模式</p>
+<ul>
+<li>为大型集群提供更好的可扩展性和性能</li>
+<li>支持比iptables更复杂的复杂均衡算法(最小负载、最少连接、加权等)</li>
+<li>支持服务器健康检查和连接重试等功能</li>
+<li>可以动态修改ipset的集合，即使iptables的规则正在使用这个集合</li>
+</ul>
+<h3 id="Etcd"><a href="#Etcd" class="headerlink" title="Etcd"></a>Etcd</h3><p>高可用的键值对存储系统，被用作k8s的后端存储，所有集群数据都存储在里面，用于服务发现和集群管理，存了整个集群的状态</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>API Server  基本的api server 提供和k8s集群的交互aip接口 ， 和etcd的watch交互信息</li>
+<li>Controller Manager  管理控制中心， 对各种资源的管理，主要控制 pod， node， namespace，token等</li>
+<li>Scheduler 调度器， 主要功能 通过预选算法将 pod 调度到node上，然后将工作交给kubelet</li>
+<li>kubelet 每个node上都运行， 主要为pod的管理，并上报每个节点的资源到master</li>
+<li>kube-proxy  server网络， ipvs外部访问的基础，每一个node上</li>
+<li>Etcd 存储数据， 集群状态</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;API-Server原理解析&quot;&gt;&lt;a href=&quot;#API-Server原理解析&quot; class=&quot;headerlink&quot; title=&quot;API Server原理解析&quot;&gt;&lt;/a&gt;API Server原理解析&lt;/h3&gt;&lt;p&gt;各类资源对象(Pod,RC,Service)
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="k8s" scheme="https://ttxsgoto.github.io/tags/k8s/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Airflow动态生成Tasks和dags</title>
     <link href="https://ttxsgoto.github.io/2019/07/28/yw-airflow-dynamic-dags-tasks/"/>
     <id>https://ttxsgoto.github.io/2019/07/28/yw-airflow-dynamic-dags-tasks/</id>
     <published>2019-07-28T08:21:22.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="动态生成task任务"><a href="#动态生成task任务" class="headerlink" title="动态生成task任务"></a>动态生成task任务</h4><p>现在有这样的需求， 需要根据计算结果动态生成任务列表，来执行dags，查找资料后发现主要使用动态生成TaskInstance实例来完成<br>具体说明如下：</p>
 <ul>
@@ -56,7 +585,7 @@
     <link href="https://ttxsgoto.github.io/2019/07/27/yw-airflow-operator/"/>
     <id>https://ttxsgoto.github.io/2019/07/27/yw-airflow-operator/</id>
     <published>2019-07-27T08:15:08.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h4><p>最近在调研Airflow demo相关的问题和解决方案， 主要问题有：</p>
 <ul>
@@ -91,7 +620,7 @@
     <link href="https://ttxsgoto.github.io/2019/07/26/yw-airflow-install/"/>
     <id>https://ttxsgoto.github.io/2019/07/26/yw-airflow-install/</id>
     <published>2019-07-26T07:50:35.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>Airflow是一个工作流分配管理系统，通过有向非循环图的方式管理任务流程，设置任务依赖关系和时间调度。Airflow独立于我们要运行的任务，只需要把任务的名字和运行方式提供给Airflow作为一个task就可以， 以代码的方式来定义任务执行流程，可操作性强。</p>
 <h4 id="Airflow架构"><a href="#Airflow架构" class="headerlink" title="Airflow架构"></a>Airflow架构</h4><p>Airflow 是建立在元数据库上的队列系统。数据库存储队列任务的状态，调度器使用这些状态来确定如何将其它任务添加到队列的优先级。此功能由四个主要组件编排</p>
@@ -156,7 +685,7 @@
     <link href="https://ttxsgoto.github.io/2019/07/03/vue-echarts/"/>
     <id>https://ttxsgoto.github.io/2019/07/03/vue-echarts/</id>
     <published>2019-07-03T12:00:47.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>最近项目中需要用到图形可视化，制作一系列的报表功能，查询资料后使用echarts来实现功能，主要需要实现根据数据渲染多组数据来展现对比数据</p>
 <h3 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h3><ul>
@@ -195,7 +724,7 @@
     <link href="https://ttxsgoto.github.io/2019/06/30/vue-life-cycle-function/"/>
     <id>https://ttxsgoto.github.io/2019/06/30/vue-life-cycle-function/</id>
     <published>2019-06-30T11:29:15.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<p>记录vue 生命周期函数的学习</p>
 <h3 id="生命周期图示"><a href="#生命周期图示" class="headerlink" title="生命周期图示"></a>生命周期图示</h3><p><img src="https://cn.vuejs.org/images/lifecycle.png" alt=""></p>
@@ -221,7 +750,7 @@
     <link href="https://ttxsgoto.github.io/2019/06/29/yw-systemd/"/>
     <id>https://ttxsgoto.github.io/2019/06/29/yw-systemd/</id>
     <published>2019-06-29T03:07:07.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>Systemd 是 Linux 系统工具，用来启动守护进程，已成为大多数发行版的标准配置；主要用于服务管理和自定义服务的管理，方便运维工作管理。</p>
 <h4 id="systemctl"><a href="#systemctl" class="headerlink" title="systemctl"></a>systemctl</h4><p>systemctl是 Systemd 的主命令，用于管理系统<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"># 重启系统</div><div class="line">$ sudo systemctl reboot</div><div class="line"> </div><div class="line"># 关闭系统，切断电源</div><div class="line">$ sudo systemctl poweroff</div><div class="line"> </div><div class="line"># CPU停止工作</div><div class="line">$ sudo systemctl halt</div><div class="line"> </div><div class="line"># 暂停系统</div><div class="line">$ sudo systemctl suspend</div><div class="line"> </div><div class="line"># 让系统进入冬眠状态</div><div class="line">$ sudo systemctl hibernate</div><div class="line"> </div><div class="line"># 让系统进入交互式休眠状态</div><div class="line">$ sudo systemctl hybrid-sleep</div><div class="line"> </div><div class="line"># 启动进入救援状态（单用户状态）</div><div class="line">$ sudo systemctl rescue</div></pre></td></tr></table></figure></p>
@@ -270,7 +799,7 @@
     <link href="https://ttxsgoto.github.io/2019/01/10/yw-sersync/"/>
     <id>https://ttxsgoto.github.io/2019/01/10/yw-sersync/</id>
     <published>2019-01-10T13:58:34.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>需要将某台服务器目录实时同步到另外一台服务器上的某个目录下，其实本来可以通过远程目录挂载的方式完成， 但是现在的需求是某两台服务器的目录实时同步到另外一台的同一目录中，这时就不能使用远程目录挂载方式完成了， 这里使用sersync+rsync来完成需求</p>
 <h4 id="Sersync特点"><a href="#Sersync特点" class="headerlink" title="Sersync特点"></a>Sersync特点</h4><ul>
@@ -303,7 +832,7 @@
     <link href="https://ttxsgoto.github.io/2019/01/07/yw-apollo/"/>
     <id>https://ttxsgoto.github.io/2019/01/07/yw-apollo/</id>
     <published>2019-01-07T12:59:45.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>之前文章中说过发布流程(<a href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/">Jenkins+Gitlab+Harbor构建持续集成</a>),但这里有个问题——不同环境中的配置文件不一样，之前的方案只是把代码发布到机器上，不能“一刀切”使用相同的配置，我们现在使用携程框架部门研发的开源配置管理中心Apollo来完成配置文件分发</p>
 <h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
@@ -348,7 +877,7 @@
     <link href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/"/>
     <id>https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/</id>
     <published>2019-01-04T12:41:44.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作</p>
 <h4 id="组件说明"><a href="#组件说明" class="headerlink" title="组件说明"></a>组件说明</h4><h5 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h5><p>jenkins是基于Java开发的一种持续集成工具，用于监控持续重复的工作，旨在提供一个开放易用的软件平台，使软件的持续集成变成可能<br>特点：</p>
@@ -403,7 +932,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-count/"/>
     <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-count/</id>
     <published>2018-12-28T14:48:50.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="count-实现方式"><a href="#count-实现方式" class="headerlink" title="count(*) 实现方式"></a>count(*) 实现方式</h4><p>不同的引擎，实现方式不同</p>
 <ul>
@@ -445,7 +974,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-order-by/"/>
     <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-order-by/</id>
     <published>2018-12-28T14:46:51.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="全字段排序"><a href="#全字段排序" class="headerlink" title="全字段排序"></a>全字段排序</h4><p>mysql会给每个线程分配一块内存用于排序，称为sort_buffer</p>
 <p>sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该值，则需要用磁盘临时文件辅助排序</p>
@@ -475,7 +1004,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-addindex-to-string/"/>
     <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-addindex-to-string/</id>
     <published>2018-12-28T12:41:50.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h4><p>前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数</p>
 <p>在建立索引时需要关注的是区分度，区分度越高越好</p>
@@ -510,7 +1039,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/"/>
     <id>https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/</id>
     <published>2018-12-27T14:44:05.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="锁分类"><a href="#锁分类" class="headerlink" title="锁分类"></a>锁分类</h4><ul>
 <li>全局锁</li>
@@ -580,7 +1109,7 @@
     <link href="https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/"/>
     <id>https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/</id>
     <published>2018-12-26T13:42:58.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
+    <updated>2020-03-20T08:09:45.000Z</updated>
     
     <content type="html"><![CDATA[<h4 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h4><p>事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持</p>
 <h4 id="事务的特性"><a href="#事务的特性" class="headerlink" title="事务的特性"></a>事务的特性</h4><ul>
@@ -642,350 +1171,6 @@
     
     
       <category term="Transaction" scheme="https://ttxsgoto.github.io/tags/Transaction/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Redo log 和 Binlog</title>
-    <link href="https://ttxsgoto.github.io/2018/12/25/yw-mysql-redo-binlog/"/>
-    <id>https://ttxsgoto.github.io/2018/12/25/yw-mysql-redo-binlog/</id>
-    <published>2018-12-25T11:43:38.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>WAL(Write-Ahead-Logging),先写日志，再写磁盘</p>
-<ul>
-<li>redo log(重做日志)<ul>
-<li>存储引擎层面</li>
-<li>存储容量大小固定，循环写</li>
-<li>checkpoint 当前要擦除的位置，擦除记录前需要将数据更新到数据文件中</li>
-<li>write-pos 当前写入记录的位置</li>
-<li>功能：保证InnoDB即使数据库发生异常重启，之前提交的记录也不会丢失(crash-safe)</li>
-<li>插件式，innodb引擎特有</li>
-<li>物流日志-记录在某个数据页上做了什么修改</li>
-</ul>
-</li>
-<li>binlog(归档日志)<ul>
-<li>Server层面</li>
-<li>逻辑日志，记录的是这个语句的原始逻辑，sql语句是什么样子的</li>
-</ul>
-</li>
-</ul>
-<p>执行器和引擎执行update操作流程：</p>
-<ol>
-<li>先取出该查询，如果在内存中则直接返回给执行器，否则先从磁盘读入内存，然后返回</li>
-<li>执行器拿到引擎给的行数据，执行相关操作，再调用引擎接口写入这行新数据</li>
-<li>引擎将这行新数据更新到内存中，同时将这个更新记录到redo log中，此时redo log处于prepare状态，然后告知执行器执行完成，随时可以提交事务</li>
-<li>执行器生成这个操作的binlog，将binlog写入磁盘</li>
-<li>执行器调用引擎的提交事务接口，引擎把刚刚写入的redo log改写提交(commit)状态，更新完成</li>
-</ol>
-<p>流程如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">获取数据 ——&gt; 返回数据 ——&gt; 执行逻辑 ——&gt; 写入新行 ——&gt; 新行更新到内存 ——&gt; 写入redo log处于prepare状态 ——&gt; 写binlog ——&gt; 提交事务redo log处于commit状态完成</div></pre></td></tr></table></figure></p>
-<p>redo log和binlog都可以用于表示事务的提交状态，而两阶段提交就是让这两个状态保持逻辑上的一致</p>
-<p>数据一致性保持理解：</p>
-<p>1 prepare阶段<br>2 写binlog<br>3 commit</p>
-<p>当在2之前崩溃时<br>重启恢复：后发现没有commit，回滚。备份恢复：没有binlog 一致<br>当在3之前崩溃<br>重启恢复：虽没有commit，但满足prepare和binlog完整，所以重启后会自动commit。备份：有binlog. 一致</p>
-<p><strong>参数配置</strong><br>innodb_flush_log_at_trx_commit 参数设置成1时，表示每次事务的redo log都直接持久化到磁盘，保证mysql异常重启后数据不丢失<br>sync_binlog参数设置成1时，表示每次事务的binlog都持久化到磁盘，保证mysql异常重启后binlog不丢失</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;WAL(Write-Ahead-Logging),先写日志，再写磁盘&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;redo log(重做日志)&lt;ul&gt;
-&lt;li&gt;存储引擎层面&lt;/li&gt;
-&lt;li&gt;存储容量大小固定，循环写&lt;/li&gt;
-&lt;li&gt;checkpoint 当前要擦除的位置，擦除记录前需要将
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="binlog" scheme="https://ttxsgoto.github.io/tags/binlog/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>索引选择</title>
-    <link href="https://ttxsgoto.github.io/2018/12/21/yw-mysql-select-index/"/>
-    <id>https://ttxsgoto.github.io/2018/12/21/yw-mysql-select-index/</id>
-    <published>2018-12-21T03:14:08.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="优化器选择索引逻辑"><a href="#优化器选择索引逻辑" class="headerlink" title="优化器选择索引逻辑"></a>优化器选择索引逻辑</h4><ul>
-<li>扫描行数</li>
-<li>使用临时表</li>
-<li>是否排序</li>
-</ul>
-<h4 id="基数"><a href="#基数" class="headerlink" title="基数"></a>基数</h4><p>一个索引上不同值的个数，称之为“基数(cardinality)”;基数越大，索引的区分度越好</p>
-<p>show index from x 查看索引对应的基数</p>
-<ul>
-<li>采样统计， 通过设置参数innodb_stats_persistent来设置  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">设置为on，表示统计信息会持久化存储，默认值N为20，M为10</div><div class="line">设置为off, 表示统计信息只存储在内存中，默认值N为8，M为16</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>analyze table t # 用于重新统计索引信息，当发现explain中rows值和实际情况差距比较大时，可以采用使用该命令来处理</p>
-<h4 id="索引选择异常和处理"><a href="#索引选择异常和处理" class="headerlink" title="索引选择异常和处理"></a>索引选择异常和处理</h4><ul>
-<li><p>使用force index强制选择一个索引</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">select * from t force index(a) where a between 1000 and 2000;</div></pre></td></tr></table></figure>
-</li>
-<li><p>修改查询语句</p>
-</li>
-<li>新建更合适的索引，来提供优化器来选择，或者删掉误用的索引</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;优化器选择索引逻辑&quot;&gt;&lt;a href=&quot;#优化器选择索引逻辑&quot; class=&quot;headerlink&quot; title=&quot;优化器选择索引逻辑&quot;&gt;&lt;/a&gt;优化器选择索引逻辑&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;扫描行数&lt;/li&gt;
-&lt;li&gt;使用临时表&lt;/li&gt;
-&lt;li&gt;是否排序&lt;/l
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>普通索引和唯一索引的区别</title>
-    <link href="https://ttxsgoto.github.io/2018/12/20/yw-mysql-unique-index/"/>
-    <id>https://ttxsgoto.github.io/2018/12/20/yw-mysql-unique-index/</id>
-    <published>2018-12-20T12:11:46.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="查询操作"><a href="#查询操作" class="headerlink" title="查询操作"></a>查询操作</h4><ul>
-<li>查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止</li>
-<li>唯一索引，找到第一个满足条件记录，停止检索</li>
-</ul>
-<h4 id="更新操作"><a href="#更新操作" class="headerlink" title="更新操作"></a>更新操作</h4><p>change buffer:如果数据页没有在内存中，innodb会将更新操作缓存在change buffer中，这样不需要从磁盘中读取数据页；下次查询访问这个数据页时，将数据页读入内存，然后执行change buffer中和这个页有关的操作</p>
-<ul>
-<li>唯一索引更新操作不能使用change buffer，因为判断记录是否存在，必须将数据页读入内存，只有普通索引更新操作可以使用change buffer</li>
-<li>change buffer使用的是buffer pool里的内存，大小可以通过参数<strong>innodb_change_buffer_max_size</strong>来设置</li>
-</ul>
-<h4 id="插入操作"><a href="#插入操作" class="headerlink" title="插入操作"></a>插入操作</h4><ol>
-<li>记录要更新的目标页在内存中，此时插入操作基本一致，从内存中读取数据对应的位置，执行插入语句</li>
-<li>记录要更新的目标页不在内存中<ul>
-<li>唯一索引，需要将数据页读入到内存，判断有没有冲突，执行语句</li>
-<li>普通索引，将更新记录到change buffer，执行语句</li>
-</ul>
-</li>
-</ol>
-<p>将数据从磁盘读入内存涉及到随机IO访问，成本高；change buffer减少了随机磁盘访问，所以对更新性能的提升更明显</p>
-<h4 id="change-buffer使用场景"><a href="#change-buffer使用场景" class="headerlink" title="change buffer使用场景"></a>change buffer使用场景</h4><p>适用于写多读少的业务场景，写入后不立即读取，常见业务系统如日志、账单类系统</p>
-<p>如果业务更新后马上需要做查询，即更新先记录change buffer，之后查询这个数据页，会立刻触发merge操作，这样随机访问io次数不会减少，反而增加了change buffer的维护代价</p>
-<h4 id="索引选择"><a href="#索引选择" class="headerlink" title="索引选择"></a>索引选择</h4><ul>
-<li>查询性能方面无差异</li>
-<li>更新操作，因为有change buffer机制，所以普通索引更新操作性能更好</li>
-</ul>
-<h4 id="change-buffer-amp-amp-redo-log"><a href="#change-buffer-amp-amp-redo-log" class="headerlink" title="change buffer &amp;&amp; redo log"></a>change buffer &amp;&amp; redo log</h4><ul>
-<li>redo log 主要节省的是随机写磁盘IO消耗(转成顺序写)</li>
-<li>change buffer主要节省的是随机读磁盘io的消耗</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;查询操作&quot;&gt;&lt;a href=&quot;#查询操作&quot; class=&quot;headerlink&quot; title=&quot;查询操作&quot;&gt;&lt;/a&gt;查询操作&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止&lt;/li&gt;
-&lt;li&gt;唯一索引，找到第一个满足
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法</title>
-    <link href="https://ttxsgoto.github.io/2018/12/03/yw-mysql-question/"/>
-    <id>https://ttxsgoto.github.io/2018/12/03/yw-mysql-question/</id>
-    <published>2018-12-03T12:22:02.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h4><p>在同一个sql语句中，先select同一个表的某些值，然后再update这个表</p>
-<p>如执行如下sql语句：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">update logistic_statistic set fluid_id=<span class="string">'cca03b6a372045f2891fef62d9524652'</span> where id <span class="keyword">in</span> (</div><div class="line">  select id <span class="keyword">from</span> logistic_statistic where company= <span class="string">'新能源有限公司'</span>);</div></pre></td></tr></table></figure></p>
-<p>执行报错：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Error : You can<span class="string">'t specify target table '</span>logistic_statistic<span class="string">' for update in FROM clause</span></div></pre></td></tr></table></figure></p>
-<h4 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h4><p>select的结果再通过一个中间表select多一次，就可以避免这个错误</p>
-<p>执行如下sql语句：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">update logistic_statistic set fluid_id=<span class="string">"cca03b6a372045f2891fef62d9524652"</span> where id <span class="keyword">in</span> ( </div><div class="line">  select other_id <span class="keyword">from</span> ( </div><div class="line">    SELECT id <span class="keyword">as</span> other_id <span class="keyword">from</span> logistic_statistic where company= <span class="string">'新能源有限公司'</span>) <span class="keyword">as</span> a ;</div><div class="line">  );</div></pre></td></tr></table></figure></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;问题描述：&quot;&gt;&lt;a href=&quot;#问题描述：&quot; class=&quot;headerlink&quot; title=&quot;问题描述：&quot;&gt;&lt;/a&gt;问题描述：&lt;/h4&gt;&lt;p&gt;在同一个sql语句中，先select同一个表的某些值，然后再update这个表&lt;/p&gt;
-&lt;p&gt;如执行如下sql语句：
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/tags/Mysql/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Django+Celery 计划任务</title>
-    <link href="https://ttxsgoto.github.io/2018/10/24/python-django-celery/"/>
-    <id>https://ttxsgoto.github.io/2018/10/24/python-django-celery/</id>
-    <published>2018-10-24T14:38:48.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>需求为工作流审批，到达某状态后，超过一段时间没有审批，则流程自动审批到下一个状态</p>
-<h4 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h4><p>想到使用计划任务来自动流转流程，因为项目本身是Django，这里使用djcelery来完成</p>
-<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><p>项目依赖<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">pip install django-celery</div><div class="line">pip install flower</div></pre></td></tr></table></figure></p>
-<p>settings.py配置<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">INSTALLED_APPS = (</div><div class="line">   ...</div><div class="line">   <span class="string">'djcelery'</span>,</div><div class="line">)</div><div class="line"> </div><div class="line"><span class="keyword">import</span> djcelery</div><div class="line"> </div><div class="line">djcelery.setup_loader()</div><div class="line">BROKER_URL = <span class="string">'redis://127.0.0.1:6379/1'</span></div><div class="line">CELERYBEAT_SCHEDULER = <span class="string">'djcelery.schedulers.DatabaseScheduler'</span></div><div class="line"><span class="comment"># CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'    # 结果存储，存储到数据库</span></div><div class="line">CELERY_RESULT_BACKEND = <span class="string">'redis://127.0.0.1:6379/1'</span></div><div class="line">CELERY_ACCEPT_CONTENT = [<span class="string">'application/json'</span>]</div><div class="line">CELERY_TASK_SERIALIZER = <span class="string">'json'</span></div><div class="line">CELERY_RESULT_SERIALIZER = <span class="string">'json'</span></div><div class="line">CELERY_TIMEZONE = <span class="string">'Asia/Shanghai'</span></div><div class="line"> </div><div class="line">CELERY_TASK_RESULT_EXPIRES = <span class="number">3600</span>  <span class="comment"># celery任务执行结果的超时时间，</span></div><div class="line">CELERYD_FORCE_EXECV = <span class="keyword">True</span>  <span class="comment"># 有些情况下可以防止死锁</span></div><div class="line">CELERYD_PREFETCH_MULTIPLIER = <span class="number">1</span></div><div class="line">CELERYD_MAX_TASKS_PER_CHILD = <span class="number">100</span>   <span class="comment"># 每个worker最多执行万100个任务就会被销毁，可防止内存泄露</span></div><div class="line"><span class="comment"># CELERYD_CONCURRENCY = 10  # celery worker的并发数 也是命令行-c指定的数目,事实上实践发现并不是worker也多越好,保证任务不堆积,加上一定新增任务的预留就可以</span></div></pre></td></tr></table></figure></p>
-<p>接下来在settings.py的同级目录中新建 celery.py文件</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import, unicode_literals</div><div class="line"><span class="keyword">import</span> os</div><div class="line"> </div><div class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</div><div class="line"><span class="keyword">from</span> django.conf <span class="keyword">import</span> settings</div><div class="line"> </div><div class="line">os.environ.setdefault(<span class="string">'DJANGO_SETTINGS_MODULE'</span>, <span class="string">'Server.settings'</span>)</div><div class="line"> </div><div class="line">app = Celery(<span class="string">'Server'</span>) <span class="comment">#, backend='redis', broker='redis://127.0.0.1:6379/1')</span></div><div class="line">app.config_from_object(<span class="string">'django.conf:settings'</span>)</div><div class="line">app.autodiscover_tasks(<span class="keyword">lambda</span>: settings.INSTALLED_APPS)</div></pre></td></tr></table></figure>
-<p>修改<strong>init</strong>.py添加<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import, unicode_literals</div><div class="line">  </div><div class="line"><span class="keyword">from</span> .celery <span class="keyword">import</span> app <span class="keyword">as</span> celery_app</div></pre></td></tr></table></figure></p>
-<p>在对应的app中添加tasks.py文件(这里必须为tasks.py文件，不然在admin中添加任务时找不到task)<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import, unicode_literals</div><div class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> shared_task, task</div><div class="line">  </div><div class="line"><span class="meta">@shared_task</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">auto_audit</span><span class="params">()</span>:</span></div><div class="line">    print(<span class="string">'func auto audit'</span>)</div><div class="line"> </div><div class="line"><span class="meta">@task()</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(x, y)</span>:</span></div><div class="line">    print(<span class="string">'x + y = '</span>, x + y)</div><div class="line">    <span class="keyword">return</span> x + y</div></pre></td></tr></table></figure></p>
-<p>在views.py中调用<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> .tasks <span class="keyword">import</span> add</div><div class="line">  </div><div class="line">add.delay(<span class="number">3</span>, <span class="number">5</span>) <span class="comment">#发送消息，触发后台任务</span></div></pre></td></tr></table></figure></p>
-<p>celery启动，当然实际环境中应该使用supervisor启动<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">python manage.py celery worker -l info  <span class="comment"># 启动 worker</span></div><div class="line">python manage.py celery beat -l info    <span class="comment"># 启动 beat</span></div><div class="line">python manage.py celery worker -B -l info  <span class="comment"># 启动 worker 和 beat</span></div><div class="line">python manage.py celery flower --address=<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span> --port=<span class="number">5555</span> --basic_auth=admin:admin    <span class="comment"># 启动celery flower监控</span></div></pre></td></tr></table></figure></p>
-<h4 id="Admin后台添加计划任务"><a href="#Admin后台添加计划任务" class="headerlink" title="Admin后台添加计划任务"></a>Admin后台添加计划任务</h4><p>在DJCELERY中Periodic tasks添加计划任务即可</p>
-<h4 id="Flower监控celery"><a href="#Flower监控celery" class="headerlink" title="Flower监控celery"></a>Flower监控celery</h4><p>主要用于监控任务执行是否成功，和broker和worker对应的状态</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;需求为工作流审批，到达某状态后，超过一段时间没有审批，则流程自动审批到下一个状态&lt;/p&gt;
-&lt;h4 id=&quot;方案&quot;&gt;&lt;a href=&quot;#方案&quot;
-    
-    </summary>
-    
-      <category term="Django" scheme="https://ttxsgoto.github.io/categories/Django/"/>
-    
-    
-      <category term="Djcelery" scheme="https://ttxsgoto.github.io/tags/Djcelery/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>运维 Redis进阶</title>
-    <link href="https://ttxsgoto.github.io/2018/09/28/redis-advance/"/>
-    <id>https://ttxsgoto.github.io/2018/09/28/redis-advance/</id>
-    <published>2018-09-28T13:14:53.000Z</published>
-    <updated>2019-07-27T06:44:05.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发</p>
-<h4 id="使用redis目的"><a href="#使用redis目的" class="headerlink" title="使用redis目的"></a>使用redis目的</h4><ul>
-<li>高性能：将数据缓存在redis中，访问数据从缓存中取，不直接访问数据库，提高页面响应效率</li>
-<li>高并发：在大的并发情况下，直接操作缓存能够承受的请求远大于直接访问数据库，这时我们需要使用redis做一个缓冲操作，让请求先访问到redis，而不是直接访问数据库</li>
-</ul>
-<h4 id="一般应用场景"><a href="#一般应用场景" class="headerlink" title="一般应用场景"></a>一般应用场景</h4><ul>
-<li>缓存-热数据：需要执行耗时久，计算结果不频繁变动的sql查询</li>
-<li>异步队列</li>
-<li>计数器：如统计点击数，INCRBY</li>
-<li>分布式锁与单线程机制</li>
-<li>最新列表：使用LPUSH命令构建List</li>
-<li>排行榜应用： 使用ZADD(有续集，sorted set)</li>
-<li>位操作(大数据处理)</li>
-</ul>
-<h4 id="单线程的redis为什么快"><a href="#单线程的redis为什么快" class="headerlink" title="单线程的redis为什么快"></a>单线程的redis为什么快</h4><ul>
-<li>纯内存操作</li>
-<li>单线程操作，避免了频繁的上下文切换</li>
-<li><p>采用非阻塞I/O多路复用机制</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">在redis服务端，启用了I/O多路复用机制，将其置于队列中，然后文件事件分发器依次去队列中去取，转发到不同的事件处理器中处理</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="常见数据结构和使用场景"><a href="#常见数据结构和使用场景" class="headerlink" title="常见数据结构和使用场景"></a>常见数据结构和使用场景</h4><ul>
-<li>String </li>
-</ul>
-<p>常用的命令： set、get、decr、incr、mget、mset<br>String 数据结构是简单的 Key-Value 类型，Value 可为字符和数值和其他类型的值<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 设置和获取key-value</span></div><div class="line">set mykey ttxsgoto</div><div class="line">get mykey</div><div class="line"> </div><div class="line"><span class="comment"># 原子递增</span></div><div class="line">set counter <span class="number">100</span></div><div class="line">incr counter ((integer) <span class="number">101</span>)</div><div class="line"> </div><div class="line"><span class="comment"># 一次性存储和获取多个key对应的值,mget 命令返回由值组成的数组</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; mset a <span class="number">10</span> b <span class="number">20</span> c <span class="number">30</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; mget a b c</div><div class="line"><span class="number">1</span>) <span class="string">"10"</span></div><div class="line"><span class="number">2</span>) <span class="string">"20"</span></div><div class="line"><span class="number">3</span>) <span class="string">"30"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; keys *</div><div class="line"><span class="number">1</span>) <span class="string">"ttxs"</span></div><div class="line"><span class="number">2</span>) <span class="string">"c"</span></div><div class="line"><span class="number">3</span>) <span class="string">"a"</span></div><div class="line"><span class="number">4</span>) <span class="string">"counter"</span></div><div class="line"><span class="number">5</span>) <span class="string">"b"</span></div><div class="line"><span class="number">6</span>) <span class="string">"mykey"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; exists a</div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; exists x</div><div class="line">(integer) <span class="number">0</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; type a</div><div class="line">string</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; <span class="keyword">del</span> a</div><div class="line">(integer) <span class="number">1</span></div><div class="line"> </div><div class="line"><span class="comment"># 设置过期时间</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; get b</div><div class="line"><span class="string">"20"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; expire b <span class="number">5</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; get b</div><div class="line">(nil)</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; set bbb <span class="number">1000</span> ex <span class="number">100</span></div><div class="line">OK</div><div class="line"><span class="comment"># 查看过期时间</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; ttl bbb</div><div class="line">(integer) <span class="number">95</span></div></pre></td></tr></table></figure></p>
-<ul>
-<li>Hash</li>
-</ul>
-<p>常用命令：hget、hset、 hmget、hmset、hgetall<br>Hash 是一个 String 类型的 Field 和 Value 的映射表，Hash 特别适合用于存储对象；后续操作的时候，你可以直接仅仅修改这个对象中的某个字段的值<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 由键值对组成</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hmset user:<span class="number">1000</span> username antirez birthyear <span class="number">1977</span> verified <span class="number">1</span></div><div class="line">OK</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hget user:<span class="number">1000</span> username</div><div class="line"><span class="string">"antirez"</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hgetall user:<span class="number">1000</span></div><div class="line"><span class="number">1</span>) <span class="string">"username"</span></div><div class="line"><span class="number">2</span>) <span class="string">"antirez"</span></div><div class="line"><span class="number">3</span>) <span class="string">"birthyear"</span></div><div class="line"><span class="number">4</span>) <span class="string">"1977"</span></div><div class="line"><span class="number">5</span>) <span class="string">"verified"</span></div><div class="line"><span class="number">6</span>) <span class="string">"1"</span></div><div class="line"> </div><div class="line"><span class="comment"># 返回多个值</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; hmget user:<span class="number">1000</span> username birthyear xxx</div><div class="line"><span class="number">1</span>) <span class="string">"antirez"</span></div><div class="line"><span class="number">2</span>) <span class="string">"1977"</span></div><div class="line"><span class="number">3</span>) (nil)</div></pre></td></tr></table></figure></p>
-<ul>
-<li>List</li>
-</ul>
-<p>常用命令：lpush、rpush、lpop、rpop、lrange<br>List 就是链表，Redis List 的应用场景非常多，也是 Redis 最重要的数据结构之一<br>Redis List 的实现为一个双向链表，即可以支持反向查找和遍历，更方便操作，不过带来了部分额外的内存开销<br>另外可以通过 lrange 命令，就是从某个元素开始读取多少个元素，可以基于 List 实现分页查询</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># lpush 向list的左边（头部）添加一个新元素</span></div><div class="line"><span class="comment"># rpush 向list的右边（尾部）添加一个新元素</span></div><div class="line"><span class="comment"># lrange 从list中取出一定范围的元素</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist A</div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist B</div><div class="line">(integer) <span class="number">2</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; lpush mylist first</div><div class="line">(integer) <span class="number">3</span></div><div class="line"><span class="comment"># </span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; lrange mylist <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"first"</span></div><div class="line"><span class="number">2</span>) <span class="string">"A"</span></div><div class="line"><span class="number">3</span>) <span class="string">"B"</span></div><div class="line"><span class="comment"># 写入多个值</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="string">"foo bar"</span></div><div class="line">(integer) <span class="number">9</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; lrange mylist <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"first"</span></div><div class="line"><span class="number">2</span>) <span class="string">"A"</span></div><div class="line"><span class="number">3</span>) <span class="string">"B"</span></div><div class="line"><span class="number">4</span>) <span class="string">"1"</span></div><div class="line"><span class="number">5</span>) <span class="string">"2"</span></div><div class="line"><span class="number">6</span>) <span class="string">"3"</span></div><div class="line"><span class="number">7</span>) <span class="string">"4"</span></div><div class="line"><span class="number">8</span>) <span class="string">"5"</span></div><div class="line"><span class="number">9</span>) <span class="string">"foo bar"</span></div><div class="line"> </div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpush mylist001 a b c</div><div class="line"><span class="comment"># 删除元素并同时返回删除的值</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; rpop mylist001</div><div class="line"><span class="string">"c"</span></div><div class="line"> </div><div class="line"><span class="comment"># ltrim把list从左边截取指定长度</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; ltrim mylist <span class="number">0</span> <span class="number">2</span></div><div class="line">OK</div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; LRANGE mylist <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"first"</span></div><div class="line"><span class="number">2</span>) <span class="string">"A"</span></div><div class="line"><span class="number">3</span>) <span class="string">"B"</span></div><div class="line"><span class="comment"># 查看list中元素的个数</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; llen mylist</div><div class="line">(integer) <span class="number">6</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; <span class="keyword">del</span> mylist</div><div class="line">(integer) <span class="number">1</span></div></pre></td></tr></table></figure>
-<ul>
-<li>Set</li>
-</ul>
-<p>常用命令：sadd、spop、smembers、sunion<br>Set 对外提供的功能与 List 类似是一个列表的功能，特殊之处在于 Set 是可以自动排重<br>当你需要存储一个列表数据，又不希望出现重复数据时，可以使用Set，同时也支持交集、并集、差集操作<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 添加</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; sadd myset <span class="number">1</span> <span class="number">2</span> <span class="number">3</span></div><div class="line">(integer) <span class="number">3</span></div><div class="line"><span class="comment"># 查看所有</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; smembers myset</div><div class="line"><span class="number">1</span>) <span class="string">"1"</span></div><div class="line"><span class="number">2</span>) <span class="string">"2"</span></div><div class="line"><span class="number">3</span>) <span class="string">"3"</span></div><div class="line"><span class="comment"># 检查元素是否存在</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; sismember myset <span class="number">1</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; sismember myset <span class="number">4</span></div><div class="line">(integer) <span class="number">0</span></div></pre></td></tr></table></figure></p>
-<ul>
-<li>Sorted Set</li>
-</ul>
-<p>常用命令：zadd、zrange、zrem、zcard<br>和 Set 相比，Sorted Set 增加了一个权重参数 Score，使得集合中的元素能够按 Score 进行有序排列<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># zadd 添加</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1940</span> <span class="string">"Alan Kay"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1957</span> <span class="string">"Sophie Wilson"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1953</span> <span class="string">"Richard Stallman"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1949</span> <span class="string">"Anita Borg"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1965</span> <span class="string">"Yukihiro Matsumoto"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1914</span> <span class="string">"Hedy Lamarr"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1916</span> <span class="string">"Claude Shannon"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1969</span> <span class="string">"Linus Torvalds"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd hackers <span class="number">1912</span> <span class="string">"Alan Turing"</span></div><div class="line">(integer) <span class="number">1</span></div><div class="line"> </div><div class="line"><span class="comment"># 查看数据</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrange hackers <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"Alan Turing"</span></div><div class="line"><span class="number">2</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"><span class="number">3</span>) <span class="string">"Claude Shannon"</span></div><div class="line"><span class="number">4</span>) <span class="string">"Alan Kay"</span></div><div class="line"><span class="number">5</span>) <span class="string">"Anita Borg"</span></div><div class="line"><span class="number">6</span>) <span class="string">"Richard Stallman"</span></div><div class="line"><span class="number">7</span>) <span class="string">"Sophie Wilson"</span></div><div class="line"><span class="number">8</span>) <span class="string">"Yukihiro Matsumoto"</span></div><div class="line"><span class="number">9</span>) <span class="string">"Linus Torvalds"</span></div><div class="line"> </div><div class="line"><span class="comment"># 反向查看数据</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrevrange hackers <span class="number">0</span> <span class="number">-1</span></div><div class="line"><span class="number">1</span>) <span class="string">"Linus Torvalds"</span></div><div class="line"><span class="number">2</span>) <span class="string">"Yukihiro Matsumoto"</span></div><div class="line"><span class="number">3</span>) <span class="string">"Sophie Wilson"</span></div><div class="line"><span class="number">4</span>) <span class="string">"Richard Stallman"</span></div><div class="line"><span class="number">5</span>) <span class="string">"Anita Borg"</span></div><div class="line"><span class="number">6</span>) <span class="string">"Alan Kay"</span></div><div class="line"><span class="number">7</span>) <span class="string">"Claude Shannon"</span></div><div class="line"><span class="number">8</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"><span class="number">9</span>) <span class="string">"Alan Turing"</span></div><div class="line"> </div><div class="line"><span class="comment"># 查看对应的得分</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrange hackers <span class="number">0</span> <span class="number">-1</span> withscores</div><div class="line"> <span class="number">1</span>) <span class="string">"Alan Turing"</span></div><div class="line"> <span class="number">2</span>) <span class="string">"1912"</span></div><div class="line"> <span class="number">3</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"> <span class="number">4</span>) <span class="string">"1914"</span></div><div class="line"> <span class="number">5</span>) <span class="string">"Claude Shannon"</span></div><div class="line"> <span class="number">6</span>) <span class="string">"1916"</span></div><div class="line"> <span class="number">7</span>) <span class="string">"Alan Kay"</span></div><div class="line"> <span class="number">8</span>) <span class="string">"1940"</span></div><div class="line"> <span class="number">9</span>) <span class="string">"Anita Borg"</span></div><div class="line"><span class="number">10</span>) <span class="string">"1949"</span></div><div class="line"><span class="number">11</span>) <span class="string">"Richard Stallman"</span></div><div class="line"><span class="number">12</span>) <span class="string">"1953"</span></div><div class="line"><span class="number">13</span>) <span class="string">"Sophie Wilson"</span></div><div class="line"><span class="number">14</span>) <span class="string">"1957"</span></div><div class="line"><span class="number">15</span>) <span class="string">"Yukihiro Matsumoto"</span></div><div class="line"><span class="number">16</span>) <span class="string">"1965"</span></div><div class="line"><span class="number">17</span>) <span class="string">"Linus Torvalds"</span></div><div class="line"><span class="number">18</span>) <span class="string">"1969"</span></div><div class="line">  </div><div class="line"><span class="comment"># 小于1950的数据</span></div><div class="line"><span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zrangebyscore hackers -inf <span class="number">1950</span></div><div class="line"><span class="number">1</span>) <span class="string">"Alan Turing"</span></div><div class="line"><span class="number">2</span>) <span class="string">"Hedy Lamarr"</span></div><div class="line"><span class="number">3</span>) <span class="string">"Claude Shannon"</span></div><div class="line"><span class="number">4</span>) <span class="string">"Alan Kay"</span></div><div class="line"><span class="number">5</span>) <span class="string">"Anita Borg"</span></div></pre></td></tr></table></figure></p>
-<h4 id="过期策略以及内存淘汰机制"><a href="#过期策略以及内存淘汰机制" class="headerlink" title="过期策略以及内存淘汰机制"></a>过期策略以及内存淘汰机制</h4><p>redis采用的是定期删除+惰性删除策略</p>
-<ul>
-<li>定期删除：Redis 默认是每隔 100ms 就随机抽取一些设置了过期时间的 Key，检查其是否过期，如果过期就删除。注意这里是随机抽取的。为什么要随机？假如 Redis 存了几十万个 Key ，每隔 100ms 就遍历所有的设置过期时间的 Key 的话，就会给 CPU 带来很大的负载</li>
-<li><p>惰性删除 ：定期删除可能会导致很多过期 Key 到了时间并没有被删除掉。所以就有了惰性删除，也就是说在你获取某个key的时候，redis会检查一下，这个key如果设置了过期时间那么是否过期了？如果过期了此时就会删除</p>
-</li>
-<li><p>内存淘汰机制： 在redis配置文件中配置 # maxmemory-policy volatile-lru<br>Redis 提供 6 种数据淘汰策略：</p>
-</li>
-</ul>
-<pre><code>- volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰
-- volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰
-- volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰
-- allkeys-lru：当内存不足以容纳新写入数据时，在键空间中，移除最近最少使用的key（这个是最常用的）
-- allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰
-- no-enviction：禁止驱逐数据，也就是说当内存不足以容纳新写入数据时，新写入操作会报错
-</code></pre><h4 id="持久化机制"><a href="#持久化机制" class="headerlink" title="持久化机制"></a>持久化机制</h4><p>Redis 的一种持久化方式叫快照（snapshotting，RDB），另一种方式是只追加文件（append-only file，AOF）。</p>
-<ul>
-<li><p>RDB 快照持久化是 Redis 默认采用的持久化方式，在 redis.conf 配置文件中默认有此下配置：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">save <span class="number">900</span> <span class="number">1</span>              <span class="comment">#在900秒(15分钟)之后，如果至少有1个key发生变化，Redis就会自动触发BGSAVE命令创建快照。</span></div><div class="line">save <span class="number">300</span> <span class="number">10</span>            <span class="comment">#在300秒(5分钟)之后，如果至少有10个key发生变化，Redis就会自动触发BGSAVE命令创建快照。</span></div><div class="line">save <span class="number">60</span> <span class="number">10000</span>        <span class="comment">#在60秒(1分钟)之后，如果至少有10000个key发生变化，Redis就会自动触发BGSAVE命令创建快照。</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>AOF<br>与快照持久化相比，AOF 持久化的实时性更好，因此已成为主流的持久化方案<br>默认情况下 Redis 没有开启 AOF（append only file）方式的持久化，可以通过 appendonly 参数开启：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">appendonly yes</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>开启 AOF 持久化后每执行一条会更改 Redis 中的数据的命令，Redis 就会将该命令写入硬盘中的 AOF 文件。</p>
-<p>AOF 文件的保存位置和 RDB 文件的位置相同，都是通过 dir 参数设置的，默认的文件名是 appendonly.aof。</p>
-<p>在 Redis 的配置文件中存在三种不同的 AOF 持久化方式，它们分别是：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">appendfsync always     <span class="comment">#每次有数据修改发生时都会写入AOF文件,这样会严重降低Redis的速度</span></div><div class="line">appendfsync everysec  <span class="comment">#每秒钟同步一次，显示地将多个写命令同步到硬盘</span></div><div class="line">appendfsync no      <span class="comment">#让操作系统决定何时进行同步</span></div></pre></td></tr></table></figure></p>
-<p>为了兼顾数据和写入性能，用户可以考虑 appendfsync everysec 选项 ，让 Redis 每秒同步一次 AOF 文件，Redis 性能几乎没受到任何影响。</p>
-<ul>
-<li>Redis 4.0 对于持久化机制的优化</li>
-</ul>
-<p>Redis 4.0 开始支持 RDB 和 AOF 的混合持久化（默认关闭，可以通过配置项 aof-use-rdb-preamble 开启）。</p>
-<p>如果把混合持久化打开，AOF 重写的时候就直接把 RDB 的内容写到 AOF 文件开头。</p>
-<p>这样做的好处是可以结合 RDB 和 AOF 的优点, 快速加载同时避免丢失过多的数据。</p>
-<p>当然缺点也是有的，AOF 里面的 RDB 部分是压缩格式不再是 AOF 格式，可读性较差。</p>
-<h4 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h4><p>当缓存失效(过期)后引起系统性能急剧下降的情况</p>
-<p>解决方案：</p>
-<ul>
-<li><p>更新锁机制</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">对缓存更新操作进行加锁保护，保证只有一个线程进行缓存更新，未能获取更新锁的线程要么等待锁释放后重新读取缓存，要么返回一个空值或者默认值</div></pre></td></tr></table></figure>
-</li>
-<li><p>后台更新机制</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">由后台线程更新缓存， 不是由业务来更新缓存，缓存本身的有效期设置为永久，后台线程定时更新缓存</div></pre></td></tr></table></figure>
-</li>
-<li><p>给缓存的失效时间加一个随机值，避免集体失效</p>
-</li>
-<li>使用双缓存，缓存A和B,A设置失效时间，B不设置失效  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">- 从缓存A读取数据，有就返回</div><div class="line">- A没有数据，直接从B读取数据，直接返回，并异步启动一个更新线程</div><div class="line">- 更新线程同时更新A，B的缓存数据</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h4><p>请求缓存中不存在的数据，导致所有的请求都落到数据库上，造成数据库短时间内承受大量请求而崩掉</p>
-<p>解决方案：</p>
-<ul>
-<li>利用互斥锁，缓存失效的时候，先去获得锁，得到锁了，再去请求数据库。没得到锁，则休眠一段时间重试</li>
-<li>采用异步更新策略，无论key是否取到值，都直接返回，如果查询返回的数据为空也缓存清理。value值中维护一个缓存失效时间，缓存如果过期，异步起一个线程去读数据库，更新缓存。需要做缓存预热(项目启动前，先加载缓存)操作</li>
-</ul>
-<h4 id="如何解决redis的并发竞争key问题"><a href="#如何解决redis的并发竞争key问题" class="headerlink" title="如何解决redis的并发竞争key问题"></a>如何解决redis的并发竞争key问题</h4><p>所谓 Redis 的并发竞争 Key 的问题也就是多个系统同时对一个 Key 进行操作，但是最后执行的顺序和我们期望的顺序不同，这样也就导致了结果的不同</p>
-<p>推荐方案： 分布式锁（ZooKeeper 和 Redis 都可以实现分布式锁）。（如果不存在 Redis 的并发竞争 Key 问题，不要使用分布式锁，这样会影响性能），大家去抢锁，抢到锁就做set操作即可；</p>
-<h4 id="redis和数据库双写一致性问题"><a href="#redis和数据库双写一致性问题" class="headerlink" title="redis和数据库双写一致性问题"></a>redis和数据库双写一致性问题</h4><p>首先，采取正确更新策略，先更新数据库，再删缓存。其次，因为可能存在删除缓存失败的问题，提供一个补偿措施即可，例如利用消息队列</p>
-<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><ul>
-<li><a href="http://www.redis.cn/topics/data-types-intro.html#strings" target="_blank" rel="external">http://www.redis.cn/topics/data-types-intro.html#strings</a></li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发&lt;/p&gt;
-&lt;h4 id=&quot;使用redis目的&quot;&gt;&lt;a href=&quot;#使用redis目的&quot; class=&quot;headerlink&quot; title=&quot;使用redis目的&quot;&gt;&lt;/a&gt;使用redis
-    
-    </summary>
-    
-      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
-    
-    
-      <category term="Redis" scheme="https://ttxsgoto.github.io/tags/Redis/"/>
     
   </entry>
   

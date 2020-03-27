@@ -1,0 +1,474 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Kubernetes 核心组件 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="API Server原理解析各类资源对象(Pod,RC,Service)的CURD和watch等HTTP REST接口，成为集群内各个功能模块之间数据交互和通信的中心枢纽，是整个系统的数据总线和数据中心
+
+api server 通过一个名为kube-apiserver的进程提供服务，运行在maste">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/03/20/k8s-core-component/" title="Kubernetes 核心组件" itemprop="url">Kubernetes 核心组件</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-03-20T08:19:12.000Z" itemprop="datePublished">2020-03-20</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#API-Server原理解析"><span class="toc-number">1.</span> <span class="toc-text">API Server原理解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Controller-Manager"><span class="toc-number">2.</span> <span class="toc-text">Controller Manager</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Replication-Controller-副本控制器"><span class="toc-number">2.1.</span> <span class="toc-text">Replication Controller 副本控制器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Node-Controller"><span class="toc-number">2.2.</span> <span class="toc-text">Node Controller</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RecourceQuota-Controller-资源配额管理"><span class="toc-number">2.3.</span> <span class="toc-text">RecourceQuota Controller 资源配额管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Namespace-Controller"><span class="toc-number">2.4.</span> <span class="toc-text">Namespace Controller</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Service-Controller-amp-amp-Endpoint-Controller"><span class="toc-number">2.5.</span> <span class="toc-text">Service Controller && Endpoint Controller</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Scheduler原理"><span class="toc-number">3.</span> <span class="toc-text">Scheduler原理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#调度算法"><span class="toc-number">3.1.</span> <span class="toc-text">调度算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#NoDiskConflict"><span class="toc-number">3.2.</span> <span class="toc-text">NoDiskConflict</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PodFitsResources"><span class="toc-number">3.3.</span> <span class="toc-text">PodFitsResources</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PodSelectorMatches"><span class="toc-number">3.4.</span> <span class="toc-text">PodSelectorMatches</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PodFitsHost"><span class="toc-number">3.5.</span> <span class="toc-text">PodFitsHost</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CheckNodeLabelPresence"><span class="toc-number">3.6.</span> <span class="toc-text">CheckNodeLabelPresence</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CheckServiceAffinity"><span class="toc-number">3.7.</span> <span class="toc-text">CheckServiceAffinity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PodFitsPorts"><span class="toc-number">3.8.</span> <span class="toc-text">PodFitsPorts</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kubelet运行机制解析"><span class="toc-number">4.</span> <span class="toc-text">Kubelet运行机制解析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#容器健康检查"><span class="toc-number">4.1.</span> <span class="toc-text">容器健康检查</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cAdvisor资源监控"><span class="toc-number">4.2.</span> <span class="toc-text">cAdvisor资源监控</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kube-proxy运行机制解析"><span class="toc-number">5.</span> <span class="toc-text">Kube-proxy运行机制解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Etcd"><span class="toc-number">6.</span> <span class="toc-text">Etcd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol>
+		</div>
+		
+		<h3 id="API-Server原理解析"><a href="#API-Server原理解析" class="headerlink" title="API Server原理解析"></a>API Server原理解析</h3><p>各类资源对象(Pod,RC,Service)的CURD和watch等HTTP REST接口，成为集群内各个功能模块之间数据交互和通信的中心枢纽，是整个系统的数据总线和数据中心</p>
+<ul>
+<li>api server 通过一个名为kube-apiserver的进程提供服务，运行在master上，默认情况下，该进程在本机的8080端口或(6443端口)提供rest服务</li>
+<li>通过kubectl和api server交互</li>
+<li>提供认证、授权、访问控制、api注册和发现等机制</li>
+<li>启动代理来访问 kubectl proxy –port=8080</li>
+<li>每个Node的kubelet每隔一段时间，调用api server的api接口报告自身状态，更新到etcd中</li>
+<li>kube-controller-manager的Node Controller模块和api server交互，实时监控Node信息</li>
+<li>kube-scheduler通过api server的watch接口监听到新建pod副本的信息后，在调度成功后将pod绑定到目标节点上</li>
+</ul>
+<p>Proxy API 接口: 在Kubernetes集群外访问某个pod容器的服务(http服务)时，可以用proxy api实现</p>
+<h3 id="Controller-Manager"><a href="#Controller-Manager" class="headerlink" title="Controller Manager"></a>Controller Manager</h3><p>Controller尝试将状态调整为期望的状态， Controller Manager是k8s中各种操作系统的管理者，是集群内部的管理控制中心，是k8s自动化功能的核心<br>包含8种Controller：</p>
+<ul>
+<li>Replication Controller</li>
+<li>Node Controller</li>
+<li>ResourceQuota Controller</li>
+<li>Namespace Controller</li>
+<li>ServiceAccount Controller</li>
+<li>Token Controller</li>
+<li>Service Controller</li>
+<li>Endpoint Controller</li>
+</ul>
+<p>Controller Manager是这些Controller的核心管理者</p>
+<h4 id="Replication-Controller-副本控制器"><a href="#Replication-Controller-副本控制器" class="headerlink" title="Replication Controller 副本控制器"></a>Replication Controller 副本控制器</h4><p>确保在任何时候集群中某个RC关联的Pod副本数量都保持预设值，需要将pod重启策略设置为always(RestartPolicy=Always),Replication Controller才会管理该pod的操作</p>
+<p>功能总结：</p>
+<ul>
+<li>确保当前集群中有且仅有N个pod实例，N是在RC中定义的Pod副本数量</li>
+<li>通过调整RC的spec.replicas属性值来实现系统的扩容和缩容</li>
+<li>通过改变RC中的Pod模板(主要是镜像版本)来实现系统的滚动升级</li>
+</ul>
+<h4 id="Node-Controller"><a href="#Node-Controller" class="headerlink" title="Node Controller"></a>Node Controller</h4><p>Node Controller通过api server实时获取Node的相关信息，实现管理和监控集群中的各个node的相关控制功能</p>
+<h4 id="RecourceQuota-Controller-资源配额管理"><a href="#RecourceQuota-Controller-资源配额管理" class="headerlink" title="RecourceQuota Controller 资源配额管理"></a>RecourceQuota Controller 资源配额管理</h4><p>确保指定的资源对象在任何时候都不会超量占用系统物理资源</p>
+<ul>
+<li>容器级别，可以对CPU和Memory进行限制</li>
+<li>pod级别，可以对一个pod内所有容器的可用资源进行限制</li>
+<li>Namespace级别，为namespace(多租户)级别的资源限制  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- pod数量</div><div class="line">- Replication Controller数量</div><div class="line">- Service数量</div><div class="line">- ResourceQuota数量</div><div class="line">- Secret数量</div><div class="line">- 可持有的PV数量</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="Namespace-Controller"><a href="#Namespace-Controller" class="headerlink" title="Namespace Controller"></a>Namespace Controller</h4><p>通过api server 可以创建新的Namespace，并将其保存到etcd中，Namespace Controller定时通过api server读取这些Namespace的信息</p>
+<h4 id="Service-Controller-amp-amp-Endpoint-Controller"><a href="#Service-Controller-amp-amp-Endpoint-Controller" class="headerlink" title="Service Controller &amp;&amp; Endpoint Controller"></a>Service Controller &amp;&amp; Endpoint Controller</h4><p>Endpoints表示一个Service对应的所有pod副本的访问地址，Endpoints Controller负责生成和维护所有Endpoints对象的控制器</p>
+<p>Service Controller是和外部的接口控制器</p>
+<ul>
+<li>ServiceAccount Controller</li>
+<li>Token Controller</li>
+</ul>
+<h3 id="Scheduler原理"><a href="#Scheduler原理" class="headerlink" title="Scheduler原理"></a>Scheduler原理</h3><p>将待调度的Pod(api新创建的Pod、Controller Manager为补足副本而创建的Pod等)按照特定的调度算法和策略绑定(binding)到集群中某个合适的node上，并将绑定信息写入etcd中</p>
+<ul>
+<li>待调度Pod列表</li>
+<li>可用Node列表</li>
+<li>调度算法和策略</li>
+</ul>
+<p>目标节点上的kubelet通过API server监听到的scheduler产生的pod绑定事件，然后获取对应的pod清单，下载image和启动容器</p>
+<p>默认的调度流程如下：</p>
+<ol>
+<li>预选调度过程，即遍历所有目标node，筛选符合要求的候选节点</li>
+<li>确定最优节点，采用优选策略计算出每个候选节点的积分，积分最高者胜出</li>
+</ol>
+<h4 id="调度算法"><a href="#调度算法" class="headerlink" title="调度算法"></a>调度算法</h4><ul>
+<li>NoDiskConflict     默认</li>
+<li>PodFitsResources    默认</li>
+<li>PodSelectorMatches    默认</li>
+<li>PodFitsHost    默认</li>
+<li>CheckNodeLabelPresence</li>
+<li>CheckServiceAffinity</li>
+<li>PodFitsPorts    默认</li>
+</ul>
+<h4 id="NoDiskConflict"><a href="#NoDiskConflict" class="headerlink" title="NoDiskConflict"></a>NoDiskConflict</h4><p>判断备选的Pod的gcePersistentDisk或AWSElasticBlockStore和备选的节点中已存在的Pod是否存在冲突</p>
+<h4 id="PodFitsResources"><a href="#PodFitsResources" class="headerlink" title="PodFitsResources"></a>PodFitsResources</h4><p>判断备选节点的资源是否满足备选Pod的需求</p>
+<ol>
+<li>计算备用pod和节点中已存在的pod容器所需资源(cpu 和内存)的总和</li>
+<li>获得备选节点的状态信息，其中包含节点的资源信息</li>
+<li>如果备选pod和节点中已存在pod的所有容器的需求资源总和，超出了备选节点拥有的资源，返回false，否则返回true</li>
+</ol>
+<h4 id="PodSelectorMatches"><a href="#PodSelectorMatches" class="headerlink" title="PodSelectorMatches"></a>PodSelectorMatches</h4><p>判断备选节点是否包含备选pod的标签选择器指定的标签</p>
+<ol>
+<li>如果pod没有指定spec.nodeSelector标签选择器,则返回true</li>
+<li>获取备选节点的标签信息，判断节点是否包含备选pod的标签选择器(spec.nodeSelector)所指定的标签，如果包含返回true，否则返回false</li>
+</ol>
+<h4 id="PodFitsHost"><a href="#PodFitsHost" class="headerlink" title="PodFitsHost"></a>PodFitsHost</h4><p>判断备选pod的spec.nodeName域所指定的节点名称和备选节点的名称是否一致，如果一致返回true，否则返回false</p>
+<h4 id="CheckNodeLabelPresence"><a href="#CheckNodeLabelPresence" class="headerlink" title="CheckNodeLabelPresence"></a>CheckNodeLabelPresence</h4><p>配置文件中指定了该策略，则scheduler会通过RegisterCustomFitPredicate方法注册该策略</p>
+<ol>
+<li>读取备选节点的标签列表信息</li>
+<li>如果策略配置的标签列表存在于备选节点的标签列表中，且策略配置的presence值为false，则返回false，否则返回true，如果策略配置的标签列表不存在于备选节点的标签列表中，且策略配置的presence值为true，返回false，否则返回true</li>
+</ol>
+<h4 id="CheckServiceAffinity"><a href="#CheckServiceAffinity" class="headerlink" title="CheckServiceAffinity"></a>CheckServiceAffinity</h4><p>该策略用于判断备选节点是否包含策略指定的标签，或包含和备选Pod在相同Service和Namespace下的Pod所在节点的标签列表，如果存在，则返回true，否则返回false</p>
+<h4 id="PodFitsPorts"><a href="#PodFitsPorts" class="headerlink" title="PodFitsPorts"></a>PodFitsPorts</h4><p>判断备选pod所用的端口列表中的端口是否在备选节点中已被占用，如果被占用，则返回false，否则返回true</p>
+<h3 id="Kubelet运行机制解析"><a href="#Kubelet运行机制解析" class="headerlink" title="Kubelet运行机制解析"></a>Kubelet运行机制解析</h3><p>每个node上都会启动一个kubelet服务进程，该进程用于处理master下发到本节点的任务，管理pod和pod中的容器，同时通过api定期向master节点汇报节点资源使用情况，并通过cAdvisor监控容器和节点资源</p>
+<h4 id="容器健康检查"><a href="#容器健康检查" class="headerlink" title="容器健康检查"></a>容器健康检查</h4><ul>
+<li>LivenessProbe探针 判断容器健康并反馈给kubelet，如果没有则返回值为success</li>
+<li>ReadlinessProbe探针 判断容器是否启动完成，且准备接收请求</li>
+</ul>
+<h4 id="cAdvisor资源监控"><a href="#cAdvisor资源监控" class="headerlink" title="cAdvisor资源监控"></a>cAdvisor资源监控</h4><p>kubelet通过cAdvisor获取其所在节点和容器的数据，cAdvisor自动查找所有在其所在node上的容器，自动采取cpu、内存、文件系统和网络使用的统计信息</p>
+<h3 id="Kube-proxy运行机制解析"><a href="#Kube-proxy运行机制解析" class="headerlink" title="Kube-proxy运行机制解析"></a>Kube-proxy运行机制解析</h3><p>在Kubernetes集群中的每个node上都会运行一个kube-proxy服务进程，功能将到某个service的访问请求转发到后端的多个pod实例上</p>
+<p>Service的Cluster IP和Nodeport是kube-proxy服务通过IPtables的NAT转换实现，kube-proxy在运行过程中动态创建与Service相关的iptables规则，这些规则实现了将访问服务的请求负载分发到后端pod的功能</p>
+<p>核心思想： 通过api server的watch接口实时跟踪service和endpoint的变更信息，并更新对应的iptables规则，client的请求流量则通过iptables的NAT机制”直接路由”到目标pod</p>
+<p>IPVS 专门用于高性能负载均衡，并使用更高效的数据结构(hash表)，允许几乎无限的规模扩张，因此被kube-proxy采纳为第三代模式</p>
+<ul>
+<li>为大型集群提供更好的可扩展性和性能</li>
+<li>支持比iptables更复杂的复杂均衡算法(最小负载、最少连接、加权等)</li>
+<li>支持服务器健康检查和连接重试等功能</li>
+<li>可以动态修改ipset的集合，即使iptables的规则正在使用这个集合</li>
+</ul>
+<h3 id="Etcd"><a href="#Etcd" class="headerlink" title="Etcd"></a>Etcd</h3><p>高可用的键值对存储系统，被用作k8s的后端存储，所有集群数据都存储在里面，用于服务发现和集群管理，存了整个集群的状态</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>API Server  基本的api server 提供和k8s集群的交互aip接口 ， 和etcd的watch交互信息</li>
+<li>Controller Manager  管理控制中心， 对各种资源的管理，主要控制 pod， node， namespace，token等</li>
+<li>Scheduler 调度器， 主要功能 通过预选算法将 pod 调度到node上，然后将工作交给kubelet</li>
+<li>kubelet 每个node上都运行， 主要为pod的管理，并上报每个节点的资源到master</li>
+<li>kube-proxy  server网络， ipvs外部访问的基础，每一个node上</li>
+<li>Etcd 存储数据， 集群状态</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/k8s/">k8s</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Kubernetes/">Kubernetes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2020/03/20/k8s-core-component/" data-title="Kubernetes 核心组件 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/03/20/k8s-cluster-install/" title="Kubernetes 集群部署">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Kubernetes 集群部署</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2019/07/28/yw-airflow-dynamic-dags-tasks/"  title="Airflow动态生成Tasks和dags">
+ <strong>旧一篇:</strong><br/> 
+ <span>Airflow动态生成Tasks和dags
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Kubernetes 核心组件" data-thread-key="k8s-core-component" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/k8s-core-component"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,422 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Kubernetes Service | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Service功能
+通过Service为一组具有相同功能的容器应用提供统一的入口地址，并将请求负载分发到后端的各个容器应用上
+Pod的创建和销毁都会实时更新service的Endpoint数据，所以可以动态地对Service的后端Pod进行查询
+集群外的客户端无法通过pod的ip或者service的">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/03/23/k8s-service/" title="Kubernetes Service" itemprop="url">Kubernetes Service</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-03-23T08:30:52.000Z" itemprop="datePublished">2020-03-23</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Service功能"><span class="toc-number">1.</span> <span class="toc-text">Service功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Service和Pod的关系"><span class="toc-number">2.</span> <span class="toc-text">Service和Pod的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Service类型"><span class="toc-number">3.</span> <span class="toc-text">Service类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ClusterIP"><span class="toc-number">3.1.</span> <span class="toc-text">ClusterIP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#NodePort"><span class="toc-number">3.2.</span> <span class="toc-text">NodePort</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LoadBalancer"><span class="toc-number">3.3.</span> <span class="toc-text">LoadBalancer</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ingress七层代理"><span class="toc-number">4.</span> <span class="toc-text">Ingress七层代理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#部署"><span class="toc-number">4.1.</span> <span class="toc-text">部署</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Ingress策略配置技巧"><span class="toc-number">4.2.</span> <span class="toc-text">Ingress策略配置技巧</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#实例"><span class="toc-number">4.3.</span> <span class="toc-text">实例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#服务发现"><span class="toc-number">5.</span> <span class="toc-text">服务发现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#环境变量"><span class="toc-number">5.1.</span> <span class="toc-text">环境变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DNS"><span class="toc-number">5.2.</span> <span class="toc-text">DNS</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Headless-Service-clusterIP-None"><span class="toc-number">6.</span> <span class="toc-text">Headless Service(clusterIP: None)</span></a></li></ol>
+		</div>
+		
+		<h3 id="Service功能"><a href="#Service功能" class="headerlink" title="Service功能"></a>Service功能</h3><ul>
+<li>通过Service为一组具有相同功能的容器应用提供统一的入口地址，并将请求负载分发到后端的各个容器应用上</li>
+<li>Pod的创建和销毁都会实时更新service的Endpoint数据，所以可以动态地对Service的后端Pod进行查询</li>
+<li>集群外的客户端无法通过pod的ip或者service的虚拟ip和虚拟端口访问，可以通过pod或service的端口号映射到宿主机，将service类型设置为NodePort类型，对service的访问将负载分发到后端的多个pod上</li>
+</ul>
+<h3 id="Service和Pod的关系"><a href="#Service和Pod的关系" class="headerlink" title="Service和Pod的关系"></a>Service和Pod的关系</h3><ul>
+<li>通过label-selector相关联</li>
+<li>通过Service实现Pod负载均衡(TCP、UDT 4层负载)</li>
+</ul>
+<h3 id="Service类型"><a href="#Service类型" class="headerlink" title="Service类型"></a>Service类型</h3><ul>
+<li>ClusterIP 集群内使用</li>
+<li><p>NodePort 对外暴露应用</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Client -&gt; NodeIP:NodePort -&gt; ClusterIP:ServicePort -&gt; PodIP:containerPort</div></pre></td></tr></table></figure>
+</li>
+<li><p>LoadBalancer 用于映射到云服务商提供的LoadBalancer地址</p>
+</li>
+</ul>
+<p>kubernets对应的网络：</p>
+<ul>
+<li>node network</li>
+<li>pod network</li>
+<li>cluster network</li>
+<li>virtual IP</li>
+</ul>
+<h4 id="ClusterIP"><a href="#ClusterIP" class="headerlink" title="ClusterIP"></a>ClusterIP</h4><p>默认，分配一个稳定的IP地址VIP，只能在集群内部访问(同一个namespace内的pod)</p>
+<h4 id="NodePort"><a href="#NodePort" class="headerlink" title="NodePort"></a>NodePort</h4><p>在每个节点上启用一个端口来暴露服务，可以在集群外部访问，也会分配一个稳定内部集群IP地址 NodeIP:NodePort<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  selector:     <span class="comment"># 定义pods对应的标签</span></div><div class="line">    app: myapp</div><div class="line">  clusterIP: <span class="number">10.99</span><span class="number">.99</span><span class="number">.99</span></div><div class="line">  type: NodePort</div><div class="line">  ports:</div><div class="line">  - port: <span class="number">80</span>        <span class="comment"># 外部访问端口</span></div><div class="line">    targetPort: <span class="number">80</span>  <span class="comment"># pod内部端口</span></div><div class="line">    nodePort: <span class="number">30080</span> <span class="comment"># nodeport端口， 对外端口</span></div></pre></td></tr></table></figure></p>
+<p>访问 curl <a href="http://10.68.2.238:30080/index.html" target="_blank" rel="external">http://10.68.2.238:30080/index.html</a></p>
+<h4 id="LoadBalancer"><a href="#LoadBalancer" class="headerlink" title="LoadBalancer"></a>LoadBalancer</h4><p>和NodePort类似，在每个节点上启用一个端口来暴露服务，另外，kubernetes会请求底层云平台上的负载均衡器，将每个Node(nodeip:nodeport)作为后端添加进去</p>
+<h3 id="Ingress七层代理"><a href="#Ingress七层代理" class="headerlink" title="Ingress七层代理"></a>Ingress七层代理</h3><ul>
+<li>将不同的URL的访问请求转发到后端不同的Service，以实现HTTP层的业务路由机制</li>
+<li>kubernetes使用一个Ingress策略定义和一个具体的Ingress Controller，两者结合并实现了一个完整的Ingress负载均衡器</li>
+<li>使用Ingress进行负载分发时，Ingress Controller基于Ingress规则将客户端请求直接转发到Service对应的后端Endpoint(Pod)上，这样会跳过Kube-proxy的转发功能，kube-proxy不再起作用</li>
+</ul>
+<h4 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">https://github.com/kubernetes/ingress-nginx</div><div class="line"> </div><div class="line">kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/mandatory.yaml</div><div class="line">kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/baremetal/service-nodeport.yaml</div><div class="line"># 指定固定访问端口</div></pre></td></tr></table></figure>
+<h4 id="Ingress策略配置技巧"><a href="#Ingress策略配置技巧" class="headerlink" title="Ingress策略配置技巧"></a>Ingress策略配置技巧</h4><p>Ingress Controller将以Pod的形式运行，监控API Server的ingress接口后端的backend services，如果Service发生变化，则Ingress Controller应自动更新其转发规则</p>
+<ul>
+<li>转发到单个后端服务上，请求将转发到后端的唯一Service上，这种情况下Ingress无须定义任何rule</li>
+<li><p>同一域名下，不同的url路径转发到不同的服务上</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- mywebsite.com/web 转发到 web-service:80 上</div><div class="line">- mywebset.com/api 转发到api-service:80 上</div></pre></td></tr></table></figure>
+</li>
+<li><p>不同的域名(虚拟主机名)被转发到不同的服务上，这种配置常用于一个网站通过不同的域名或者虚拟主机名提供不同服务的场景，如foo.bar.com域名由service1提供服务，bar.foo.com域名由service2提供服务</p>
+</li>
+<li>不使用域名的转发规则 </li>
+</ul>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  selector:</div><div class="line">    app: myapp</div><div class="line">  ports:</div><div class="line">  - name: http</div><div class="line">    targetPort: <span class="number">80</span></div><div class="line">    port: <span class="number">80</span></div><div class="line">---</div><div class="line">apiVersion: extensions/v1beta1</div><div class="line">kind: Ingress</div><div class="line">metadata:</div><div class="line">  name: ingree-myapp</div><div class="line">  namespace: default</div><div class="line">  annotations:</div><div class="line">    kubernetes.io/ingress.<span class="keyword">class</span>: <span class="string">"nginx"</span>    <span class="comment"># 说明和controller相对于的是nginx规则</span></div><div class="line">spec:</div><div class="line">  rules:</div><div class="line">  - host: myapp.ttxsgoto.com    <span class="comment"># </span></div><div class="line">    http:</div><div class="line">      paths:</div><div class="line">      - path:</div><div class="line">        backend:    <span class="comment"># 对应后端的地址</span></div><div class="line">          serviceName: myapp    <span class="comment">#  指定service的名称相匹配</span></div><div class="line">          servicePort: <span class="number">80</span></div><div class="line">---</div><div class="line">apiVersion: apps/v1</div><div class="line">kind: Deployment</div><div class="line">metadata:</div><div class="line">  name: myapp-deploy</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  replicas: <span class="number">3</span></div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: myapp</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: myapp</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: myapp</div><div class="line">        image: ikubernetes/myapp:v2</div><div class="line">        ports:</div><div class="line">        - name: http</div><div class="line">          containerPort: <span class="number">80</span></div></pre></td></tr></table></figure>
+<h3 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h3><p>k8s通过服务发现机制能够很容易获得service对应IP和Port</p>
+<h4 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h4><p>当 Pod 运行在 Node 上，kubelet 会为每个活跃的 Service 添加一组环境变量，格式就是{SVCNAME}_SERVICE_HOST和{SVCNAME**_SERVICE_PORT的变量，但注意 Service 的名称需大写，横线被转换成下划\线</p>
+<p><strong>缺点</strong>: 依赖的服务必须在 Pod 启动之前就存在，不然是不会出现在环境变量中的</p>
+<h4 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h4><p>DNS服务监视Kubernetes API,为每个Service创建dns记录用于域名解析<br>资源记录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">kubectl get pods -n kube-system| grep dns  # 查看dns pod</div><div class="line">  </div><div class="line">kubectl get svc --all-namespaces   # 查看所有名称空间的服务</div><div class="line"> </div><div class="line">SVC_NAME.NS_NAME.DOMAIN.LTD</div><div class="line">svc.cluster.local</div><div class="line">redis.default.svc.cluster.local</div><div class="line">所有需要使用域名访问的规则SVC_NAME.NS_NAME.svc.cluster.local </div><div class="line">如: myapp.default.svc.cluster.local 使用dns的方式可以访问k8s集群里面任何想要访问的service资源</div></pre></td></tr></table></figure></p>
+<h3 id="Headless-Service-clusterIP-None"><a href="#Headless-Service-clusterIP-None" class="headerlink" title="Headless Service(clusterIP: None)"></a>Headless Service(clusterIP: None)</h3><p>Headless Service不需要分配一个VIP，而是可以直接以DNS记录的方式解析出被代理Pod的地址, 主要用途 StatefulSet<br>解析规则：</p>
+<ul>
+<li>namespace: default</li>
+<li>service: foo</li>
+<li>pod: A-0</li>
+</ul>
+<p>域名： a-0.foo.default.svc.cluster.local , 通过DNS服务，查找域名foo.default.svc.cluster.local对应的所有SRV记录，获得一个StatefulSet中所有pod名称</p>
+<p>每个pod解析到对应的ip，解析名称规格为：<br>pod_name.service_name.ns_name.cluster.local</p>
+<p>不为service设置ClusterIP(入口IP地址)，仅通过label Selector将后端的Pod列表返回给调用的客户端<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: Service</div><div class="line">metadata:</div><div class="line">  name: myapp</div><div class="line">  namespace: default</div><div class="line">spec:</div><div class="line">  selector:     <span class="comment"># 定义pods对应的标签</span></div><div class="line">    app: myapp</div><div class="line">  clusterIP: <span class="keyword">None</span></div><div class="line">  type: NodePort</div><div class="line">  ports:</div><div class="line">  - port: <span class="number">80</span>        <span class="comment"># 外部访问端口</span></div><div class="line">    targetPort: <span class="number">80</span>  <span class="comment"># pod内部端口</span></div><div class="line">    nodePort: <span class="number">30080</span> <span class="comment"># nodeport端口， 对外端口</span></div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/service/">service</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Kubernetes/">Kubernetes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2020/03/23/k8s-service/" data-title="Kubernetes Service | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/03/23/k8s-pv-pvc/" title="Kubernetes 存储PV&amp;PVC">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Kubernetes 存储PV&amp;PVC</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/03/20/k8s-pods/"  title="Kubernetes Pods">
+ <strong>旧一篇:</strong><br/> 
+ <span>Kubernetes Pods
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Kubernetes Service" data-thread-key="k8s-service" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/k8s-service"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

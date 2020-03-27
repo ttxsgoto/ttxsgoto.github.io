@@ -89,6 +89,175 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2018/12/25/yw-mysql-redo-binlog/" title="Redo log 和 Binlog" itemprop="url">
+      
+        Redo log 和 Binlog
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >WAL(Write-Ahead-Logging),先写日志，再写磁盘
+
+redo log(重做日志)
+存储引擎层面
+存储容量大小固定，循环写
+checkpoint 当前要擦除的位置，擦除记录前需要将数据更新到数据文件中
+write-pos 当前写入记录的位置
+功能：保证InnoD</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-25T11:43:38.000Z" itemprop="datePublished">2018-12-25</time>
+      
+          <a href="/2018/12/25/yw-mysql-redo-binlog/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/21/yw-mysql-select-index/" title="索引选择" itemprop="url">
+      
+        索引选择
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >优化器选择索引逻辑
+扫描行数
+使用临时表
+是否排序
+
+基数一个索引上不同值的个数，称之为“基数(cardinality)”;基数越大，索引的区分度越好
+show index from x 查看索引对应的基数
+
+采样统计， 通过设置参数innodb_stats_persistent</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-21T03:14:08.000Z" itemprop="datePublished">2018-12-21</time>
+      
+          <a href="/2018/12/21/yw-mysql-select-index/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/20/yw-mysql-unique-index/" title="普通索引和唯一索引的区别" itemprop="url">
+      
+        普通索引和唯一索引的区别
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >查询操作
+查找到满足条件的第一个记录，在查找下一个记录，直到到不满足记录时停止
+唯一索引，找到第一个满足条件记录，停止检索
+
+更新操作change buffer:如果数据页没有在内存中，innodb会将更新操作缓存在change buffer中，这样不需要从磁盘中读取数据页；下次</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-20T12:11:46.000Z" itemprop="datePublished">2018-12-20</time>
+      
+          <a href="/2018/12/20/yw-mysql-unique-index/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/03/yw-mysql-question/" title="Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法" itemprop="url">
+      
+        Mysql 出现You can&#39;t specify target table for update in FROM clause错误的解决方法
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >问题描述：在同一个sql语句中，先select同一个表的某些值，然后再update这个表
+如执行如下sql语句：12update logistic_statistic set fluid_id=&#39;cca03b6a372045f2891fef62d9524652&#39; where id</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-03T12:22:02.000Z" itemprop="datePublished">2018-12-03</time>
+      
+          <a href="/2018/12/03/yw-mysql-question/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/10/24/python-django-celery/" title="Django+Celery 计划任务" itemprop="url">
+      
+        Django+Celery 计划任务
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >背景需求为工作流审批，到达某状态后，超过一段时间没有审批，则流程自动审批到下一个状态
+方案想到使用计划任务来自动流转流程，因为项目本身是Django，这里使用djcelery来完成
+实例项目依赖12pip install django-celerypip install flow</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-10-24T14:38:48.000Z" itemprop="datePublished">2018-10-24</time>
+      
+          <a href="/2018/10/24/python-django-celery/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/09/28/redis-advance/" title="运维 Redis进阶" itemprop="url">
+      
+        运维 Redis进阶
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发
+使用redis目的
+高性能：将数据缓存在redis中，访问数据从缓存中取，不直接访问数据库，提高页面响应效率
+高并发：在大的并发情况下，直接操作缓存能够承受的请求远大于直接访问数据库，这时我</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-09-28T13:14:53.000Z" itemprop="datePublished">2018-09-28</time>
+      
+          <a href="/2018/09/28/redis-advance/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2018/09/17/django-migrations-error/" title="Django mgirate 错误" itemprop="url">
       
         Django mgirate 错误
@@ -198,162 +367,9 @@ InnoDB索引模型在InnoDB中，表都是根据主键顺序以索引的形式</
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/08/10/python-asyncio-basic/" title="asyncio 基本用法" itemprop="url">
-      
-        asyncio 基本用法
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >async/await协程同时开启多个任务，但一次只执行一个，当执行的任务遇到阻塞，就切换到下一个任务继续执行，以期节省阻塞所占用的时间
-要实现异步处理，需要有挂起的操作，当一个任务需要等待 IO 结果的时候，可以挂起当前任务，转而去执行其他任务
-
-event_loop： 事件循</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-08-10T03:58:11.000Z" itemprop="datePublished">2018-08-10</time>
-      
-          <a href="/2018/08/10/python-asyncio-basic/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/04/15/yw-mysql-index/" title="Mysql索引01" itemprop="url">
-      
-        Mysql索引01
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >索引类型B-Tree索引：mysql引擎默认支持这种索引
-MyISAM 使用前缀技术使索引更小InnoDB 按照原数据格式进行存储
-B-Tree索引可以快速访问数据，不再需要进行全表扫描获取需要的数据，从索引的根节点开始进行搜索
-Mysql索引原理b+树介绍如上图，是一颗b+树。</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-04-15T14:34:24.000Z" itemprop="datePublished">2018-04-15</time>
-      
-          <a href="/2018/04/15/yw-mysql-index/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/04/14/rest-framwork-serializer-efficient/" title="(转)优化DRF的性能" itemprop="url">
-      
-        (转)优化DRF的性能
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >看似简单直观的 Django REST Framework 及其嵌套序列化可能会大大降低你的 API 端的性能。你的服务器的其他部分的响应能力也会被某一个低效的 REST API 影响问题的根源就是 「N+1 selects problem」；首先查询数据库一次得到表中的数据（例</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-04-14T04:05:12.000Z" itemprop="datePublished">2018-04-14</time>
-      
-          <a href="/2018/04/14/rest-framwork-serializer-efficient/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/04/13/django-orm-queryset/" title="Django ORM数据查询操作优化" itemprop="url">
-      
-        Django ORM数据查询操作优化
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >最近几天研究了一下django ORM查询优化，响应时间慢问题，主要原因还是代码规范和方法使用不当，如果正确使用相应方法，大部分的性能问题都是可以解决，记录如下：
-Django QuerySet懒执行只有访问到对应的数据时，才会访问数据库，如果再次读取查询到的数据时，不会触发访问</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-04-13T14:47:47.000Z" itemprop="datePublished">2018-04-13</time>
-      
-          <a href="/2018/04/13/django-orm-queryset/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/02/11/python-magic-function/" title="Python 特殊方法" itemprop="url">
-      
-        Python 特殊方法
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >说明主要说明类的特殊方法(也叫魔法方法)，了解使用场景和方法，使用时方便查询
-具体说明创建实例和销毁__new____init____del__1234567891011121314151617181920class Foo01:    def __new__(cls, *arg</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-02-11T13:13:59.000Z" itemprop="datePublished">2018-02-11</time>
-      
-          <a href="/2018/02/11/python-magic-function/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/02/05/django-define-auth/" title="Django 自定义认证字段" itemprop="url">
-      
-        Django 自定义认证字段
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >背景Django默认使用username字段来进行认证，而现在对于多数平台来说，更多的通过email或手机号来进行认证，自定义认证字段就是解决这类问题。
-说明Django中在底层，维护着”authentication backends”列表，当调用django.contrib.a</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-02-05T14:21:34.000Z" itemprop="datePublished">2018-02-05</time>
-      
-          <a href="/2018/02/05/django-define-auth/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
-    <a class="extend prev" rel="prev" href="/page/2/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/">下一页 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/2/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/4/">下一页 &raquo;</a>
   </nav>
 
 </div>
@@ -398,6 +414,8 @@ Django QuerySet懒执行只有访问到对应的数据时，才会访问数据�
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
 			<li><a href="/categories/Frontend/" title="Frontend">Frontend<sup>6</sup></a></li>
+		
+			<li><a href="/categories/Kubernetes/" title="Kubernetes">Kubernetes<sup>6</sup></a></li>
 		
 			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
 		
