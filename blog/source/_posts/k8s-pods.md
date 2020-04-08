@@ -258,6 +258,12 @@ spec:
     matchLabels:
       app: nginx
   replicas: 3
+  minReadySeconds: 5  # kubernetes在等待设置的时间后才进行升级
+  strategy:
+    type: rollingUpdate # 更新策略，滚动更新
+    rollingUpdate:
+      maxSurge: 25%     # 指定可以超过期望的pod数量的最大百分比，也可以是个数
+      maxUnavailable: 25% # 指定升级过程中不可用pod的最大数量
   template:
     metadata:
       labels:
@@ -269,15 +275,59 @@ spec:
         ports:
         - containerPort: 80
 ```
+常用命令
+```python
+kubectl rollout status deployment/nginx-deployment  # 查看状态
+kubectl rollout pause deployment <deployment-name> # 暂停升级
+kubectl rollout resume deploymnet <deployment-name> # 继续升级
+kubectl rollout history deployment <deployment-name>  # 查看Deployment的升级历史
+kubectl rollout history deploymnet <deployment-name> --revision=n   # 查看单个deploy revision的信息
+kubectl rollout undo deployment <deployment-name> # 回退到上一个版本
+kubectl rollout undo deployment <deployment-name> --to-revision=2   # 回滚到指定版本
+```
 
 #### DaemonSet
 
 - 在每个node上都调度一个pod，适用于监控系统，数据采集等资源的采集
 - 新加入的node也同样会自动运行一个pod
 
-```
-
-
+```python
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jumpserver-nginx
+  labels:
+    app.kubernetes.io/name: nginx
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nginx
+    spec:
+      containers:
+      - name: jms-nginx
+        image: wojiushixiaobai/jms_nginx:1.5.6
+        ports:
+        - containerPort: 80
+          name: nginx
+          protocol: TCP
+        volumeMounts:
+        - name: static
+          mountPath: /opt/jumpserver/data/static
+        - name: media
+          mountPath: /opt/jumpserver/data/media
+      volumes:
+      - name: static
+        nfs:
+          path: /data/core/static
+          server: 192.168.238.100
+      - name: media
+        nfs:
+          path: /data/core/media
+          server: 192.168.238.100
 ```
 
 #### Job
