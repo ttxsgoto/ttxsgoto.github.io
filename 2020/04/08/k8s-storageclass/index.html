@@ -1,0 +1,372 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Kubernetes StorageClass | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="StorageClass创建动态PV，使用时无需先创建好PV
+创建Provisioner使用 StorageClass，我们需要安装对应的自动配置程序，比如我们这里存储后端使用的是 nfs，那么我们就需要使用到一个 nfs-client 的自动配置程序，我们也叫Provisioner，这个程序使用我">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/04/08/k8s-storageclass/" title="Kubernetes StorageClass" itemprop="url">Kubernetes StorageClass</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-04-08T06:26:29.000Z" itemprop="datePublished">2020-04-08</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#StorageClass"><span class="toc-number">1.</span> <span class="toc-text">StorageClass</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建Provisioner"><span class="toc-number">2.</span> <span class="toc-text">创建Provisioner</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#配置Deployment"><span class="toc-number">2.1.</span> <span class="toc-text">配置Deployment</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ServiceAccount"><span class="toc-number">2.2.</span> <span class="toc-text">ServiceAccount</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#StorageClass-1"><span class="toc-number">2.3.</span> <span class="toc-text">StorageClass</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#新建PVC"><span class="toc-number">3.</span> <span class="toc-text">新建PVC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试"><span class="toc-number">4.</span> <span class="toc-text">测试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Pod"><span class="toc-number">4.1.</span> <span class="toc-text">Pod</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#StatefulSet"><span class="toc-number">4.2.</span> <span class="toc-text">StatefulSet</span></a></li></ol></li></ol>
+		</div>
+		
+		<h3 id="StorageClass"><a href="#StorageClass" class="headerlink" title="StorageClass"></a>StorageClass</h3><p>创建动态PV，使用时无需先创建好PV</p>
+<h3 id="创建Provisioner"><a href="#创建Provisioner" class="headerlink" title="创建Provisioner"></a>创建Provisioner</h3><p>使用 StorageClass，我们需要安装对应的自动配置程序，比如我们这里存储后端使用的是 nfs，那么我们就需要使用到一个 nfs-client 的自动配置程序，我们也叫Provisioner，这个程序使用我们已经配置好的 nfs 服务器，来自动创建持久卷，也就是自动帮我们创建 PV</p>
+<ul>
+<li>自动创建的 PV 以${namespace}-${pvcName}-${pvName}格式创建在NFS服务器上</li>
+<li>而当这个PV被回收后以archieved-${namespace}-${pvcName}-${pvName}这样的命名格式存在 NFS 服务器上</li>
+</ul>
+<h4 id="配置Deployment"><a href="#配置Deployment" class="headerlink" title="配置Deployment"></a>配置Deployment</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line">kind: Deployment</div><div class="line">metadata:</div><div class="line">  name: nfs-client-provisioner</div><div class="line">spec:</div><div class="line">  replicas: <span class="number">1</span></div><div class="line">  strategy:</div><div class="line">    type: Recreate</div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: nfs-client-provisioner</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: nfs-client-provisioner</div><div class="line">    spec:</div><div class="line">      serviceAccountName: nfs-client-provisioner</div><div class="line">      containers:</div><div class="line">        - name: nfs-client-provisioner</div><div class="line">          image: quay.io/external_storage/nfs-client-provisioner:latest</div><div class="line">          volumeMounts:</div><div class="line">            - name: nfs-client-root</div><div class="line">              mountPath: /persistentvolumes</div><div class="line">          env:</div><div class="line">            - name: PROVISIONER_NAME</div><div class="line">              value: fuseim.pri/ifs</div><div class="line">            - name: NFS_SERVER</div><div class="line">              value: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div><div class="line">            - name: NFS_PATH</div><div class="line">              value: /data/k8s</div><div class="line">      volumes:</div><div class="line">        - name: nfs-client-root</div><div class="line">          nfs:</div><div class="line">            server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div><div class="line">            path: /data/k8s</div></pre></td></tr></table></figure>
+<h4 id="ServiceAccount"><a href="#ServiceAccount" class="headerlink" title="ServiceAccount"></a>ServiceAccount</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: ServiceAccount</div><div class="line">metadata:</div><div class="line">  name: nfs-client-provisioner</div><div class="line">---</div><div class="line">kind: ClusterRole</div><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">metadata:</div><div class="line">  name: nfs-client-provisioner-runner</div><div class="line">rules:</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"persistentvolumes"</span>]</div><div class="line">    verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"create"</span>, <span class="string">"delete"</span>]</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"persistentvolumeclaims"</span>]</div><div class="line">    verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"update"</span>]</div><div class="line">  - apiGroups: [<span class="string">"storage.k8s.io"</span>]</div><div class="line">    resources: [<span class="string">"storageclasses"</span>]</div><div class="line">    verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>]</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"events"</span>]</div><div class="line">    verbs: [<span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"create"</span>, <span class="string">"update"</span>, <span class="string">"patch"</span>]</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"endpoints"</span>]</div><div class="line">    verbs: [<span class="string">"create"</span>, <span class="string">"delete"</span>, <span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"patch"</span>, <span class="string">"update"</span>]</div><div class="line"> </div><div class="line">---</div><div class="line">kind: ClusterRoleBinding</div><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">metadata:</div><div class="line">  name: run-nfs-client-provisioner</div><div class="line">subjects:</div><div class="line">  - kind: ServiceAccount</div><div class="line">    name: nfs-client-provisioner</div><div class="line">    namespace: default</div><div class="line">roleRef:</div><div class="line">  kind: ClusterRole</div><div class="line">  name: nfs-client-provisioner-runner</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div></pre></td></tr></table></figure>
+<h4 id="StorageClass-1"><a href="#StorageClass-1" class="headerlink" title="StorageClass"></a>StorageClass</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">apiVersion: storage.k8s.io/v1</div><div class="line">kind: StorageClass  <span class="comment"># 声明了一个名为 es-data-db 的StorageClass对象</span></div><div class="line">metadata:</div><div class="line">  name: es-data-db</div><div class="line">provisioner: fuseim.pri/ifs <span class="comment"># 需要和deployment中的PROVISIONER_NAME环境变量值一样</span></div></pre></td></tr></table></figure>
+<h3 id="新建PVC"><a href="#新建PVC" class="headerlink" title="新建PVC"></a>新建PVC</h3><ul>
+<li><p>通过annotations属性来标识自动生成PV</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: PersistentVolumeClaim</div><div class="line">metadata:</div><div class="line">  name: test-pvc</div><div class="line">  annotations:</div><div class="line">    volume.beta.kubernetes.io/storage-<span class="class"><span class="keyword">class</span>:</span> <span class="string">"es-data-db"</span></div><div class="line">spec:</div><div class="line">  accessModes:</div><div class="line">  - ReadWriteMany</div><div class="line">  resources:</div><div class="line">    requests:</div><div class="line">      storage: <span class="number">1</span>Mi</div></pre></td></tr></table></figure>
+</li>
+<li><p>可以设置es-data-db的StorageClass为Kubernetes的默认存储后端</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ kubectl patch storageclass es-data-db -p <span class="string">'&#123;"metadata": &#123;"annotations":&#123;"storageclass.kubernetes.io/is-default-class":"true"&#125;&#125;&#125;'</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><h4 id="Pod"><a href="#Pod" class="headerlink" title="Pod"></a>Pod</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">kind: Pod</div><div class="line">apiVersion: v1</div><div class="line">metadata:</div><div class="line">  name: test-pod</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: test-pod</div><div class="line">    image: busybox</div><div class="line">    imagePullPolicy: IfNotPresent</div><div class="line">    command:</div><div class="line">    - <span class="string">"/bin/sh"</span></div><div class="line">    args:</div><div class="line">    - <span class="string">"-c"</span></div><div class="line">    - <span class="string">"touch /mnt/SUCCESS &amp;&amp; exit 0 || exit 1"</span></div><div class="line">    volumeMounts:</div><div class="line">    - name: nfs-pvc</div><div class="line">      mountPath: <span class="string">"/mnt"</span></div><div class="line">  restartPolicy: <span class="string">"Never"</span></div><div class="line">  volumes:</div><div class="line">  - name: nfs-pvc</div><div class="line">    persistentVolumeClaim:</div><div class="line">      claimName: test-pvc</div></pre></td></tr></table></figure>
+<h4 id="StatefulSet"><a href="#StatefulSet" class="headerlink" title="StatefulSet"></a>StatefulSet</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line">kind: StatefulSet</div><div class="line">metadata:</div><div class="line">  name: nfs-web</div><div class="line">spec:</div><div class="line">  serviceName: <span class="string">"nginx"</span></div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: nfs-web</div><div class="line">  replicas: <span class="number">3</span></div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: nfs-web</div><div class="line">    spec:</div><div class="line">      terminationGracePeriodSeconds: <span class="number">10</span></div><div class="line">      containers:</div><div class="line">      - name: nginx</div><div class="line">        image: nginx:<span class="number">1.7</span><span class="number">.9</span></div><div class="line">        ports:</div><div class="line">        - containerPort: <span class="number">80</span></div><div class="line">          name: web</div><div class="line">        volumeMounts:</div><div class="line">        - name: www</div><div class="line">          mountPath: /usr/share/nginx/html</div><div class="line">  volumeClaimTemplates:</div><div class="line">  - metadata:</div><div class="line">      name: www</div><div class="line">      annotations:</div><div class="line">        volume.beta.kubernetes.io/storage-<span class="class"><span class="keyword">class</span>:</span> es-data-db</div><div class="line">    spec:</div><div class="line">      accessModes: [ <span class="string">"ReadWriteOnce"</span> ]</div><div class="line">      resources:</div><div class="line">        requests:</div><div class="line">          storage: <span class="number">1</span>Gi</div></pre></td></tr></table></figure>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/StorageClass/">StorageClass</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Kubernetes/">Kubernetes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2020/04/08/k8s-storageclass/" data-title="Kubernetes StorageClass | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2020/04/08/k8s-sa-rbac/"  title="Kubernetes 认证、Serviceaccount &amp;&amp; RBAC">
+ <strong>旧一篇:</strong><br/> 
+ <span>Kubernetes 认证、Serviceaccount &amp;&amp; RBAC
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Kubernetes StorageClass" data-thread-key="k8s-storageclass" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/k8s-storageclass"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

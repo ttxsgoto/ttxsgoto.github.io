@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2020-03-27T08:41:42.000Z</updated>
+  <updated>2020-04-08T06:32:50.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,155 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Kubernetes StorageClass</title>
+    <link href="https://ttxsgoto.github.io/2020/04/08/k8s-storageclass/"/>
+    <id>https://ttxsgoto.github.io/2020/04/08/k8s-storageclass/</id>
+    <published>2020-04-08T06:26:29.000Z</published>
+    <updated>2020-04-08T06:32:50.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="StorageClass"><a href="#StorageClass" class="headerlink" title="StorageClass"></a>StorageClass</h3><p>创建动态PV，使用时无需先创建好PV</p>
+<h3 id="创建Provisioner"><a href="#创建Provisioner" class="headerlink" title="创建Provisioner"></a>创建Provisioner</h3><p>使用 StorageClass，我们需要安装对应的自动配置程序，比如我们这里存储后端使用的是 nfs，那么我们就需要使用到一个 nfs-client 的自动配置程序，我们也叫Provisioner，这个程序使用我们已经配置好的 nfs 服务器，来自动创建持久卷，也就是自动帮我们创建 PV</p>
+<ul>
+<li>自动创建的 PV 以${namespace}-${pvcName}-${pvName}格式创建在NFS服务器上</li>
+<li>而当这个PV被回收后以archieved-${namespace}-${pvcName}-${pvName}这样的命名格式存在 NFS 服务器上</li>
+</ul>
+<h4 id="配置Deployment"><a href="#配置Deployment" class="headerlink" title="配置Deployment"></a>配置Deployment</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line">kind: Deployment</div><div class="line">metadata:</div><div class="line">  name: nfs-client-provisioner</div><div class="line">spec:</div><div class="line">  replicas: <span class="number">1</span></div><div class="line">  strategy:</div><div class="line">    type: Recreate</div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: nfs-client-provisioner</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: nfs-client-provisioner</div><div class="line">    spec:</div><div class="line">      serviceAccountName: nfs-client-provisioner</div><div class="line">      containers:</div><div class="line">        - name: nfs-client-provisioner</div><div class="line">          image: quay.io/external_storage/nfs-client-provisioner:latest</div><div class="line">          volumeMounts:</div><div class="line">            - name: nfs-client-root</div><div class="line">              mountPath: /persistentvolumes</div><div class="line">          env:</div><div class="line">            - name: PROVISIONER_NAME</div><div class="line">              value: fuseim.pri/ifs</div><div class="line">            - name: NFS_SERVER</div><div class="line">              value: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div><div class="line">            - name: NFS_PATH</div><div class="line">              value: /data/k8s</div><div class="line">      volumes:</div><div class="line">        - name: nfs-client-root</div><div class="line">          nfs:</div><div class="line">            server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div><div class="line">            path: /data/k8s</div></pre></td></tr></table></figure>
+<h4 id="ServiceAccount"><a href="#ServiceAccount" class="headerlink" title="ServiceAccount"></a>ServiceAccount</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: ServiceAccount</div><div class="line">metadata:</div><div class="line">  name: nfs-client-provisioner</div><div class="line">---</div><div class="line">kind: ClusterRole</div><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">metadata:</div><div class="line">  name: nfs-client-provisioner-runner</div><div class="line">rules:</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"persistentvolumes"</span>]</div><div class="line">    verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"create"</span>, <span class="string">"delete"</span>]</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"persistentvolumeclaims"</span>]</div><div class="line">    verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"update"</span>]</div><div class="line">  - apiGroups: [<span class="string">"storage.k8s.io"</span>]</div><div class="line">    resources: [<span class="string">"storageclasses"</span>]</div><div class="line">    verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>]</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"events"</span>]</div><div class="line">    verbs: [<span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"create"</span>, <span class="string">"update"</span>, <span class="string">"patch"</span>]</div><div class="line">  - apiGroups: [<span class="string">""</span>]</div><div class="line">    resources: [<span class="string">"endpoints"</span>]</div><div class="line">    verbs: [<span class="string">"create"</span>, <span class="string">"delete"</span>, <span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"patch"</span>, <span class="string">"update"</span>]</div><div class="line"> </div><div class="line">---</div><div class="line">kind: ClusterRoleBinding</div><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">metadata:</div><div class="line">  name: run-nfs-client-provisioner</div><div class="line">subjects:</div><div class="line">  - kind: ServiceAccount</div><div class="line">    name: nfs-client-provisioner</div><div class="line">    namespace: default</div><div class="line">roleRef:</div><div class="line">  kind: ClusterRole</div><div class="line">  name: nfs-client-provisioner-runner</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div></pre></td></tr></table></figure>
+<h4 id="StorageClass-1"><a href="#StorageClass-1" class="headerlink" title="StorageClass"></a>StorageClass</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">apiVersion: storage.k8s.io/v1</div><div class="line">kind: StorageClass  <span class="comment"># 声明了一个名为 es-data-db 的StorageClass对象</span></div><div class="line">metadata:</div><div class="line">  name: es-data-db</div><div class="line">provisioner: fuseim.pri/ifs <span class="comment"># 需要和deployment中的PROVISIONER_NAME环境变量值一样</span></div></pre></td></tr></table></figure>
+<h3 id="新建PVC"><a href="#新建PVC" class="headerlink" title="新建PVC"></a>新建PVC</h3><ul>
+<li><p>通过annotations属性来标识自动生成PV</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: PersistentVolumeClaim</div><div class="line">metadata:</div><div class="line">  name: test-pvc</div><div class="line">  annotations:</div><div class="line">    volume.beta.kubernetes.io/storage-<span class="class"><span class="keyword">class</span>:</span> <span class="string">"es-data-db"</span></div><div class="line">spec:</div><div class="line">  accessModes:</div><div class="line">  - ReadWriteMany</div><div class="line">  resources:</div><div class="line">    requests:</div><div class="line">      storage: <span class="number">1</span>Mi</div></pre></td></tr></table></figure>
+</li>
+<li><p>可以设置es-data-db的StorageClass为Kubernetes的默认存储后端</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ kubectl patch storageclass es-data-db -p <span class="string">'&#123;"metadata": &#123;"annotations":&#123;"storageclass.kubernetes.io/is-default-class":"true"&#125;&#125;&#125;'</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><h4 id="Pod"><a href="#Pod" class="headerlink" title="Pod"></a>Pod</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">kind: Pod</div><div class="line">apiVersion: v1</div><div class="line">metadata:</div><div class="line">  name: test-pod</div><div class="line">spec:</div><div class="line">  containers:</div><div class="line">  - name: test-pod</div><div class="line">    image: busybox</div><div class="line">    imagePullPolicy: IfNotPresent</div><div class="line">    command:</div><div class="line">    - <span class="string">"/bin/sh"</span></div><div class="line">    args:</div><div class="line">    - <span class="string">"-c"</span></div><div class="line">    - <span class="string">"touch /mnt/SUCCESS &amp;&amp; exit 0 || exit 1"</span></div><div class="line">    volumeMounts:</div><div class="line">    - name: nfs-pvc</div><div class="line">      mountPath: <span class="string">"/mnt"</span></div><div class="line">  restartPolicy: <span class="string">"Never"</span></div><div class="line">  volumes:</div><div class="line">  - name: nfs-pvc</div><div class="line">    persistentVolumeClaim:</div><div class="line">      claimName: test-pvc</div></pre></td></tr></table></figure>
+<h4 id="StatefulSet"><a href="#StatefulSet" class="headerlink" title="StatefulSet"></a>StatefulSet</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line">kind: StatefulSet</div><div class="line">metadata:</div><div class="line">  name: nfs-web</div><div class="line">spec:</div><div class="line">  serviceName: <span class="string">"nginx"</span></div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: nfs-web</div><div class="line">  replicas: <span class="number">3</span></div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: nfs-web</div><div class="line">    spec:</div><div class="line">      terminationGracePeriodSeconds: <span class="number">10</span></div><div class="line">      containers:</div><div class="line">      - name: nginx</div><div class="line">        image: nginx:<span class="number">1.7</span><span class="number">.9</span></div><div class="line">        ports:</div><div class="line">        - containerPort: <span class="number">80</span></div><div class="line">          name: web</div><div class="line">        volumeMounts:</div><div class="line">        - name: www</div><div class="line">          mountPath: /usr/share/nginx/html</div><div class="line">  volumeClaimTemplates:</div><div class="line">  - metadata:</div><div class="line">      name: www</div><div class="line">      annotations:</div><div class="line">        volume.beta.kubernetes.io/storage-<span class="class"><span class="keyword">class</span>:</span> es-data-db</div><div class="line">    spec:</div><div class="line">      accessModes: [ <span class="string">"ReadWriteOnce"</span> ]</div><div class="line">      resources:</div><div class="line">        requests:</div><div class="line">          storage: <span class="number">1</span>Gi</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;StorageClass&quot;&gt;&lt;a href=&quot;#StorageClass&quot; class=&quot;headerlink&quot; title=&quot;StorageClass&quot;&gt;&lt;/a&gt;StorageClass&lt;/h3&gt;&lt;p&gt;创建动态PV，使用时无需先创建好PV&lt;/p&gt;
+&lt;h3 id=
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="StorageClass" scheme="https://ttxsgoto.github.io/tags/StorageClass/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kubernetes 认证、Serviceaccount &amp;&amp; RBAC</title>
+    <link href="https://ttxsgoto.github.io/2020/04/08/k8s-sa-rbac/"/>
+    <id>https://ttxsgoto.github.io/2020/04/08/k8s-sa-rbac/</id>
+    <published>2020-04-08T03:47:11.000Z</published>
+    <updated>2020-04-08T06:26:06.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="用户和用户组"><a href="#用户和用户组" class="headerlink" title="用户和用户组"></a>用户和用户组</h3><p>两种连接到API服务器的客户端</p>
+<ul>
+<li>真实的人(用户)</li>
+<li>Pod（运行在pod中的应用）</li>
+</ul>
+<p>pod使用service accounts机制，该机制被创建和存储在集群中作为ServiceAccount资源</p>
+<h3 id="ServiceAccount资源"><a href="#ServiceAccount资源" class="headerlink" title="ServiceAccount资源"></a>ServiceAccount资源</h3><p>在单独的命名空间，为每个命名空间自动创建一个默认的ServiceAccount, 都会用一个默认token，存放在secret中</p>
+<ul>
+<li>每个pod都与一个serviceAccount相关联</li>
+<li>多个pod可以使用同一个ServiceAccount</li>
+<li>pod只能使用同一个命名空间中的ServiceAccount</li>
+<li>可通过ServiceAccount提供镜像拉取密钥</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: ServiceAccount</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-read-pods</div><div class="line">  namespace: default</div><div class="line"></div><div class="line">或者</div><div class="line">kubectl create sa ttxsgoto-read-pods -n default</div></pre></td></tr></table></figure>
+<p>在pod的manifest文件中，可以用指定账户名的方式将一个serviceAccount赋值给一个pod，如果不显式地指定serviceAccount账号名称，pod会使用在这个命名空间中的默认serviceAccount</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 查看sa</span></div><div class="line">kubectl get sa</div><div class="line">  </div><div class="line"><span class="comment"># 创建sa，会自动创建token认证信息</span></div><div class="line">kubectl create sa foo -o yaml --dry-run</div><div class="line"> </div><div class="line"><span class="comment"># 查看describe </span></div><div class="line">kubectl describe sa foo</div><div class="line">  </div><div class="line"><span class="comment"># 查看ServiceAccount密钥 （JWT）</span></div><div class="line">kubectl describe secret foo-token-mfl66</div><div class="line"> </div><div class="line"><span class="comment"># 将serviceAccount分配给pod</span></div><div class="line">通过在pod定义文件中的spec.serviceAccountName字段上设置serviceAccount名称来进行分配（需要在pod创建时进行设置，后续不能被修改）</div><div class="line"> </div><div class="line"><span class="comment"># 查看挂载进pod内的token</span></div><div class="line">cat /var/run/secrets/kubernetes.io/serviceaccount/token <span class="comment"># 这个token就是对于的serviceAccount对于的token</span></div></pre></td></tr></table></figure>
+<h3 id="RBAC"><a href="#RBAC" class="headerlink" title="RBAC"></a>RBAC</h3><p>角色定义了可以做什么操作，绑定定义谁可以做这些操作</p>
+<ul>
+<li>Role(角色)和ClusterRole(集群角色),指定了在资源上可以执行哪些动作</li>
+<li>RoleBinding(角色绑定)和ClusterRoleBinding(集群角色绑定)，它将上述角色绑定到特定用户、组或ServiceAccounts上</li>
+<li>角色绑定的是命名空间的资源</li>
+<li>集群绑定的是集群级别的资源</li>
+</ul>
+<h4 id="Role"><a href="#Role" class="headerlink" title="Role"></a>Role</h4><p>Role资源定义了哪些操作可以在哪些资源上执行<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: Role</div><div class="line">metadata:</div><div class="line">  namespace: foo</div><div class="line">  name: service-reader</div><div class="line">rules:</div><div class="line">- apiGroups: [<span class="string">""</span>]   <span class="comment"># 核心的apiGroup资源</span></div><div class="line">  verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>]    <span class="comment"># 获取独立的Service并列出所有允许的服务</span></div><div class="line">  resources: [<span class="string">"services"</span>]   <span class="comment"># 这条规则和服务有关，必须使用复数的名字</span></div><div class="line"> </div><div class="line"><span class="comment"># 或者通过命令行</span></div><div class="line">kubectl create role service-reader --verb=get --verb=list --resource=services -n foo</div></pre></td></tr></table></figure></p>
+<h4 id="RoleBinding"><a href="#RoleBinding" class="headerlink" title="RoleBinding"></a>RoleBinding</h4><p>RoleBinding将来自不同命名空间中的ServiceAccount绑定到同一个Role中, 可以是user 、group(user/serviceaccount) and serviceaccount<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: RoleBinding</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-pods-reader</div><div class="line">roleRef:</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: Role</div><div class="line">  name: pods-reader</div><div class="line">subjects:</div><div class="line">- apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: User</div><div class="line">  name: ttxsgoto</div><div class="line"> </div><div class="line"><span class="comment"># 或者通过命令行</span></div><div class="line">kubectl create rolebinding test role-binding --role=pods-reader --user=email@<span class="number">123.</span>com/ --serviceaccount=default:default</div><div class="line"> </div><div class="line">--user 参数指定用户名</div><div class="line">--group 参数绑定角色到组</div></pre></td></tr></table></figure></p>
+<h4 id="Sa-Rolebinding-Role"><a href="#Sa-Rolebinding-Role" class="headerlink" title="Sa-Rolebinding-Role"></a>Sa-Rolebinding-Role</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">apiVersion: v1</div><div class="line">kind: ServiceAccount</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-read-pods</div><div class="line">  namespace: default</div><div class="line">---</div><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: Role</div><div class="line">metadata:</div><div class="line">  name: pods-reader</div><div class="line">  namespace: default</div><div class="line">rules:</div><div class="line">- apiGroups:</div><div class="line">  - <span class="string">""</span></div><div class="line">  resources:</div><div class="line">  - pods</div><div class="line">  verbs:</div><div class="line">  - get</div><div class="line">  - list</div><div class="line">  - watch</div><div class="line">- apiGroups: [<span class="string">"apps"</span>]</div><div class="line">  resources: [<span class="string">"deployments"</span>]</div><div class="line">  verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"create"</span>, <span class="string">"update"</span>, <span class="string">"patch"</span>, <span class="string">"delete"</span>]</div><div class="line">---</div><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: RoleBinding</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-sa-rolebind-role</div><div class="line">roleRef:</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: Role</div><div class="line">  name: pods-reader</div><div class="line">subjects:</div><div class="line">- kind: ServiceAccount</div><div class="line">  name: ttxsgoto-read-pods</div></pre></td></tr></table></figure>
+<h4 id="Sa-Rolebinding-Clusterrole"><a href="#Sa-Rolebinding-Clusterrole" class="headerlink" title="Sa-Rolebinding-Clusterrole"></a>Sa-Rolebinding-Clusterrole</h4><p>绑定clusterRole,这样用户只能访问该namespace对应下的资源<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: RoleBinding</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-sa-rolebind-cluster</div><div class="line">roleRef:</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: ClusterRole</div><div class="line">  name: cluster-admin</div><div class="line">subjects:</div><div class="line">- kind: ServiceAccount</div><div class="line">  name: ttxsgoto-read-pods</div><div class="line">  namespace: default</div></pre></td></tr></table></figure></p>
+<h4 id="User-Rolebinding-Clusterrole"><a href="#User-Rolebinding-Clusterrole" class="headerlink" title="User-Rolebinding-Clusterrole"></a>User-Rolebinding-Clusterrole</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: RoleBinding</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-reader-pods</div><div class="line">  namespace: default</div><div class="line">roleRef:</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: ClusterRole</div><div class="line">  name: cluster-readers</div><div class="line">subjects:</div><div class="line">- apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: User</div><div class="line">  name: ttxsgoto</div><div class="line"> </div><div class="line"><span class="comment"># 或者通过命令行</span></div><div class="line">kubectl create rolebinding ttxsgoto-reader-pods --clusterrole=cluster-readers --user=ttxsgoto</div></pre></td></tr></table></figure>
+<h4 id="Sa-Clusterrolebinding-Clusterrole"><a href="#Sa-Clusterrolebinding-Clusterrole" class="headerlink" title="Sa-Clusterrolebinding-Clusterrole"></a>Sa-Clusterrolebinding-Clusterrole</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: ClusterRoleBinding</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-sa-clusterbind-cluster</div><div class="line">roleRef:</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: ClusterRole</div><div class="line">  name: cluster-admin</div><div class="line">subjects:</div><div class="line">- kind: ServiceAccount</div><div class="line">  name: ttxsgoto-read-pods</div><div class="line">  namespace: default</div></pre></td></tr></table></figure>
+<h4 id="ClusterRole"><a href="#ClusterRole" class="headerlink" title="ClusterRole"></a>ClusterRole</h4><p>ClusterRole是一种集群级资源，它允许访问没有命名空间的资源和非资源型的URL,或者作为单个命名空间内部绑定的公共角色，从而避免必须在每个命名空间中重新定义相同的角色<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: ClusterRole</div><div class="line">metadata:</div><div class="line">  name: cluster-readers</div><div class="line">rules:</div><div class="line">- apiGroups:</div><div class="line">  - <span class="string">""</span></div><div class="line">  resources:</div><div class="line">  - pods</div><div class="line">  verbs:</div><div class="line">  - get</div><div class="line">  - list</div><div class="line">  - watch</div><div class="line"> </div><div class="line"><span class="comment"># 或者通过命令行</span></div><div class="line">kubectl create clusterrole cluster-readers --verb=get,list,watch --resource=pods</div></pre></td></tr></table></figure></p>
+<h4 id="ClusterRoleBinding"><a href="#ClusterRoleBinding" class="headerlink" title="ClusterRoleBinding"></a>ClusterRoleBinding</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1beta1</div><div class="line">kind: ClusterRoleBinding</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-read-all-pods</div><div class="line">roleRef:</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: ClusterRole</div><div class="line">  name: cluster-readers</div><div class="line">subjects:</div><div class="line">- apiGroup: rbac.authorization.k8s.io</div><div class="line">  kind: User</div><div class="line">  name: ttxsgoto</div><div class="line"> </div><div class="line"><span class="comment"># 或者通过命令行</span></div><div class="line">kubectl create clusterrolebinding pv-test --clusterrole=pv-reader --serviceaccount=foo:default</div></pre></td></tr></table></figure>
+<h3 id="User"><a href="#User" class="headerlink" title="User"></a>User</h3><h4 id="User创建"><a href="#User创建" class="headerlink" title="User创建"></a>User创建</h4><p>kubernetes中没有User Account的api对象，创建用户需要使用管理员分配的私钥来创建<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 给用户生成私钥</span></div><div class="line">(umask <span class="number">077</span>; openssl genrsa -out ttxsgoto.key <span class="number">2048</span>)</div><div class="line"><span class="comment"># 给私钥生成证书 </span></div><div class="line">openssl req -new -key ttxsgoto.key -out ttxsgoto.csr -subj <span class="string">"/CN=ttxsgoto/O=ttxsgoto"</span> <span class="comment"># cn用户名，o组</span></div><div class="line"><span class="comment"># 使用ca.crt来签署证书</span></div><div class="line">openssl x509 -req -<span class="keyword">in</span> ttxsgoto.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out ttxsgoto.crt -days <span class="number">1000</span></div><div class="line"><span class="comment"># 查看证书</span></div><div class="line">openssl x509 -<span class="keyword">in</span> ttxsgoto.crt -text -noout</div><div class="line"> </div><div class="line"><span class="comment"># 将创建的证书文件和私钥文件在集群中创建新的凭证 set-credentials，将证书添加为认证k8s信息</span></div><div class="line">kubectl config set-credentials ttxsgoto --client-certificate=./ttxsgoto.crt --client-key=./ttxsgoto.key --embed-certs=true</div><div class="line"> </div><div class="line"><span class="comment"># 给用户创建新的上下文 set-context, ttxsgoto@kubernetes 用户名@集群名</span></div><div class="line">kubectl config set-context ttxsgoto@kubernetes --namespace=default --cluster=kubernetes --user=ttxsgoto</div><div class="line"> </div><div class="line"><span class="comment"># use-context 设置当前用户的context</span></div><div class="line">kubectl config use-context ttxsgoto@kubernetes</div><div class="line"><span class="comment"># 查看use-context使用有权限操作</span></div><div class="line">kubectl get pods --context=ttxsgoto@kubernetes</div><div class="line"> </div><div class="line">kubectl config view <span class="comment"># 查看config信息</span></div><div class="line">kubectl config --help</div><div class="line">kubectl config set-cluster/set-context/set-credentials</div></pre></td></tr></table></figure></p>
+<h4 id="User-Rolebinding-Role"><a href="#User-Rolebinding-Role" class="headerlink" title="User-Rolebinding-Role"></a>User-Rolebinding-Role</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: Role</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-user-role</div><div class="line">  namespace: default</div><div class="line">rules:</div><div class="line">- apiGroups: [<span class="string">""</span>, <span class="string">"extensions"</span>, <span class="string">"apps"</span>]</div><div class="line">  resources: [<span class="string">"deployments"</span>, <span class="string">"replicasets"</span>, <span class="string">"pods"</span>]</div><div class="line">  verbs: [<span class="string">"get"</span>, <span class="string">"list"</span>, <span class="string">"watch"</span>, <span class="string">"create"</span>, <span class="string">"update"</span>, <span class="string">"patch"</span>, <span class="string">"delete"</span>] <span class="comment"># 也可以使用['*']</span></div><div class="line">---</div><div class="line">apiVersion: rbac.authorization.k8s.io/v1</div><div class="line">kind: RoleBinding</div><div class="line">metadata:</div><div class="line">  name: ttxsgoto-sa-rolebind-role</div><div class="line">  namespace: default</div><div class="line">subjects:</div><div class="line">- kind: User</div><div class="line">  name: ttxsgoto <span class="comment"># 这里为username 而非context-name</span></div><div class="line">roleRef:</div><div class="line">  kind: Role</div><div class="line">  name: ttxsgoto-user-role</div><div class="line">  apiGroup: rbac.authorization.k8s.io</div></pre></td></tr></table></figure>
+<h3 id="Role和Binding绑定组合"><a href="#Role和Binding绑定组合" class="headerlink" title="Role和Binding绑定组合"></a>Role和Binding绑定组合</h3><table>
+<thead>
+<tr>
+<th>访问资源</th>
+<th>使用的角色类型</th>
+<th>使用的绑定类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>集群级别的资源(node, PV)</td>
+<td>ClusterRole</td>
+<td>ClusterRoleBinding</td>
+</tr>
+<tr>
+<td>非资源型URL(api/healthz)</td>
+<td>ClusterRole</td>
+<td>ClusterRoleBinding</td>
+</tr>
+<tr>
+<td>任何命名空间中的资源(跨所有命名空间的资源)</td>
+<td>ClusterRole</td>
+<td>ClusterRoleBinding</td>
+</tr>
+<tr>
+<td>在具体命名空间中的资源(在多个命名空间中重用这个相同的ClusterRole)</td>
+<td>ClusterRole</td>
+<td>RoleBinding</td>
+</tr>
+<tr>
+<td>在具体命名空间中的资源(Role必须在每个命名空间定义好)</td>
+<td>Role</td>
+<td>RoleBinding </td>
+</tr>
+</tbody>
+</table>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>API服务器的客户端有真实的用户和pod中运行的应用</li>
+<li>pod中的应用与一个ServiceAccount关联</li>
+<li>用户和ServiceAccount都与组进行关联</li>
+<li>默认情况下，pod运行在每个命名空间自动创建的默认ServiceAccount下</li>
+<li>额外的ServiceAccount可以手动创建，并且和一个pod关联</li>
+<li>ServiceAccount通过配置可以允许只挂载给定pod中受限的Secret列表</li>
+<li>ServiceAccount可以给pod添加镜像拉取密钥</li>
+<li>Role和ClusterRole定义了可以在哪些资源上执行哪些操作</li>
+<li>RoleBinding和ClusterRolebinding将Role和ClusterRole绑定给用户、组合和ServiceAccount</li>
+<li>每个集群都有默认的ClusterRole和ClusterRoleBinding</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;用户和用户组&quot;&gt;&lt;a href=&quot;#用户和用户组&quot; class=&quot;headerlink&quot; title=&quot;用户和用户组&quot;&gt;&lt;/a&gt;用户和用户组&lt;/h3&gt;&lt;p&gt;两种连接到API服务器的客户端&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;真实的人(用户)&lt;/li&gt;
+&lt;li&gt;Pod（运行在
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="RBAC" scheme="https://ttxsgoto.github.io/tags/RBAC/"/>
+    
+      <category term="Serviceaccount" scheme="https://ttxsgoto.github.io/tags/Serviceaccount/"/>
+    
+  </entry>
   
   <entry>
     <title>Kubernetes StatefulSet</title>
@@ -234,7 +383,7 @@
     <link href="https://ttxsgoto.github.io/2020/03/20/k8s-pods/"/>
     <id>https://ttxsgoto.github.io/2020/03/20/k8s-pods/</id>
     <published>2020-03-20T09:40:23.000Z</published>
-    <updated>2020-03-27T08:29:42.000Z</updated>
+    <updated>2020-04-03T08:33:06.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="容器内获取pod信息"><a href="#容器内获取pod信息" class="headerlink" title="容器内获取pod信息"></a>容器内获取pod信息</h3><ul>
 <li><p>环境变量，将pod信息注入为环境变量</p>
@@ -295,12 +444,13 @@
 <li>Job</li>
 <li>Cronjob</li>
 </ul>
-<h4 id="RC-amp-Deployment"><a href="#RC-amp-Deployment" class="headerlink" title="RC &amp; Deployment"></a>RC &amp; Deployment</h4><p>自动部署一个容器的多个副本，以及持续监控副本的数量，在集群内始终维持指定的副本数量<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line"><span class="comment">#apiVersion: apps/v1beta1</span></div><div class="line">kind: Deployment</div><div class="line">metadata:</div><div class="line">  name: nginx-deployment</div><div class="line">spec:</div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: nginx</div><div class="line">  replicas: 3</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: nginx</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: nginx</div><div class="line">        image: nginx:1.7.9</div><div class="line">        ports:</div><div class="line">        - containerPort: 80</div></pre></td></tr></table></figure></p>
+<h4 id="RC-amp-Deployment"><a href="#RC-amp-Deployment" class="headerlink" title="RC &amp; Deployment"></a>RC &amp; Deployment</h4><p>自动部署一个容器的多个副本，以及持续监控副本的数量，在集群内始终维持指定的副本数量<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line"><span class="comment">#apiVersion: apps/v1beta1</span></div><div class="line">kind: Deployment</div><div class="line">metadata:</div><div class="line">  name: nginx-deployment</div><div class="line">spec:</div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app: nginx</div><div class="line">  replicas: 3</div><div class="line">  minReadySeconds: 5  <span class="comment"># kubernetes在等待设置的时间后才进行升级</span></div><div class="line">  strategy:</div><div class="line">    <span class="built_in">type</span>: rollingUpdate <span class="comment"># 更新策略，滚动更新</span></div><div class="line">    rollingUpdate:</div><div class="line">      maxSurge: 25%     <span class="comment"># 指定可以超过期望的pod数量的最大百分比，也可以是个数</span></div><div class="line">      maxUnavailable: 25% <span class="comment"># 指定升级过程中不可用pod的最大数量</span></div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app: nginx</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: nginx</div><div class="line">        image: nginx:1.7.9</div><div class="line">        ports:</div><div class="line">        - containerPort: 80</div></pre></td></tr></table></figure></p>
+<p>常用命令<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">kubectl rollout status deployment/nginx-deployment  <span class="comment"># 查看状态</span></div><div class="line">kubectl rollout pause deployment &lt;deployment-name&gt; <span class="comment"># 暂停升级</span></div><div class="line">kubectl rollout resume deploymnet &lt;deployment-name&gt; <span class="comment"># 继续升级</span></div><div class="line">kubectl rollout history deployment &lt;deployment-name&gt;  <span class="comment"># 查看Deployment的升级历史</span></div><div class="line">kubectl rollout history deploymnet &lt;deployment-name&gt; --revision=n   <span class="comment"># 查看单个deploy revision的信息</span></div><div class="line">kubectl rollout undo deployment &lt;deployment-name&gt; <span class="comment"># 回退到上一个版本</span></div><div class="line">kubectl rollout undo deployment &lt;deployment-name&gt; --to-revision=<span class="number">2</span>   <span class="comment"># 回滚到指定版本</span></div></pre></td></tr></table></figure></p>
 <h4 id="DaemonSet"><a href="#DaemonSet" class="headerlink" title="DaemonSet"></a>DaemonSet</h4><ul>
 <li>在每个node上都调度一个pod，适用于监控系统，数据采集等资源的采集</li>
 <li>新加入的node也同样会自动运行一个pod</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">apiVersion: apps/v1</div><div class="line">kind: DaemonSet</div><div class="line">metadata:</div><div class="line">  name: jumpserver-nginx</div><div class="line">  labels:</div><div class="line">    app.kubernetes.io/name: nginx</div><div class="line">spec:</div><div class="line">  selector:</div><div class="line">    matchLabels:</div><div class="line">      app.kubernetes.io/name: nginx</div><div class="line">  template:</div><div class="line">    metadata:</div><div class="line">      labels:</div><div class="line">        app.kubernetes.io/name: nginx</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: jms-nginx</div><div class="line">        image: wojiushixiaobai/jms_nginx:<span class="number">1.5</span><span class="number">.6</span></div><div class="line">        ports:</div><div class="line">        - containerPort: <span class="number">80</span></div><div class="line">          name: nginx</div><div class="line">          protocol: TCP</div><div class="line">        volumeMounts:</div><div class="line">        - name: static</div><div class="line">          mountPath: /opt/jumpserver/data/static</div><div class="line">        - name: media</div><div class="line">          mountPath: /opt/jumpserver/data/media</div><div class="line">      volumes:</div><div class="line">      - name: static</div><div class="line">        nfs:</div><div class="line">          path: /data/core/static</div><div class="line">          server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div><div class="line">      - name: media</div><div class="line">        nfs:</div><div class="line">          path: /data/core/media</div><div class="line">          server: <span class="number">192.168</span><span class="number">.238</span><span class="number">.100</span></div></pre></td></tr></table></figure>
 <h4 id="Job"><a href="#Job" class="headerlink" title="Job"></a>Job</h4><p>批处理调度,仅执行一次的任务，保证处理任务的一个或者多个pod成功结束<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">apiVersion: batch/v1</div><div class="line">kind: Job</div><div class="line">metadata:</div><div class="line">  name: k8s-job</div><div class="line">spec:</div><div class="line">  template:</div><div class="line">    spec:</div><div class="line">      containers:</div><div class="line">      - name: python</div><div class="line">        image: python:3.8-alpine</div><div class="line">        <span class="built_in">command</span>: [<span class="string">"python"</span>, <span class="string">"-c"</span>, <span class="string">"import socket; print(socket.gethostbyname(socket.gethostname()))"</span>]</div><div class="line">      restartPolicy: Never</div><div class="line">  backoffLimit: 4</div></pre></td></tr></table></figure></p>
 <h4 id="Cronjob"><a href="#Cronjob" class="headerlink" title="Cronjob"></a>Cronjob</h4><ul>
 <li>在给定时间点只运行一次</li>
@@ -1031,146 +1181,6 @@
     
     
       <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>全局锁、表级锁和行锁</title>
-    <link href="https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/"/>
-    <id>https://ttxsgoto.github.io/2018/12/27/yw-mysql-lock/</id>
-    <published>2018-12-27T14:44:05.000Z</published>
-    <updated>2020-03-20T08:09:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="锁分类"><a href="#锁分类" class="headerlink" title="锁分类"></a>锁分类</h4><ul>
-<li>全局锁</li>
-<li>表级锁</li>
-<li>行锁</li>
-</ul>
-<h4 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h4><p>全局锁就是对整个数据库实例加锁<br>命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">flush tables with read lock</div></pre></td></tr></table></figure></p>
-<p>使用该命令后其他线程的执行语句都会被阻塞：数据更新语句(数据的增删改)和数据定义语句(建表和修改表结构等)和更新事务的提交语句</p>
-<p><strong>应用</strong>：全库逻辑备份</p>
-<ul>
-<li>innodb引擎， mysqldump 使用参数-single-transaction，导数据时会启动一个事务，来确保一致性视图</li>
-<li>myisam引擎，不支持事务，需要使用FTWRL命令</li>
-</ul>
-<h4 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h4><h5 id="表锁"><a href="#表锁" class="headerlink" title="表锁"></a>表锁</h5><p>语句:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">lock tables xxx read/write;</div><div class="line">unlock tables;</div></pre></td></tr></table></figure></p>
-<p>表锁是最常用的处理并发的方式，而对于innodb这种行锁的引擎，一般不会使用lock tables命令来控制并发，因为锁住整个表的影响太大</p>
-<h5 id="元数据锁-meta-data-lock-MDL"><a href="#元数据锁-meta-data-lock-MDL" class="headerlink" title="元数据锁(meta data lock, MDL)"></a>元数据锁(meta data lock, MDL)</h5><p>MDL不需要显示使用，在访问一个表时会自动加上，MDL的作用，保证读写的正确性</p>
-<ul>
-<li>在对一个表做增删改查操作，加MDL读锁，当要对表做结构变更操作，加MDL写锁</li>
-<li>读锁之间不互斥，可以有多个线程对一张表增删改查</li>
-<li>读写锁之间，写锁之间互斥，用来保证变更表结构操作的安全性,如果有两个线程要同时给一个表加字段，其中一个要等另一个执行完成后才能开始执行</li>
-</ul>
-<h5 id="安全给小表加字段"><a href="#安全给小表加字段" class="headerlink" title="安全给小表加字段"></a>安全给小表加字段</h5><ol>
-<li>需要解决长事务，事务不提交，就会一直占用MDL锁，mysql中的information_schema库中INNODB_TRX表中记录着当前执行中的事务</li>
-<li>变更热点表，在alter table语句里面设置等待时间，如果在等待时间没有拿到也不会阻塞 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">alter table xxx nowait add column ...</div><div class="line">alter table yyy wait n add column ...</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<h4 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h4><p>行锁是针对数据表中的行记录的锁</p>
-<p>mysql行锁是在引擎层自己实现的，并不是所有引擎都支持行锁，如myisam引擎不支持行锁，只能使用表锁，任何时刻只能有一个更新在执行，影响业务并发度</p>
-<h5 id="两阶段锁"><a href="#两阶段锁" class="headerlink" title="两阶段锁"></a>两阶段锁</h5><p>在innodb事务中，行锁是在需要的时候才加上，但并不是不需要了立刻释放，而是要等到事务结束时才释放</p>
-<p><strong>如果你的事务中需要锁多个行，要把最可能造成锁冲突、最可能影响并发度的锁尽量往后放</strong></p>
-<h5 id="死锁和死锁检测"><a href="#死锁和死锁检测" class="headerlink" title="死锁和死锁检测"></a>死锁和死锁检测</h5><p>死锁：当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态</p>
-<p>出现死锁，解决策略：</p>
-<ul>
-<li>直接进入等待，直到超时，超时时间可以通过参数<code>innodb_lock_wait_timeout</code>来设置，默认值为50s</li>
-<li>发起死锁检测，发现死锁后，主动回滚死锁链条中的某个事物，让其他事物得以继续执行，通过参数<code>innodb_deadlock_detect</code>设置为on，来开启死锁检测</li>
-</ul>
-<p>如果所有事务都要更新同一行，这时死锁检测将消耗大量cpu资源，因此出现cpu利用率很高，但每秒执行不了多少事务</p>
-<p>解决方案：</p>
-<ul>
-<li>控制并发，在数据库服务端控制并发，需要修改mysql源码，要求高</li>
-<li>业务上，将更新一行改为逻辑上的多行来减少锁冲突</li>
-<li>减少死锁的主要方向，控制访问相同资源的并发事务量</li>
-</ul>
-<p>innodb行级锁是通过锁索引记录实现的，如果更新的列没有建索引会锁住整个表的</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;锁分类&quot;&gt;&lt;a href=&quot;#锁分类&quot; class=&quot;headerlink&quot; title=&quot;锁分类&quot;&gt;&lt;/a&gt;锁分类&lt;/h4&gt;&lt;ul&gt;
-&lt;li&gt;全局锁&lt;/li&gt;
-&lt;li&gt;表级锁&lt;/li&gt;
-&lt;li&gt;行锁&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&quot;全局锁&quot;&gt;&lt;a href
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="Lock" scheme="https://ttxsgoto.github.io/tags/Lock/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>事务隔离</title>
-    <link href="https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/"/>
-    <id>https://ttxsgoto.github.io/2018/12/26/yw-mysql-transaction/</id>
-    <published>2018-12-26T13:42:58.000Z</published>
-    <updated>2020-03-20T08:09:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h4><p>事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持</p>
-<h4 id="事务的特性"><a href="#事务的特性" class="headerlink" title="事务的特性"></a>事务的特性</h4><ul>
-<li>原子性</li>
-<li>一致性</li>
-<li>隔离性</li>
-<li>持久性</li>
-</ul>
-<h4 id="多事务同时执行引起的问题"><a href="#多事务同时执行引起的问题" class="headerlink" title="多事务同时执行引起的问题"></a>多事务同时执行引起的问题</h4><ul>
-<li>脏读</li>
-<li>不可重复读</li>
-<li>幻读</li>
-</ul>
-<h4 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h4><ul>
-<li>读未提交(read uncommitted) 一个事务还没提交时，它做的变更就能被别的事务看到</li>
-<li>读提交(read committed) 一个事务提交之后，它做的变更才会被其他事务看到</li>
-<li>可重复读(repeatable read) 一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的</li>
-<li>串行化(serializable) “写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突时，后访问的事务必须等前一个事务执行完成后，才能继续执行</li>
-</ul>
-<h4 id="配置事务方法"><a href="#配置事务方法" class="headerlink" title="配置事务方法"></a>配置事务方法</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">启动参数transaction-isolation</div></pre></td></tr></table></figure>
-<h4 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h4><p>每条记录在更新的时候都会同时记录一条回滚操作。通过回滚操作，都可以得到前一个状态的值</p>
-<p>同一条记录在系统中可以存在多个版本，这就是数据库的多版本并发控制（MVCC）。</p>
-<p>回滚日志在不需要的时候删除，当系统里没有比这个回滚日志更早的read-view时候，系统自动删除</p>
-<h4 id="尽量不要使用长事务"><a href="#尽量不要使用长事务" class="headerlink" title="尽量不要使用长事务"></a>尽量不要使用长事务</h4><p>长事务意味着系统里面会存在很老的事务视图，在事务提交之前，回滚日志必须保留，这就会导致大量占用存储空间</p>
-<h4 id="事务的启动方式"><a href="#事务的启动方式" class="headerlink" title="事务的启动方式"></a>事务的启动方式</h4><ul>
-<li><p>显示启动事务</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">begin transaction</div><div class="line">do something</div><div class="line">commit / rollback</div></pre></td></tr></table></figure>
-</li>
-<li><p>set autocommit=0，将这个线程的自动提交关掉，只要你执行一个查询语句，事务就启动了，接下来的查询都在事务中，如果是长连接，将导致意外的长事务，这样直到你主动执行commit或者rollback语句或者断开连接才释放，可以通过set autocommit=1来显式方式来启动事务</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">begin tracsaction; #  不是一个事务的起点，在执行到它之后的第一个操作InnoDB语句，事务才真正启动</div><div class="line">start transaction with consistent snapshot; # 马上启动一个事务</div><div class="line"> </div><div class="line">commit;     # 提交事务</div><div class="line">autocommit=1;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="事务隔离-or-不隔离"><a href="#事务隔离-or-不隔离" class="headerlink" title="事务隔离 or 不隔离"></a>事务隔离 or 不隔离</h4><p>如果是可重复读隔离级别，事务启动时会创建一个视图read-view，之后事务执行期间，即使有其他事务修改了数据，该事务看到的仍然跟启动时看到的一样，也就是在可重复读隔离级别下执行事务，不受外界影响<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">start transaction with consistent snapshot;    # 执行该命令后马上启动一个事务</div></pre></td></tr></table></figure></p>
-<p>Mysql中的两个“视图”：</p>
-<ul>
-<li>一个view，用于查询语句定义的虚拟表，在调用的时候执行查询语句并生成结果</li>
-<li>InnoDB在实现MCVV时用到的一致性读视图，即consistent read view，用于支持RC(Read Committed，读提交)和RR(Repeatable Read，可重复读)隔离级别的实现，作用在事务执行期间用来定义”我能看到什么数据”</li>
-</ul>
-<h4 id="“快照”在MVCC里是怎么工作的"><a href="#“快照”在MVCC里是怎么工作的" class="headerlink" title="“快照”在MVCC里是怎么工作的"></a>“快照”在MVCC里是怎么工作的</h4><p>在可重复读隔离级别下，事务在启动的时候就拍下快照，这个快照是基于整库</p>
-<p>Innodb里面每个事务有一个唯一的事务ID，叫作transaction id，它是在事务开始的时候向Innodb的事务系统申请的，是按申请顺序严格递增的</p>
-<p>每行数据也都都是有多个版本的，每次事务更新数据时，都会生成一个新的数据版本，而且把transaction id赋值给这个数据版本的事务id，记为row trx_id; 同时，旧的数据版本要保留，并且在新的数据版本中能够有信息可以直接拿到它</p>
-<p>数据表中一行记录，其实可能有多个版本(row)，每个版本有自己的rowtrx_id</p>
-<p>InnoDB利用了“所有数据都有多个版本”的特性，实现了“秒级创建快照的能力”</p>
-<p>更新数据都要先读后写，而这个读，只能读当前的值，称之为”当前读”；当前读总是读取已经提交完成的最新版本</p>
-<ul>
-<li>对于可重复读，查询只承认在事务启动前就已经提交完成的数据</li>
-<li>对于读提交，查询只承认在语句启动前就已经提交完成的数据</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;事务&quot;&gt;&lt;a href=&quot;#事务&quot; class=&quot;headerlink&quot; title=&quot;事务&quot;&gt;&lt;/a&gt;事务&lt;/h4&gt;&lt;p&gt;事务是为了保证一组数据库操作，要么全部执行成功，要么全部执行不成功，InnoDB支持，Myisam不支持&lt;/p&gt;
-&lt;h4 id=&quot;事务的特性
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="Transaction" scheme="https://ttxsgoto.github.io/tags/Transaction/"/>
     
   </entry>
   
