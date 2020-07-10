@@ -89,6 +89,64 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2019/07/28/yw-airflow-dynamic-dags-tasks/" title="Airflow动态生成Tasks和dags" itemprop="url">
+      
+        Airflow动态生成Tasks和dags
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >动态生成task任务现在有这样的需求， 需要根据计算结果动态生成任务列表，来执行dags，查找资料后发现主要使用动态生成TaskInstance实例来完成具体说明如下：
+
+将计算得到值使用Variables变量保存
+  1airflow variables --set keyNa</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-07-28T08:21:22.000Z" itemprop="datePublished">2019-07-28</time>
+      
+          <a href="/2019/07/28/yw-airflow-dynamic-dags-tasks/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2019/07/27/yw-airflow-operator/" title="Airflow变量和执行器" itemprop="url">
+      
+        Airflow变量和执行器
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >问题描述最近在调研Airflow demo相关的问题和解决方案， 主要问题有：
+
+Dags中任务启动时，参数如何传递
+Task任务之间的依赖关系，返回值如何被其他task使用
+运行docker程序
+Http API请求实现
+
+具体说明Dags中任务启动时，参数如何传递Airflo</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2019-07-27T08:15:08.000Z" itemprop="datePublished">2019-07-27</time>
+      
+          <a href="/2019/07/27/yw-airflow-operator/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2019/07/26/yw-airflow-install/" title="Airflow架构、安装部署" itemprop="url">
       
         Airflow架构、安装部署
@@ -299,57 +357,6 @@ Innodb，需要把数据一行行的从引擎中读出来，然后累积计数�
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/12/28/yw-mysql-order-by/" title="Order by工作原理" itemprop="url">
-      
-        Order by工作原理
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >全字段排序mysql会给每个线程分配一块内存用于排序，称为sort_buffer
-sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-12-28T14:46:51.000Z" itemprop="datePublished">2018-12-28</time>
-      
-          <a href="/2018/12/28/yw-mysql-order-by/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/12/28/yw-mysql-addindex-to-string/" title="字符串加索引" itemprop="url">
-      
-        字符串加索引
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >前缀索引前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数
-在建立索引时需要关注的是区分度，区分度越高越好
-查看对应索引的区分度方法123456select count(distinct a) as L from user;select count(*) as tota</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-12-28T12:41:50.000Z" itemprop="datePublished">2018-12-28</time>
-      
-          <a href="/2018/12/28/yw-mysql-addindex-to-string/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/">&laquo; 上一页</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/3/">下一页 &raquo;</a>
@@ -392,13 +399,13 @@ sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如
 		
 			<li><a href="/categories/Django/" title="Django">Django<sup>12</sup></a></li>
 		
-			<li><a href="/categories/Docker/" title="Docker">Docker<sup>3</sup></a></li>
+			<li><a href="/categories/Docker/" title="Docker">Docker<sup>4</sup></a></li>
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
 			<li><a href="/categories/Frontend/" title="Frontend">Frontend<sup>6</sup></a></li>
 		
-			<li><a href="/categories/Kubernetes/" title="Kubernetes">Kubernetes<sup>8</sup></a></li>
+			<li><a href="/categories/Kubernetes/" title="Kubernetes">Kubernetes<sup>9</sup></a></li>
 		
 			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
 		

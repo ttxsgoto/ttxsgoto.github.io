@@ -1,0 +1,394 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Docker 网络通信 | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="Docker通信，需要解决的问题有：
+
+同一台主机上的不同docker的通信
+跨主机的不同docker的通信
+
+网桥(bridge)网桥(Bridge)：在linux中能够起到虚拟交换机的网络设备，工作在数据链路层，主要通过mac地址学习将数据包发送给网桥的不同端口
+在docker项目中会默认在宿主">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/07/09/docker-network02/" title="Docker 网络通信" itemprop="url">Docker 网络通信</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-07-09T09:31:20.000Z" itemprop="datePublished">2020-07-09</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#网桥-bridge"><span class="toc-number">1.</span> <span class="toc-text">网桥(bridge)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Veth-Pair"><span class="toc-number">2.</span> <span class="toc-text">Veth Pair</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#同一台主机上的不同docker的通信"><span class="toc-number">3.</span> <span class="toc-text">同一台主机上的不同docker的通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#跨主机的不同docker的通信"><span class="toc-number">4.</span> <span class="toc-text">跨主机的不同docker的通信</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Flannel"><span class="toc-number">4.1.</span> <span class="toc-text">Flannel</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Tunel设备"><span class="toc-number">4.2.</span> <span class="toc-text">Tunel设备</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Flannel子网-Subnet"><span class="toc-number">4.3.</span> <span class="toc-text">Flannel子网(Subnet)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Flannel通信"><span class="toc-number">4.4.</span> <span class="toc-text">Flannel通信</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>Docker通信，需要解决的问题有：</p>
+<ul>
+<li>同一台主机上的不同docker的通信</li>
+<li>跨主机的不同docker的通信</li>
+</ul>
+<h4 id="网桥-bridge"><a href="#网桥-bridge" class="headerlink" title="网桥(bridge)"></a>网桥(bridge)</h4><p>网桥(Bridge)：在linux中能够起到虚拟交换机的网络设备，工作在数据链路层，主要通过mac地址学习将数据包发送给网桥的不同端口</p>
+<p>在docker项目中会默认在宿主机上创建docker0的网桥，只要连接在docker0网桥上的容器，就可以通过它来进行通信</p>
+<h4 id="Veth-Pair"><a href="#Veth-Pair" class="headerlink" title="Veth Pair"></a>Veth Pair</h4><p>Docker通过一种名为Veth pair的虚拟设备来连接到docker0网桥上</p>
+<p>veth pair的特点：被创建出来后，总是以两张虚拟网卡成对出现，从其中一个网卡发出数据包，可以直接从另一个网卡得到数据包，即使这两个网卡不在同一个network namespace里</p>
+<h4 id="同一台主机上的不同docker的通信"><a href="#同一台主机上的不同docker的通信" class="headerlink" title="同一台主机上的不同docker的通信"></a>同一台主机上的不同docker的通信</h4><p>被限制在network namespace里的容器进程，实际上是通过Veth Pair设备 + 宿主机网桥的方式实现了同其他容器的数据交换</p>
+<p><img src="https://ttxsgoto.github.io/img/docker_network/docker-network-01.png" alt=""></p>
+<p>在容器中的eth0为Veth pair设备在容器的一端，主机上vethxxxx为Veth pair的另一端</p>
+<p><strong>容器虚拟网卡和网桥docker0虚拟网络的Veth pair的配对关系查找</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">docker <span class="built_in">exec</span> -it &lt;container-name&gt; bash -c <span class="string">'cat /sys/class/net/eth0/iflink'</span></div><div class="line"><span class="comment"># 返回 60</span></div><div class="line">grep <span class="_">-l</span> 60 /sys/class/net/veth*/ifindex</div><div class="line"><span class="comment"># 此时会有如下类似返回</span></div><div class="line">/sys/class/net/veth11d4238/ifindex</div><div class="line"><span class="comment"># veth11d4238 即主机上的另一半</span></div><div class="line"> </div><div class="line">brctl show  	<span class="comment"># 查看veth pair都对应在哪个网桥上</span></div><div class="line">ip link show    <span class="comment"># 查看veth pair网卡信息</span></div></pre></td></tr></table></figure></p>
+<h4 id="跨主机的不同docker的通信"><a href="#跨主机的不同docker的通信" class="headerlink" title="跨主机的不同docker的通信"></a>跨主机的不同docker的通信</h4><p>容器都连接在docker0网桥上，而网络插件则在宿主机上创建了一个特殊的设备，docker0和这个设备，通过ip转发(即路由表)进行转发</p>
+<p>我们需要在已有的宿主机网络上，再通过软件构建一个覆盖在已有宿主机网络之上的、可以把所有容器连通在一起的虚拟网络。所以，这种技术就被称为：Overlay Network（覆盖网络）</p>
+<h5 id="Flannel"><a href="#Flannel" class="headerlink" title="Flannel"></a>Flannel</h5><ul>
+<li>VXLAN   虚拟可扩展局域网，内核态实现封装和解封装</li>
+<li>host-gw 主机二层连通，即同一个vlan中</li>
+<li>UDP       严重性能问题(用户态和内核态之间的切换)，已弃用 </li>
+</ul>
+<h5 id="Tunel设备"><a href="#Tunel设备" class="headerlink" title="Tunel设备"></a>Tunel设备</h5><p>Flannel为Tunnel设备，为三层的虚拟网络设备，在操作系统内核和用户应用程序之间传递ip包</p>
+<h5 id="Flannel子网-Subnet"><a href="#Flannel子网-Subnet" class="headerlink" title="Flannel子网(Subnet)"></a>Flannel子网(Subnet)</h5><p>由flannel管理的容器网络里，一台宿主机上的所有容器，都属于该宿主机被分配的一个“子网”，这些子网与宿主机的对应关系，保存在etcd中</p>
+<h5 id="Flannel通信"><a href="#Flannel通信" class="headerlink" title="Flannel通信"></a>Flannel通信</h5><p>Flannel将不同宿主机的容器组成一个大的子网，所有容器都在这个大的网络中，即Overlay Network 得以打通</p>
+<p>VXLAN覆盖网络的设计： 在现有的三层网络上，“覆盖”一层虚拟的、内核的VXLAN模块负责维护的二层网络，使得连接在这个VXLAN二层网络的主机之间，可以像在同一个局域网(LAN)里自由通信。</p>
+<p>VTEP (VXLAN Tunnel End Point 虚拟隧道端点)<br>flannel.1设备为VXLAN所需的VTEP设备，拥有ip地址也有mac地址<br>当数据到宿主机时，路由到flannel.1设备进行处理，进入隧道，找到对应的出口(flanneld进程负责维护设备信息)</p>
+<p>VTEP设备需之间需要组建一个虚拟的二层网络，通过二层数据帧进行通信<br>原始ip包+目的MAC地址封装成二层数据帧(通过ARP表得到目的mac地址)</p>
+<p><img src="https://ttxsgoto.github.io/img/docker_network/docker-network-02.jpg" alt=""></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Network/">Network</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Docker/">Docker</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2020/07/09/docker-network02/" data-title="Docker 网络通信 | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/07/10/k8s-network/" title="Kubernetes Network">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Kubernetes Network</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/04/08/k8s-storageclass/"  title="Kubernetes StorageClass">
+ <strong>旧一篇:</strong><br/> 
+ <span>Kubernetes StorageClass
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Docker 网络通信" data-thread-key="docker-network02" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/docker-network02"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

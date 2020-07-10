@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2020-04-08T06:32:50.000Z</updated>
+  <updated>2020-07-10T09:54:16.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -16,11 +16,123 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Kubernetes Network</title>
+    <link href="https://ttxsgoto.github.io/2020/07/10/k8s-network/"/>
+    <id>https://ttxsgoto.github.io/2020/07/10/k8s-network/</id>
+    <published>2020-07-10T09:48:08.000Z</published>
+    <updated>2020-07-10T09:54:16.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="网络模型"><a href="#网络模型" class="headerlink" title="网络模型"></a>网络模型</h4><p>Kubernetes通过一个叫CNI的接口，维护了一个单独的网桥来代替docker0，即CNI网桥， 在宿主机上的设备名称默认是cni0，和docker网络不同的是将docker0网桥替换成CNI网桥</p>
+<p><img src="https://ttxsgoto.github.io/img/k8s/k8s-flannel-01.jpg" alt=""></p>
+<h4 id="CNI"><a href="#CNI" class="headerlink" title="CNI"></a>CNI</h4><p>Kubernetes 创建一个 Pod 的第一步，就是创建并启动一个 Infra 容器，用来“hold”住这个 Pod 的 Network Namespace<br>CNI 在Kubernetes启动infra容器之后，就直接可以调用CNI网络插件，为这个Infra容器的Network Namespace配置符合预期的网络栈</p>
+<h5 id="CNI配置流程"><a href="#CNI配置流程" class="headerlink" title="CNI配置流程"></a>CNI配置流程</h5><p>/opt/cni/bin存放的CNI插件所需的基本可执行文件</p>
+<ol>
+<li><p>实现网络方案本身</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- 即flanneld进程的主要逻辑</div><div class="line">- 创建和配置flannel.1设备，配置宿主机路由、ARP和FDB表信息</div></pre></td></tr></table></figure>
+</li>
+<li><p>实现网络方案对应的CNI插件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- 配置Infra容器里的网络栈，并把它连接在CNI网桥上</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>在宿主机上安装flanneld，并在每台宿主机上生成对应的CNI配置文件/etc/cni/net.d/10-flannel.conflist,kubernetes集群会使用这个配置文件来作为容器网络配置方案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;name&quot;: &quot;cbr0&quot;,</div><div class="line">  &quot;cniVersion&quot;: &quot;0.3.1&quot;,</div><div class="line">  &quot;plugins&quot;: [</div><div class="line">    &#123;</div><div class="line">      &quot;type&quot;: &quot;flannel&quot;,</div><div class="line">      &quot;delegate&quot;: &#123;</div><div class="line">        &quot;hairpinMode&quot;: true,    # 集群里的 Pod 才可以通过它自己的 Service 访问到自己</div><div class="line">        &quot;isDefaultGateway&quot;: true</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">      &quot;type&quot;: &quot;portmap&quot;,</div><div class="line">      &quot;capabilities&quot;: &#123;</div><div class="line">        &quot;portMappings&quot;: true</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  ]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>CRI(Container Runtime Interface，容器运行时接口)实现容器网络相关的逻辑，对应docker项目为dockershim来实现</p>
+<h5 id="dockershim处理过程"><a href="#dockershim处理过程" class="headerlink" title="dockershim处理过程"></a>dockershim处理过程</h5><ol>
+<li>dockershim在处理容器网络时，加载/etc/cni/net.d内的文件，并且把plugins字段中的第一个插件作为默认插件</li>
+<li>后面的执行过程中，flannel和portmap会按照定义顺序被调用，从而依次完成“配置容器网络”和“配置端口映射”这两步操作</li>
+</ol>
+<h5 id="CNI插件的工作原理"><a href="#CNI插件的工作原理" class="headerlink" title="CNI插件的工作原理"></a>CNI插件的工作原理</h5><ol>
+<li>kubelet创建pod时，首先通过dockershim会先调用docker api创建并启动Infra容器，然后执行SetUpPod方法，作用为：为CNI插件准备参数，然后调用CNI插件为Infra容器配置网络<ul>
+<li>将容器添加到CNI网络中，即通过容器以Veth Pair方式插到CNI网桥上</li>
+<li>/run/flannel/subnet.env为宿主机生成的flannel配置文件</li>
+<li>/var/lib/cni/flannel 为flannel cni插件把delegate字段以json文件的方式保存下来</li>
+</ul>
+</li>
+<li>CNI bridge插件调用CNI ipam插件，为容器分配可用ip地址，同时为容器设置默认路由</li>
+<li>CNI插件会把容器的ip地址等信息返回给dockershim，然后被kubelet添加到Pod的Status字段中</li>
+</ol>
+<h4 id="Service的工作原理"><a href="#Service的工作原理" class="headerlink" title="Service的工作原理"></a>Service的工作原理</h4><p>Service是由kube-proxy组件，加上iptables共同实现<br>访问service vip的ip包经过iptables处理后， 就可以变为访问后端Pod的ip包，而这些endpoints对应的iptables规则，正是kube-proxy通过监听pod的变化事件，在宿主机上生成并维护的</p>
+<p><strong>IPVS模式工作原理</strong></p>
+<ol>
+<li>和iptables模式类似，当我们创建service后，kube-proxy会在宿主机上创建一个虚拟网卡(kube-ipvs0)，并为它分配service VIP作为ip地址</li>
+<li>kube-proxy通过linux的ipvs模块，为这个ip设置对应的ipvs虚拟主机，并设置这些虚拟主机之间的轮询模式(rr)来作为负载均衡策略，可通过ipvsadm -ln查看；IPVS在内核中的实现是具有Netfilter的NAT模式，IPVS不需要在宿主机上为每个pod设置iptables规则，而是把这些规则的处理放在内核态，从而大大降低了维护iptables的这些规则，从而提高了性能</li>
+<li>IPVS模块只负责负责均衡和代理模块， 其他的包过滤、SNAT等操作，还是依靠iptables来实现，但这些iptables规则数量有限，而且不会随pod数量的增加而增加</li>
+<li>kube-proxy设置为 -proxy-mode=ipvs开启ipvs功能</li>
+</ol>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;网络模型&quot;&gt;&lt;a href=&quot;#网络模型&quot; class=&quot;headerlink&quot; title=&quot;网络模型&quot;&gt;&lt;/a&gt;网络模型&lt;/h4&gt;&lt;p&gt;Kubernetes通过一个叫CNI的接口，维护了一个单独的网桥来代替docker0，即CNI网桥， 在宿主机上的设备名称默
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="k8s" scheme="https://ttxsgoto.github.io/tags/k8s/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker 网络通信</title>
+    <link href="https://ttxsgoto.github.io/2020/07/09/docker-network02/"/>
+    <id>https://ttxsgoto.github.io/2020/07/09/docker-network02/</id>
+    <published>2020-07-09T09:31:20.000Z</published>
+    <updated>2020-07-10T09:45:58.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Docker通信，需要解决的问题有：</p>
+<ul>
+<li>同一台主机上的不同docker的通信</li>
+<li>跨主机的不同docker的通信</li>
+</ul>
+<h4 id="网桥-bridge"><a href="#网桥-bridge" class="headerlink" title="网桥(bridge)"></a>网桥(bridge)</h4><p>网桥(Bridge)：在linux中能够起到虚拟交换机的网络设备，工作在数据链路层，主要通过mac地址学习将数据包发送给网桥的不同端口</p>
+<p>在docker项目中会默认在宿主机上创建docker0的网桥，只要连接在docker0网桥上的容器，就可以通过它来进行通信</p>
+<h4 id="Veth-Pair"><a href="#Veth-Pair" class="headerlink" title="Veth Pair"></a>Veth Pair</h4><p>Docker通过一种名为Veth pair的虚拟设备来连接到docker0网桥上</p>
+<p>veth pair的特点：被创建出来后，总是以两张虚拟网卡成对出现，从其中一个网卡发出数据包，可以直接从另一个网卡得到数据包，即使这两个网卡不在同一个network namespace里</p>
+<h4 id="同一台主机上的不同docker的通信"><a href="#同一台主机上的不同docker的通信" class="headerlink" title="同一台主机上的不同docker的通信"></a>同一台主机上的不同docker的通信</h4><p>被限制在network namespace里的容器进程，实际上是通过Veth Pair设备 + 宿主机网桥的方式实现了同其他容器的数据交换</p>
+<p><img src="https://ttxsgoto.github.io/img/docker_network/docker-network-01.png" alt=""></p>
+<p>在容器中的eth0为Veth pair设备在容器的一端，主机上vethxxxx为Veth pair的另一端</p>
+<p><strong>容器虚拟网卡和网桥docker0虚拟网络的Veth pair的配对关系查找</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">docker <span class="built_in">exec</span> -it &lt;container-name&gt; bash -c <span class="string">'cat /sys/class/net/eth0/iflink'</span></div><div class="line"><span class="comment"># 返回 60</span></div><div class="line">grep <span class="_">-l</span> 60 /sys/class/net/veth*/ifindex</div><div class="line"><span class="comment"># 此时会有如下类似返回</span></div><div class="line">/sys/class/net/veth11d4238/ifindex</div><div class="line"><span class="comment"># veth11d4238 即主机上的另一半</span></div><div class="line"> </div><div class="line">brctl show  	<span class="comment"># 查看veth pair都对应在哪个网桥上</span></div><div class="line">ip link show    <span class="comment"># 查看veth pair网卡信息</span></div></pre></td></tr></table></figure></p>
+<h4 id="跨主机的不同docker的通信"><a href="#跨主机的不同docker的通信" class="headerlink" title="跨主机的不同docker的通信"></a>跨主机的不同docker的通信</h4><p>容器都连接在docker0网桥上，而网络插件则在宿主机上创建了一个特殊的设备，docker0和这个设备，通过ip转发(即路由表)进行转发</p>
+<p>我们需要在已有的宿主机网络上，再通过软件构建一个覆盖在已有宿主机网络之上的、可以把所有容器连通在一起的虚拟网络。所以，这种技术就被称为：Overlay Network（覆盖网络）</p>
+<h5 id="Flannel"><a href="#Flannel" class="headerlink" title="Flannel"></a>Flannel</h5><ul>
+<li>VXLAN   虚拟可扩展局域网，内核态实现封装和解封装</li>
+<li>host-gw 主机二层连通，即同一个vlan中</li>
+<li>UDP       严重性能问题(用户态和内核态之间的切换)，已弃用 </li>
+</ul>
+<h5 id="Tunel设备"><a href="#Tunel设备" class="headerlink" title="Tunel设备"></a>Tunel设备</h5><p>Flannel为Tunnel设备，为三层的虚拟网络设备，在操作系统内核和用户应用程序之间传递ip包</p>
+<h5 id="Flannel子网-Subnet"><a href="#Flannel子网-Subnet" class="headerlink" title="Flannel子网(Subnet)"></a>Flannel子网(Subnet)</h5><p>由flannel管理的容器网络里，一台宿主机上的所有容器，都属于该宿主机被分配的一个“子网”，这些子网与宿主机的对应关系，保存在etcd中</p>
+<h5 id="Flannel通信"><a href="#Flannel通信" class="headerlink" title="Flannel通信"></a>Flannel通信</h5><p>Flannel将不同宿主机的容器组成一个大的子网，所有容器都在这个大的网络中，即Overlay Network 得以打通</p>
+<p>VXLAN覆盖网络的设计： 在现有的三层网络上，“覆盖”一层虚拟的、内核的VXLAN模块负责维护的二层网络，使得连接在这个VXLAN二层网络的主机之间，可以像在同一个局域网(LAN)里自由通信。</p>
+<p>VTEP (VXLAN Tunnel End Point 虚拟隧道端点)<br>flannel.1设备为VXLAN所需的VTEP设备，拥有ip地址也有mac地址<br>当数据到宿主机时，路由到flannel.1设备进行处理，进入隧道，找到对应的出口(flanneld进程负责维护设备信息)</p>
+<p>VTEP设备需之间需要组建一个虚拟的二层网络，通过二层数据帧进行通信<br>原始ip包+目的MAC地址封装成二层数据帧(通过ARP表得到目的mac地址)</p>
+<p><img src="https://ttxsgoto.github.io/img/docker_network/docker-network-02.jpg" alt=""></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Docker通信，需要解决的问题有：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;同一台主机上的不同docker的通信&lt;/li&gt;
+&lt;li&gt;跨主机的不同docker的通信&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&quot;网桥-bridge&quot;&gt;&lt;a href=&quot;#网桥-bridge&quot; class=&quot;hea
+    
+    </summary>
+    
+      <category term="Docker" scheme="https://ttxsgoto.github.io/categories/Docker/"/>
+    
+    
+      <category term="Network" scheme="https://ttxsgoto.github.io/tags/Network/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Kubernetes StorageClass</title>
     <link href="https://ttxsgoto.github.io/2020/04/08/k8s-storageclass/"/>
     <id>https://ttxsgoto.github.io/2020/04/08/k8s-storageclass/</id>
     <published>2020-04-08T06:26:29.000Z</published>
-    <updated>2020-04-08T06:32:50.000Z</updated>
+    <updated>2020-04-16T02:28:31.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="StorageClass"><a href="#StorageClass" class="headerlink" title="StorageClass"></a>StorageClass</h3><p>创建动态PV，使用时无需先创建好PV</p>
 <h3 id="创建Provisioner"><a href="#创建Provisioner" class="headerlink" title="创建Provisioner"></a>创建Provisioner</h3><p>使用 StorageClass，我们需要安装对应的自动配置程序，比如我们这里存储后端使用的是 nfs，那么我们就需要使用到一个 nfs-client 的自动配置程序，我们也叫Provisioner，这个程序使用我们已经配置好的 nfs 服务器，来自动创建持久卷，也就是自动帮我们创建 PV</p>
@@ -1116,71 +1228,6 @@
     
     
       <category term="count" scheme="https://ttxsgoto.github.io/tags/count/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Order by工作原理</title>
-    <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-order-by/"/>
-    <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-order-by/</id>
-    <published>2018-12-28T14:46:51.000Z</published>
-    <updated>2020-03-20T08:09:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="全字段排序"><a href="#全字段排序" class="headerlink" title="全字段排序"></a>全字段排序</h4><p>mysql会给每个线程分配一块内存用于排序，称为sort_buffer</p>
-<p>sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该值，则需要用磁盘临时文件辅助排序</p>
-<h4 id="rowid排序"><a href="#rowid排序" class="headerlink" title="rowid排序"></a>rowid排序</h4><p>全字段排序只对原表数据读取一次，剩下的都在sort_buffer和临时文件中进行，如果查询返回的字段很多，那么sort_buffer里面存放的字段数太多，内存里放下的数据行数就很少，需要分成很多个临时文件，排序的性能会受影响，这时需要使用rowid排序</p>
-<p>max_length_for_sort_data 字段用来控制排序的行数据的长度的参数，如果单行的长度超过这个值，mysql会换一种算法，即将查询的列和主键id放入sort_buffer中</p>
-<p>这种算法需要多访问一次表的主键索引</p>
-<p>如果内存大，mysql就会多利用内存，尽量减少磁盘访问</p>
-<p><strong>写入有序数据，通过索引本身就是写入数据就是有序的，那么order by 就不需要排序了，直接就是对应的数据</strong></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;全字段排序&quot;&gt;&lt;a href=&quot;#全字段排序&quot; class=&quot;headerlink&quot; title=&quot;全字段排序&quot;&gt;&lt;/a&gt;全字段排序&lt;/h4&gt;&lt;p&gt;mysql会给每个线程分配一块内存用于排序，称为sort_buffer&lt;/p&gt;
-&lt;p&gt;sort_buffer_siz
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="排序" scheme="https://ttxsgoto.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>字符串加索引</title>
-    <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-addindex-to-string/"/>
-    <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-addindex-to-string/</id>
-    <published>2018-12-28T12:41:50.000Z</published>
-    <updated>2020-03-20T08:09:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h4><p>前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数</p>
-<p>在建立索引时需要关注的是区分度，区分度越高越好</p>
-<p>查看对应索引的区分度方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">select count(distinct a) <span class="keyword">as</span> L <span class="keyword">from</span> user;</div><div class="line">select count(*) <span class="keyword">as</span> total <span class="keyword">from</span> user;</div><div class="line"> </div><div class="line">select count(distinct left(a, <span class="number">4</span>) <span class="keyword">as</span> L4,</div><div class="line">       count(distinct left(a, <span class="number">5</span>) <span class="keyword">as</span> L5,</div><div class="line"><span class="keyword">from</span> user</div></pre></td></tr></table></figure></p>
-<p><strong>注意</strong>：使用前缀索引就用不上覆盖索引查询对查询性能的优化，这是在选择是否使用前缀索引时需要考虑的因素</p>
-<h4 id="倒序存储"><a href="#倒序存储" class="headerlink" title="倒序存储"></a>倒序存储</h4><p>对前面n位数都是重复的字段，可以使用倒序存储，将存储的内容倒序存储<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">select field <span class="keyword">from</span> t where word=reverse(<span class="string">'input_string'</span>);</div></pre></td></tr></table></figure></p>
-<h4 id="使用hash字段"><a href="#使用hash字段" class="headerlink" title="使用hash字段"></a>使用hash字段</h4><p>在表中再创建一个整数字段，来保存字段的校验码，同时在这个字段创建索引<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">alter table t add word_crc int unsigned, <span class="keyword">and</span> index(word_crc);</div></pre></td></tr></table></figure></p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
-<li>直接创建完整索引，这样可能会占用大量的空间</li>
-<li>创建前缀索引，节省空间，但会增加查询扫描次数，并且不能使用覆盖索引</li>
-<li>倒序存储，在创建前缀索引，用于绕过字符串本身前缀区分度不高的问题</li>
-<li>创建hash字段索引，查询性能稳定，有额外的存储和计算消耗，同时不支持范围扫描</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;前缀索引&quot;&gt;&lt;a href=&quot;#前缀索引&quot; class=&quot;headerlink&quot; title=&quot;前缀索引&quot;&gt;&lt;/a&gt;前缀索引&lt;/h4&gt;&lt;p&gt;前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数&lt;/p&gt;
-&lt;p&gt;在建立索引时需要关注的是区分度，区分度越高越好&lt;
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="Index" scheme="https://ttxsgoto.github.io/tags/Index/"/>
     
   </entry>
   

@@ -89,6 +89,57 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2018/12/28/yw-mysql-order-by/" title="Order by工作原理" itemprop="url">
+      
+        Order by工作原理
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >全字段排序mysql会给每个线程分配一块内存用于排序，称为sort_buffer
+sort_buffer_size 是mysql为排序开辟的内存大小(sort_buffer)大小，如果要排序的数据量小于sort_buffer_size，排序在内存中完成，如果排序数据量太大，大于该</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T14:46:51.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-order-by/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2018/12/28/yw-mysql-addindex-to-string/" title="字符串加索引" itemprop="url">
+      
+        字符串加索引
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >前缀索引前缀字符长度索引，所占空间更小，同时会增加额外的记录扫描次数
+在建立索引时需要关注的是区分度，区分度越高越好
+查看对应索引的区分度方法123456select count(distinct a) as L from user;select count(*) as tota</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T12:41:50.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-addindex-to-string/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2018/12/27/yw-mysql-lock/" title="全局锁、表级锁和行锁" itemprop="url">
       
         全局锁、表级锁和行锁
@@ -324,56 +375,6 @@ show index from x 查看索引对应的基数
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/09/17/django-migrations-error/" title="Django mgirate 错误" itemprop="url">
-      
-        Django mgirate 错误
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >问题描述最近在工作中，django model添加表时，如果有外键，在migrate时常常出现如下报错：1234567891011File &quot;/root/.virtualenvs/lib/python3.5/site-packages/pymysql/connections.py</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-09-17T11:37:18.000Z" itemprop="datePublished">2018-09-17</time>
-      
-          <a href="/2018/09/17/django-migrations-error/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/09/16/mysql-queryset/" title="Mysql必知必会笔记" itemprop="url">
-      
-        Mysql必知必会笔记
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >最近看了一下mysql基础知识， 主要集中在相关查询操作上，记录如下：
-其中使用的数据库结构和数据为http://forta.com/books/0672327120/ 中的SQL脚本
-计算次序12345SELECT * FROM products WHERE vend_id=1</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-09-16T11:02:58.000Z" itemprop="datePublished">2018-09-16</time>
-      
-          <a href="/2018/09/16/mysql-queryset/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/page/2/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/4/">下一页 &raquo;</a>
@@ -416,13 +417,13 @@ show index from x 查看索引对应的基数
 		
 			<li><a href="/categories/Django/" title="Django">Django<sup>12</sup></a></li>
 		
-			<li><a href="/categories/Docker/" title="Docker">Docker<sup>3</sup></a></li>
+			<li><a href="/categories/Docker/" title="Docker">Docker<sup>4</sup></a></li>
 		
 			<li><a href="/categories/Elasticsearch/" title="Elasticsearch">Elasticsearch<sup>4</sup></a></li>
 		
 			<li><a href="/categories/Frontend/" title="Frontend">Frontend<sup>6</sup></a></li>
 		
-			<li><a href="/categories/Kubernetes/" title="Kubernetes">Kubernetes<sup>8</sup></a></li>
+			<li><a href="/categories/Kubernetes/" title="Kubernetes">Kubernetes<sup>9</sup></a></li>
 		
 			<li><a href="/categories/Mysql/" title="Mysql">Mysql<sup>13</sup></a></li>
 		
