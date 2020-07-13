@@ -4,14 +4,12 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Kubernetes Network | ttxsgoto&#39; Blog</title>
+    <title>Minio Client Error x509 certificate signed by unknown authority | ttxsgoto&#39; Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="ttxsgoto">
     
-    <meta name="description" content="网络模型Kubernetes通过一个叫CNI的接口，维护了一个单独的网桥来代替docker0，即CNI网桥， 在宿主机上的设备名称默认是cni0，和docker网络不同的是将docker0网桥替换成CNI网桥
-
-CNIKubernetes 创建一个 Pod 的第一步，就是创建并启动一个 Infra ">
+    <meta name="description" content="问题描述当Minio Server通过https提供服务时，通过命令 mc config –insecure host add minio https://ttxsgoto.github.io username password –api S3v4 添加后，出现 x509: certificate ">
     
     
     
@@ -88,10 +86,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2020/07/10/k8s-network/" title="Kubernetes Network" itemprop="url">Kubernetes Network</a>
+      <a href="/2020/07/13/yw-mc-error/" title="Minio Client Error x509 certificate signed by unknown authority" itemprop="url">Minio Client Error x509 certificate signed by unknown authority</a>
   </h1>
   <p class="article-time">
-    <time datetime="2020-07-10T09:48:08.000Z" itemprop="datePublished">2020-07-10</time>
+    <time datetime="2020-07-13T09:03:56.000Z" itemprop="datePublished">2020-07-13</time>
   </p>
 </header>
 	<div class="article-content">
@@ -99,65 +97,31 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#网络模型"><span class="toc-number">1.</span> <span class="toc-text">网络模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CNI"><span class="toc-number">2.</span> <span class="toc-text">CNI</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#CNI配置流程"><span class="toc-number">2.1.</span> <span class="toc-text">CNI配置流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#dockershim处理过程"><span class="toc-number">2.2.</span> <span class="toc-text">dockershim处理过程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#CNI插件的工作原理"><span class="toc-number">2.3.</span> <span class="toc-text">CNI插件的工作原理</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Service的工作原理"><span class="toc-number">3.</span> <span class="toc-text">Service的工作原理</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#问题描述"><span class="toc-number">1.</span> <span class="toc-text">问题描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#解决方案"><span class="toc-number">2.</span> <span class="toc-text">解决方案</span></a></li></ol>
 		</div>
 		
-		<h4 id="网络模型"><a href="#网络模型" class="headerlink" title="网络模型"></a>网络模型</h4><p>Kubernetes通过一个叫CNI的接口，维护了一个单独的网桥来代替docker0，即CNI网桥， 在宿主机上的设备名称默认是cni0，和docker网络不同的是将docker0网桥替换成CNI网桥</p>
-<p><img src="https://ttxsgoto.github.io/img/k8s/k8s-flannel-01.jpg" alt=""></p>
-<h4 id="CNI"><a href="#CNI" class="headerlink" title="CNI"></a>CNI</h4><p>Kubernetes 创建一个 Pod 的第一步，就是创建并启动一个 Infra 容器，用来“hold”住这个 Pod 的 Network Namespace<br>CNI 在Kubernetes启动infra容器之后，就直接可以调用CNI网络插件，为这个Infra容器的Network Namespace配置符合预期的网络栈</p>
-<h5 id="CNI配置流程"><a href="#CNI配置流程" class="headerlink" title="CNI配置流程"></a>CNI配置流程</h5><p>/opt/cni/bin存放的CNI插件所需的基本可执行文件</p>
-<ol>
-<li><p>实现网络方案本身</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">- 即flanneld进程的主要逻辑</div><div class="line">- 创建和配置flannel.1设备，配置宿主机路由、ARP和FDB表信息</div></pre></td></tr></table></figure>
-</li>
-<li><p>实现网络方案对应的CNI插件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">- 配置Infra容器里的网络栈，并把它连接在CNI网桥上</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>在宿主机上安装flanneld，并在每台宿主机上生成对应的CNI配置文件/etc/cni/net.d/10-flannel.conflist,kubernetes集群会使用这个配置文件来作为容器网络配置方案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;name&quot;: &quot;cbr0&quot;,</div><div class="line">  &quot;cniVersion&quot;: &quot;0.3.1&quot;,</div><div class="line">  &quot;plugins&quot;: [</div><div class="line">    &#123;</div><div class="line">      &quot;type&quot;: &quot;flannel&quot;,</div><div class="line">      &quot;delegate&quot;: &#123;</div><div class="line">        &quot;hairpinMode&quot;: true,    # 集群里的 Pod 才可以通过它自己的 Service 访问到自己</div><div class="line">        &quot;isDefaultGateway&quot;: true</div><div class="line">      &#125;</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">      &quot;type&quot;: &quot;portmap&quot;,</div><div class="line">      &quot;capabilities&quot;: &#123;</div><div class="line">        &quot;portMappings&quot;: true</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  ]</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>CRI(Container Runtime Interface，容器运行时接口)实现容器网络相关的逻辑，对应docker项目为dockershim来实现</p>
-<h5 id="dockershim处理过程"><a href="#dockershim处理过程" class="headerlink" title="dockershim处理过程"></a>dockershim处理过程</h5><ol>
-<li>dockershim在处理容器网络时，加载/etc/cni/net.d内的文件，并且把plugins字段中的第一个插件作为默认插件</li>
-<li>后面的执行过程中，flannel和portmap会按照定义顺序被调用，从而依次完成“配置容器网络”和“配置端口映射”这两步操作</li>
-</ol>
-<h5 id="CNI插件的工作原理"><a href="#CNI插件的工作原理" class="headerlink" title="CNI插件的工作原理"></a>CNI插件的工作原理</h5><ol>
-<li>kubelet创建pod时，首先通过dockershim会先调用docker api创建并启动Infra容器，然后执行SetUpPod方法，作用为：为CNI插件准备参数，然后调用CNI插件为Infra容器配置网络<ul>
-<li>将容器添加到CNI网络中，即通过容器以Veth Pair方式插到CNI网桥上</li>
-<li>/run/flannel/subnet.env为宿主机生成的flannel配置文件</li>
-<li>/var/lib/cni/flannel 为flannel cni插件把delegate字段以json文件的方式保存下来</li>
-</ul>
-</li>
-<li>CNI bridge插件调用CNI ipam插件，为容器分配可用ip地址，同时为容器设置默认路由</li>
-<li>CNI插件会把容器的ip地址等信息返回给dockershim，然后被kubelet添加到Pod的Status字段中</li>
-</ol>
-<h4 id="Service的工作原理"><a href="#Service的工作原理" class="headerlink" title="Service的工作原理"></a>Service的工作原理</h4><p>Service是由kube-proxy组件，加上iptables共同实现<br>访问service vip的ip包经过iptables处理后， 就可以变为访问后端Pod的ip包，而这些endpoints对应的iptables规则，正是kube-proxy通过监听pod的变化事件，在宿主机上生成并维护的</p>
-<p><strong>IPVS模式工作原理</strong></p>
-<ol>
-<li>和iptables模式类似，当我们创建service后，kube-proxy会在宿主机上创建一个虚拟网卡(kube-ipvs0)，并为它分配service VIP作为ip地址</li>
-<li>kube-proxy通过linux的ipvs模块，为这个ip设置对应的ipvs虚拟主机，并设置这些虚拟主机之间的轮询模式(rr)来作为负载均衡策略，可通过ipvsadm -ln查看；IPVS在内核中的实现是具有Netfilter的NAT模式，IPVS不需要在宿主机上为每个pod设置iptables规则，而是把这些规则的处理放在内核态，从而大大降低了维护iptables的这些规则，从而提高了性能</li>
-<li>IPVS模块只负责负责均衡和代理模块， 其他的包过滤、SNAT等操作，还是依靠iptables来实现，但这些iptables规则数量有限，而且不会随pod数量的增加而增加</li>
-<li>kube-proxy设置为 -proxy-mode=ipvs开启ipvs功能</li>
-</ol>
+		<h4 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h4><p>当Minio Server通过https提供服务时，通过命令 mc config –insecure host add minio <a href="https://ttxsgoto.github.io">https://ttxsgoto.github.io</a> username password –api S3v4 添加后，出现 x509: certificate signed by unknown authority错误</p>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># https://github.com/minio/minio/issues/7862</span></div><div class="line"><span class="built_in">cd</span> /root/.mc/certs/CAs &amp;&amp; openssl s_client -showcerts -connect ttxsgoto.github.io:443 &gt; ttxsgoto.crt</div><div class="line"> </div><div class="line">~ <span class="comment"># mc ls minio # 测试ok</span></div><div class="line">[2020-07-07 07:00:38 UTC]      0B <span class="built_in">test</span>/</div></pre></td></tr></table></figure>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/k8s/">k8s</a>
+  <span></span> <a href="/tags/minio/">minio</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/Kubernetes/">Kubernetes</a>
+  <a class="article-category-link" href="/categories/运维/">运维</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://ttxsgoto.github.io/2020/07/10/k8s-network/" data-title="Kubernetes Network | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://ttxsgoto.github.io/2020/07/13/yw-mc-error/" data-title="Minio Client Error x509 certificate signed by unknown authority | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -166,19 +130,11 @@ var _hmt = _hmt || [];
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2020/07/13/yw-mc-error/" title="Minio Client Error x509 certificate signed by unknown authority">
-  <strong>新一篇:</strong><br/>
-  <span>
-  Minio Client Error x509 certificate signed by unknown authority</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2020/07/09/docker-network02/"  title="Docker 网络通信">
+<a href="/2020/07/10/k8s-network/"  title="Kubernetes Network">
  <strong>旧一篇:</strong><br/> 
- <span>Docker 网络通信
+ <span>Kubernetes Network
 </span>
 </a>
 </div>
@@ -188,7 +144,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="Kubernetes Network" data-thread-key="k8s-network" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/k8s-network"></div>
+	<div class="ds-thread" data-title="Minio Client Error x509 certificate signed by unknown authority" data-thread-key="yw-mc-error" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/yw-mc-error"></div>
 	
 </section>
 

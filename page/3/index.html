@@ -89,6 +89,35 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2018/12/28/yw-mysql-count/" title="Count计数变慢" itemprop="url">
+      
+        Count计数变慢
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >count(*) 实现方式不同的引擎，实现方式不同
+
+Myisam把一个表的总行存在磁盘上，执行时直接返回这个数
+Innodb，需要把数据一行行的从引擎中读出来，然后累积计数，遍历全表
+
+不同的count用法count()为聚合函数，对于返回的结果集，一行行判断，如果count函</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2018-12-28T14:48:50.000Z" itemprop="datePublished">2018-12-28</time>
+      
+          <a href="/2018/12/28/yw-mysql-count/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2018/12/28/yw-mysql-order-by/" title="Order by工作原理" itemprop="url">
       
         Order by工作原理
@@ -348,33 +377,6 @@ show index from x 查看索引对应的基数
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2018/09/28/redis-advance/" title="运维 Redis进阶" itemprop="url">
-      
-        运维 Redis进阶
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >Redis的数据存在内存中， 读写速度非常快，常用于缓存数据，来提高系统的高性能和高并发
-使用redis目的
-高性能：将数据缓存在redis中，访问数据从缓存中取，不直接访问数据库，提高页面响应效率
-高并发：在大的并发情况下，直接操作缓存能够承受的请求远大于直接访问数据库，这时我</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2018-09-28T13:14:53.000Z" itemprop="datePublished">2018-09-28</time>
-      
-          <a href="/2018/09/28/redis-advance/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
 
   <nav id="page-nav" class="clearfix">
     <a class="extend prev" rel="prev" href="/page/2/">&laquo; 上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/4/">下一页 &raquo;</a>
@@ -433,7 +435,7 @@ show index from x 查看索引对应的基数
 		
 			<li><a href="/categories/中间件/" title="中间件">中间件<sup>1</sup></a></li>
 		
-			<li><a href="/categories/运维/" title="运维">运维<sup>23</sup></a></li>
+			<li><a href="/categories/运维/" title="运维">运维<sup>24</sup></a></li>
 		
 		</ul>
 </div>

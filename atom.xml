@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2020-07-10T09:54:16.000Z</updated>
+  <updated>2020-07-13T09:08:30.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Minio Client Error x509 certificate signed by unknown authority</title>
+    <link href="https://ttxsgoto.github.io/2020/07/13/yw-mc-error/"/>
+    <id>https://ttxsgoto.github.io/2020/07/13/yw-mc-error/</id>
+    <published>2020-07-13T09:03:56.000Z</published>
+    <updated>2020-07-13T09:08:30.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h4><p>当Minio Server通过https提供服务时，通过命令 mc config –insecure host add minio <a href="https://ttxsgoto.github.io">https://ttxsgoto.github.io</a> username password –api S3v4 添加后，出现 x509: certificate signed by unknown authority错误</p>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># https://github.com/minio/minio/issues/7862</span></div><div class="line"><span class="built_in">cd</span> /root/.mc/certs/CAs &amp;&amp; openssl s_client -showcerts -connect ttxsgoto.github.io:443 &gt; ttxsgoto.crt</div><div class="line"> </div><div class="line">~ <span class="comment"># mc ls minio # 测试ok</span></div><div class="line">[2020-07-07 07:00:38 UTC]      0B <span class="built_in">test</span>/</div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;问题描述&quot;&gt;&lt;a href=&quot;#问题描述&quot; class=&quot;headerlink&quot; title=&quot;问题描述&quot;&gt;&lt;/a&gt;问题描述&lt;/h4&gt;&lt;p&gt;当Minio Server通过https提供服务时，通过命令 mc config –insecure host add mi
+    
+    </summary>
+    
+      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="minio" scheme="https://ttxsgoto.github.io/tags/minio/"/>
+    
+  </entry>
   
   <entry>
     <title>Kubernetes Network</title>
@@ -1186,48 +1210,6 @@
     
     
       <category term="Jenkins" scheme="https://ttxsgoto.github.io/tags/Jenkins/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Count计数变慢</title>
-    <link href="https://ttxsgoto.github.io/2018/12/28/yw-mysql-count/"/>
-    <id>https://ttxsgoto.github.io/2018/12/28/yw-mysql-count/</id>
-    <published>2018-12-28T14:48:50.000Z</published>
-    <updated>2020-03-20T08:09:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="count-实现方式"><a href="#count-实现方式" class="headerlink" title="count(*) 实现方式"></a>count(*) 实现方式</h4><p>不同的引擎，实现方式不同</p>
-<ul>
-<li>Myisam把一个表的总行存在磁盘上，执行时直接返回这个数</li>
-<li>Innodb，需要把数据一行行的从引擎中读出来，然后累积计数，遍历全表</li>
-</ul>
-<h4 id="不同的count用法"><a href="#不同的count用法" class="headerlink" title="不同的count用法"></a>不同的count用法</h4><p>count()为聚合函数，对于返回的结果集，一行行判断，如果count函数的参数不为null，累计值加1，最终返回累计值</p>
-<ul>
-<li>count(*)</li>
-<li>count(id)</li>
-<li>count(字段)</li>
-<li>count(1)</li>
-</ul>
-<p>这里count(*),count(id),count(1)返回满足条件的结果集的总行数，而count(字段)返回满足条件不为null的总数<br>性能比较原则：</p>
-<ol>
-<li>server层要做什么就给什么</li>
-<li>innodb只给必要的值</li>
-</ol>
-<h4 id="效率排序"><a href="#效率排序" class="headerlink" title="效率排序"></a>效率排序</h4><p>count(字段)&lt; count(id)&lt;count(1)=count(*)</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;count-实现方式&quot;&gt;&lt;a href=&quot;#count-实现方式&quot; class=&quot;headerlink&quot; title=&quot;count(*) 实现方式&quot;&gt;&lt;/a&gt;count(*) 实现方式&lt;/h4&gt;&lt;p&gt;不同的引擎，实现方式不同&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Myisam
-    
-    </summary>
-    
-      <category term="Mysql" scheme="https://ttxsgoto.github.io/categories/Mysql/"/>
-    
-    
-      <category term="count" scheme="https://ttxsgoto.github.io/tags/count/"/>
     
   </entry>
   
