@@ -1,0 +1,367 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Kubernetes 高可用集群(Kubespray) | ttxsgoto&#39; Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="ttxsgoto">
+    
+    <meta name="description" content="说明Kubespray 是 Kubernetes incubator 中的项目，目标是提供 Production Ready Kubernetes 部署方案
+
+可以部署在 AWS, GCE, Azure, OpenStack 以及裸机上.
+部署 High Available Kubernetes 集">
+    
+    
+    
+    
+    
+    
+    <link rel="apple-touch-icon" href="/img/1.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/1.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="ttxsgoto&#39; Blog">ttxsgoto&#39; Blog</a></h1>
+				<h2 class="blog-motto">好好学习 努力工作 享受生活</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="st-search-inpu" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/08/10/k8s-hv-cluster/" title="Kubernetes 高可用集群(Kubespray)" itemprop="url">Kubernetes 高可用集群(Kubespray)</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-08-10T08:16:02.000Z" itemprop="datePublished">2020-08-10</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#说明"><span class="toc-number">1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#部署说明"><span class="toc-number">2.</span> <span class="toc-text">部署说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用操作"><span class="toc-number">3.</span> <span class="toc-text">常用操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#inventory-ini说明"><span class="toc-number">4.</span> <span class="toc-text">inventory.ini说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#集群验证"><span class="toc-number">5.</span> <span class="toc-text">集群验证</span></a></li></ol>
+		</div>
+		
+		<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>Kubespray 是 Kubernetes incubator 中的项目，目标是提供 Production Ready Kubernetes 部署方案</p>
+<ul>
+<li>可以部署在 AWS, GCE, Azure, OpenStack 以及裸机上.</li>
+<li>部署 High Available Kubernetes 集群，ingress和etcd集群，也可以直接使用对应的插件，如dashboard，ingress等.</li>
+<li>可组合性 (Composable)，可自行选择 Network Plugin (flannel, calico, canal, weave) 来部署.</li>
+<li>支持多种 Linux distributions(CoreOS, Debian Jessie, Ubuntu 16.04, CentOS/RHEL7).</li>
+</ul>
+<h4 id="部署说明"><a href="#部署说明" class="headerlink" title="部署说明"></a>部署说明</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 角色分配</span></div><div class="line">master01 192.168.238.100(Ubuntu 16.04.5 LTS) etcd01 ingress</div><div class="line">master02 192.168.238.99(Ubuntu 16.04.5 LTS)  etcd02 ingress</div><div class="line">master03 192.168.238.98(Ubuntu 16.04.5 LTS)  etcd03 ingress</div><div class="line">node01   192.168.238.101(Ubuntu 16.04.5 LTS)</div><div class="line">node02   192.168.238.102(Ubuntu 16.04.5 LTS)</div></pre></td></tr></table></figure>
+<h4 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">git <span class="built_in">clone</span> https://github.com/kubernetes-sigs/kubespray.git</div><div class="line"> </div><div class="line"><span class="built_in">cd</span> kubespray &amp;&amp; pip install -r requirements.txt</div><div class="line">cp -rfp inventory/sample inventory/mycluster</div><div class="line"> </div><div class="line"><span class="comment"># 前提需要打通ssh无密钥认证</span></div><div class="line"><span class="comment"># 安装或者删除原节点再次安装进入集群</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini --become-user=root cluster.yml -b -v</div><div class="line"> </div><div class="line"><span class="comment"># 移除node</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini remove-node.yml -b -v --extra-vars <span class="string">"node=master03,node01"</span></div><div class="line"> </div><div class="line"><span class="comment"># 添加node， 添加node到inventory.ini中，如不行使用cluster.yml</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini scale.yml -b -v</div><div class="line"> </div><div class="line"><span class="comment"># 升级版本</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini upgrade-cluster.yml <span class="_">-e</span> kube_version=v1.18.6 -b -v</div><div class="line"> </div><div class="line"><span class="comment"># 删除集群</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini reset.yml -b -v</div></pre></td></tr></table></figure>
+<h4 id="inventory-ini说明"><a href="#inventory-ini说明" class="headerlink" title="inventory.ini说明"></a>inventory.ini说明</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># inventory.ini文件</span></div><div class="line">[all]</div><div class="line">master01 ansible_host=192.168.238.100 ip=192.168.238.100 etcd_member_name=etcd1</div><div class="line">master02 ansible_host=192.168.238.99 ip=192.168.238.99 etcd_member_name=etcd2</div><div class="line">master03 ansible_host=192.168.238.98 ip=192.168.238.98 etcd_member_name=etcd3</div><div class="line"> </div><div class="line">node01 ansible_host=192.168.238.101 ip=192.168.238.101 </div><div class="line">node02 ansible_host=192.168.238.102 ip=192.168.238.102</div><div class="line"><span class="comment"># ## configure a bastion host if your nodes are not directly reachable</span></div><div class="line"><span class="comment"># bastion ansible_host=x.x.x.x ansible_user=some_user</span></div><div class="line"> </div><div class="line">[ingress]   <span class="comment"># 这里定义的名称如果需要给对应的节点添加标签和污点，需要在inventory/mycluster/group_vars/目录中有对应的名称，如 ingress.yml</span></div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[kube-master]</div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[etcd]</div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[ingress]</div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[vehicle]</div><div class="line">node01</div><div class="line"> </div><div class="line">[kube-node]</div><div class="line">node01</div><div class="line">node02</div><div class="line"><span class="comment"># node[01:30]</span></div><div class="line"> </div><div class="line">[calico-rr]</div><div class="line"> </div><div class="line">[k8s-cluster:children]</div><div class="line">kube-master</div><div class="line">kube-node</div><div class="line">calico-rr</div><div class="line"> </div><div class="line"><span class="comment"># inventory/mycluster/group_vars/vehicle.yml    # 设置标签和污点</span></div><div class="line">node_taints:</div><div class="line">  - <span class="string">"node.kubernetes.net/role=vehicle:NoSchedule"</span></div><div class="line"> </div><div class="line">node_labels:</div><div class="line">  <span class="string">'node.kubernetes.net/role'</span>: <span class="string">'vehicle'</span></div><div class="line"> </div><div class="line"><span class="comment"># inventory/mycluster/group_vars/ingress.yml    # </span></div><div class="line">node_labels:</div><div class="line">  <span class="string">'node-role.kubernetes.io/ingress'</span>: <span class="string">''</span></div></pre></td></tr></table></figure>
+<h4 id="集群验证"><a href="#集群验证" class="headerlink" title="集群验证"></a>集群验证</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get nodes -o wide</span></div><div class="line">NAME       STATUS   ROLES            AGE   VERSION   INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME</div><div class="line">master01   Ready    ingress,master   27m   v1.18.6   192.168.238.100   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">master02   Ready    ingress,master   27m   v1.18.6   192.168.238.99    &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">master03   Ready    ingress,master   27m   v1.18.6   192.168.238.98   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">node01     Ready    &lt;none&gt;           26m   v1.18.6   192.168.238.101   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">node02     Ready    &lt;none&gt;           26m   v1.18.6   192.168.238.102   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get nodes  -l node.kubernetes.net/role=vehicle</span></div><div class="line">NAME     STATUS   ROLES    AGE   VERSION</div><div class="line">node01   Ready    &lt;none&gt;   15m   v1.18.6</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get pods -n ingress-nginx -o wide</span></div><div class="line">NAME                             READY   STATUS    RESTARTS   AGE   IP                NODE       NOMINATED NODE   READINESS GATES</div><div class="line">ingress-nginx-controller-fd9xf   1/1     Running   0          16m   192.168.238.99    master02   &lt;none&gt;           &lt;none&gt;</div><div class="line">ingress-nginx-controller-j9vp8   1/1     Running   0          16m   192.168.238.100   master01   &lt;none&gt;           &lt;none&gt;</div><div class="line">ingress-nginx-controller-xlw5b   1/1     Running   0          16m   192.168.238.98   master03   &lt;none&gt;           &lt;none&gt;</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get cs</span></div><div class="line">NAME                 STATUS      MESSAGE                                                                                     ERROR</div><div class="line">controller-manager   Unhealthy   Get http://127.0.0.1:10252/healthz: dial tcp 127.0.0.1:10252: connect: connection refused</div><div class="line">scheduler            Unhealthy   Get http://127.0.0.1:10251/healthz: dial tcp 127.0.0.1:10251: connect: connection refused</div><div class="line">etcd-1               Healthy     &#123;<span class="string">"health"</span>:<span class="string">"true"</span>&#125;</div><div class="line">etcd-2               Healthy     &#123;<span class="string">"health"</span>:<span class="string">"true"</span>&#125;</div><div class="line">etcd-0               Healthy     &#123;<span class="string">"health"</span>:<span class="string">"true"</span>&#125;</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get nodes -o go-template='&#123;&#123;- range .items &#125;&#125;&#123;&#123;- .metadata.name &#125;&#125;&#123;&#123; "\t" &#125;&#125;&#123;&#123;- range (index .spec "taints") &#125;&#125;&#123;&#123;- .key &#125;&#125;=&#123;&#123; .value &#125;&#125;:&#123;&#123; .effect &#125;&#125;&#123;&#123; "\t" &#125;&#125;&#123;&#123;- end &#125;&#125;&#123;&#123;- "\n" &#125;&#125;&#123;&#123;- end &#125;&#125;'</span></div><div class="line">master01	node-role.kubernetes.io/master=&lt;no value&gt;:NoSchedule</div><div class="line">master02	node-role.kubernetes.io/master=&lt;no value&gt;:NoSchedule</div><div class="line">master03	node-role.kubernetes.io/master=&lt;no value&gt;:NoSchedule</div><div class="line">node01	node.kubernetes.net/role=vehicle:NoSchedule</div><div class="line">node02</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Kubespray/">Kubespray</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Kubernetes/">Kubernetes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://ttxsgoto.github.io/2020/08/10/k8s-hv-cluster/" data-title="Kubernetes 高可用集群(Kubespray) | ttxsgoto&#39; Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2020/07/13/yw-mc-error/"  title="Minio Client Error x509 certificate signed by unknown authority">
+ <strong>旧一篇:</strong><br/> 
+ <span>Minio Client Error x509 certificate signed by unknown authority
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Kubernetes 高可用集群(Kubespray)" data-thread-key="k8s-hv-cluster" data-author-key="ttxsgoto" data-url="https://ttxsgoto.github.io/post/k8s-hv-cluster"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© ttxsgoto</span>
+		
+	<div>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','hZ7WsBNz4sCsnRDfH9NT','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

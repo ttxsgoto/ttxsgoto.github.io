@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://ttxsgoto.github.io/"/>
-  <updated>2020-07-13T09:08:30.000Z</updated>
+  <updated>2020-08-10T08:22:17.000Z</updated>
   <id>https://ttxsgoto.github.io/</id>
   
   <author>
@@ -14,6 +14,39 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Kubernetes 高可用集群(Kubespray)</title>
+    <link href="https://ttxsgoto.github.io/2020/08/10/k8s-hv-cluster/"/>
+    <id>https://ttxsgoto.github.io/2020/08/10/k8s-hv-cluster/</id>
+    <published>2020-08-10T08:16:02.000Z</published>
+    <updated>2020-08-10T08:22:17.000Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>Kubespray 是 Kubernetes incubator 中的项目，目标是提供 Production Ready Kubernetes 部署方案</p>
+<ul>
+<li>可以部署在 AWS, GCE, Azure, OpenStack 以及裸机上.</li>
+<li>部署 High Available Kubernetes 集群，ingress和etcd集群，也可以直接使用对应的插件，如dashboard，ingress等.</li>
+<li>可组合性 (Composable)，可自行选择 Network Plugin (flannel, calico, canal, weave) 来部署.</li>
+<li>支持多种 Linux distributions(CoreOS, Debian Jessie, Ubuntu 16.04, CentOS/RHEL7).</li>
+</ul>
+<h4 id="部署说明"><a href="#部署说明" class="headerlink" title="部署说明"></a>部署说明</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 角色分配</span></div><div class="line">master01 192.168.238.100(Ubuntu 16.04.5 LTS) etcd01 ingress</div><div class="line">master02 192.168.238.99(Ubuntu 16.04.5 LTS)  etcd02 ingress</div><div class="line">master03 192.168.238.98(Ubuntu 16.04.5 LTS)  etcd03 ingress</div><div class="line">node01   192.168.238.101(Ubuntu 16.04.5 LTS)</div><div class="line">node02   192.168.238.102(Ubuntu 16.04.5 LTS)</div></pre></td></tr></table></figure>
+<h4 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">git <span class="built_in">clone</span> https://github.com/kubernetes-sigs/kubespray.git</div><div class="line"> </div><div class="line"><span class="built_in">cd</span> kubespray &amp;&amp; pip install -r requirements.txt</div><div class="line">cp -rfp inventory/sample inventory/mycluster</div><div class="line"> </div><div class="line"><span class="comment"># 前提需要打通ssh无密钥认证</span></div><div class="line"><span class="comment"># 安装或者删除原节点再次安装进入集群</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini --become-user=root cluster.yml -b -v</div><div class="line"> </div><div class="line"><span class="comment"># 移除node</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini remove-node.yml -b -v --extra-vars <span class="string">"node=master03,node01"</span></div><div class="line"> </div><div class="line"><span class="comment"># 添加node， 添加node到inventory.ini中，如不行使用cluster.yml</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini scale.yml -b -v</div><div class="line"> </div><div class="line"><span class="comment"># 升级版本</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini upgrade-cluster.yml <span class="_">-e</span> kube_version=v1.18.6 -b -v</div><div class="line"> </div><div class="line"><span class="comment"># 删除集群</span></div><div class="line">ansible-playbook -i inventory/mycluster/inventory.ini reset.yml -b -v</div></pre></td></tr></table></figure>
+<h4 id="inventory-ini说明"><a href="#inventory-ini说明" class="headerlink" title="inventory.ini说明"></a>inventory.ini说明</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># inventory.ini文件</span></div><div class="line">[all]</div><div class="line">master01 ansible_host=192.168.238.100 ip=192.168.238.100 etcd_member_name=etcd1</div><div class="line">master02 ansible_host=192.168.238.99 ip=192.168.238.99 etcd_member_name=etcd2</div><div class="line">master03 ansible_host=192.168.238.98 ip=192.168.238.98 etcd_member_name=etcd3</div><div class="line"> </div><div class="line">node01 ansible_host=192.168.238.101 ip=192.168.238.101 </div><div class="line">node02 ansible_host=192.168.238.102 ip=192.168.238.102</div><div class="line"><span class="comment"># ## configure a bastion host if your nodes are not directly reachable</span></div><div class="line"><span class="comment"># bastion ansible_host=x.x.x.x ansible_user=some_user</span></div><div class="line"> </div><div class="line">[ingress]   <span class="comment"># 这里定义的名称如果需要给对应的节点添加标签和污点，需要在inventory/mycluster/group_vars/目录中有对应的名称，如 ingress.yml</span></div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[kube-master]</div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[etcd]</div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[ingress]</div><div class="line">master01</div><div class="line">master02</div><div class="line">master03</div><div class="line"> </div><div class="line">[vehicle]</div><div class="line">node01</div><div class="line"> </div><div class="line">[kube-node]</div><div class="line">node01</div><div class="line">node02</div><div class="line"><span class="comment"># node[01:30]</span></div><div class="line"> </div><div class="line">[calico-rr]</div><div class="line"> </div><div class="line">[k8s-cluster:children]</div><div class="line">kube-master</div><div class="line">kube-node</div><div class="line">calico-rr</div><div class="line"> </div><div class="line"><span class="comment"># inventory/mycluster/group_vars/vehicle.yml    # 设置标签和污点</span></div><div class="line">node_taints:</div><div class="line">  - <span class="string">"node.kubernetes.net/role=vehicle:NoSchedule"</span></div><div class="line"> </div><div class="line">node_labels:</div><div class="line">  <span class="string">'node.kubernetes.net/role'</span>: <span class="string">'vehicle'</span></div><div class="line"> </div><div class="line"><span class="comment"># inventory/mycluster/group_vars/ingress.yml    # </span></div><div class="line">node_labels:</div><div class="line">  <span class="string">'node-role.kubernetes.io/ingress'</span>: <span class="string">''</span></div></pre></td></tr></table></figure>
+<h4 id="集群验证"><a href="#集群验证" class="headerlink" title="集群验证"></a>集群验证</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># kubectl get nodes -o wide</span></div><div class="line">NAME       STATUS   ROLES            AGE   VERSION   INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME</div><div class="line">master01   Ready    ingress,master   27m   v1.18.6   192.168.238.100   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">master02   Ready    ingress,master   27m   v1.18.6   192.168.238.99    &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">master03   Ready    ingress,master   27m   v1.18.6   192.168.238.98   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">node01     Ready    &lt;none&gt;           26m   v1.18.6   192.168.238.101   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line">node02     Ready    &lt;none&gt;           26m   v1.18.6   192.168.238.102   &lt;none&gt;        Ubuntu 16.04.5 LTS   4.4.0-142-generic   containerd://1.2.13</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get nodes  -l node.kubernetes.net/role=vehicle</span></div><div class="line">NAME     STATUS   ROLES    AGE   VERSION</div><div class="line">node01   Ready    &lt;none&gt;   15m   v1.18.6</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get pods -n ingress-nginx -o wide</span></div><div class="line">NAME                             READY   STATUS    RESTARTS   AGE   IP                NODE       NOMINATED NODE   READINESS GATES</div><div class="line">ingress-nginx-controller-fd9xf   1/1     Running   0          16m   192.168.238.99    master02   &lt;none&gt;           &lt;none&gt;</div><div class="line">ingress-nginx-controller-j9vp8   1/1     Running   0          16m   192.168.238.100   master01   &lt;none&gt;           &lt;none&gt;</div><div class="line">ingress-nginx-controller-xlw5b   1/1     Running   0          16m   192.168.238.98   master03   &lt;none&gt;           &lt;none&gt;</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get cs</span></div><div class="line">NAME                 STATUS      MESSAGE                                                                                     ERROR</div><div class="line">controller-manager   Unhealthy   Get http://127.0.0.1:10252/healthz: dial tcp 127.0.0.1:10252: connect: connection refused</div><div class="line">scheduler            Unhealthy   Get http://127.0.0.1:10251/healthz: dial tcp 127.0.0.1:10251: connect: connection refused</div><div class="line">etcd-1               Healthy     &#123;<span class="string">"health"</span>:<span class="string">"true"</span>&#125;</div><div class="line">etcd-2               Healthy     &#123;<span class="string">"health"</span>:<span class="string">"true"</span>&#125;</div><div class="line">etcd-0               Healthy     &#123;<span class="string">"health"</span>:<span class="string">"true"</span>&#125;</div><div class="line"> </div><div class="line"><span class="comment"># kubectl get nodes -o go-template='&#123;&#123;- range .items &#125;&#125;&#123;&#123;- .metadata.name &#125;&#125;&#123;&#123; "\t" &#125;&#125;&#123;&#123;- range (index .spec "taints") &#125;&#125;&#123;&#123;- .key &#125;&#125;=&#123;&#123; .value &#125;&#125;:&#123;&#123; .effect &#125;&#125;&#123;&#123; "\t" &#125;&#125;&#123;&#123;- end &#125;&#125;&#123;&#123;- "\n" &#125;&#125;&#123;&#123;- end &#125;&#125;'</span></div><div class="line">master01	node-role.kubernetes.io/master=&lt;no value&gt;:NoSchedule</div><div class="line">master02	node-role.kubernetes.io/master=&lt;no value&gt;:NoSchedule</div><div class="line">master03	node-role.kubernetes.io/master=&lt;no value&gt;:NoSchedule</div><div class="line">node01	node.kubernetes.net/role=vehicle:NoSchedule</div><div class="line">node02</div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h4&gt;&lt;p&gt;Kubespray 是 Kubernetes incubator 中的项目，目标是提供 Production Ready Kubernete
+    
+    </summary>
+    
+      <category term="Kubernetes" scheme="https://ttxsgoto.github.io/categories/Kubernetes/"/>
+    
+    
+      <category term="Kubespray" scheme="https://ttxsgoto.github.io/tags/Kubespray/"/>
+    
+  </entry>
   
   <entry>
     <title>Minio Client Error x509 certificate signed by unknown authority</title>
@@ -1155,61 +1188,6 @@
     
     
       <category term="Apollo" scheme="https://ttxsgoto.github.io/tags/Apollo/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Jenkins+Gitlab+Harbor构建持续集成</title>
-    <link href="https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/"/>
-    <id>https://ttxsgoto.github.io/2019/01/04/yw-jenkins-ci/</id>
-    <published>2019-01-04T12:41:44.000Z</published>
-    <updated>2020-03-20T08:09:45.000Z</updated>
-    
-    <content type="html"><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenkins工具，自动发布代码到对应环境中，然后进行测试，提高研发工作效率和减少运维人员重复工作</p>
-<h4 id="组件说明"><a href="#组件说明" class="headerlink" title="组件说明"></a>组件说明</h4><h5 id="Jenkins"><a href="#Jenkins" class="headerlink" title="Jenkins"></a>Jenkins</h5><p>jenkins是基于Java开发的一种持续集成工具，用于监控持续重复的工作，旨在提供一个开放易用的软件平台，使软件的持续集成变成可能<br>特点：</p>
-<ul>
-<li>分布式构建</li>
-<li>大量三方插件</li>
-<li>变更支持</li>
-<li>消息通知</li>
-</ul>
-<h5 id="Gitlab"><a href="#Gitlab" class="headerlink" title="Gitlab"></a>Gitlab</h5><p>Gitlab 是一个用于仓库管理系统的开源项目，使用Git作为代码管理工具，并在此基础上搭建起来的web服务<br>特点：</p>
-<ul>
-<li>代码仓库管理</li>
-<li>多人协作</li>
-<li>完善的用户、权限管理</li>
-</ul>
-<h5 id="Harbor"><a href="#Harbor" class="headerlink" title="Harbor"></a>Harbor</h5><p>Harbor 是一个用于存储和分发 Docker 镜像的企业级 Registry 服务器<br>特点：</p>
-<ul>
-<li>基于角色的访问控制</li>
-<li>镜像复制</li>
-<li>鉴权认证管理</li>
-<li>用户管理，访问控制和活动审计</li>
-<li>RESTful API</li>
-</ul>
-<h4 id="实现说明"><a href="#实现说明" class="headerlink" title="实现说明"></a>实现说明</h4><ol>
-<li>通过Jenkins 生成的secret token来关联gitlab Webhooks设置url 和token，当代码有更新时，自动触发构建</li>
-<li>将代码拉取到Jenkins运行节点中，通过基础镜像加dockerfile文件构建应用镜像，然后上传到Harbor服务器中</li>
-<li>在测试服务器中拉取对应的镜像，然后运行起来</li>
-<li>构建完成没有错误，发邮件通知相关人员</li>
-</ol>
-<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4><ol>
-<li>Jenkins系统设置中需要配置gitlab服务器地址和对应的gitlab api token用于Jenkins和gitlab交互通信</li>
-<li>Jenkins任务构建可以指定在固定节点上构建， 构建节点和应用服务器之间必须有登录权限</li>
-<li>Harbor镜像管理，需要有鉴权和认证设置</li>
-</ol>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;最近研究了一下公司现有的发布流程，大致流程是这样：开发在开发完成代码后，提PR后，Merge代码， 不需要关注代码发布流程， 使用Jenki
-    
-    </summary>
-    
-      <category term="运维" scheme="https://ttxsgoto.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
-    
-    
-      <category term="Jenkins" scheme="https://ttxsgoto.github.io/tags/Jenkins/"/>
     
   </entry>
   
